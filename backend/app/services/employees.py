@@ -8,14 +8,22 @@ import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from sqlalchemy import ColumnElement, Select, func, or_, select
+from sqlalchemy import ColumnElement, Select, func, literal, select
 from sqlalchemy.orm import Session
 
 from app.calculations.salary_changes import SalaryChangeError, validate_salary_change
 from app.errors import EMPLOYEE_FIELD, DomainError, NotFoundError
 from app.models import Employee, SalaryChange
-from app.reference import ACTIVE, INACTIVE
+from app.reference import ACTIVE, INACTIVE, REPORTING_CURRENCY
 from app.services.pagination import DEFAULT_PAGE_SIZE, Page, paginate
+from app.services.sql import (
+    GROUP,
+    VALUE,
+    active_employees_with_rate,
+    matches_search,
+    median_by_group,
+    reporting_minor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -52,16 +60,75 @@ def list_employees(session: Session, query: EmployeeQuery) -> Page[Employee]:
     )
 
 
+@dataclass(frozen=True)
+class SalaryFigures:
+    """The lowest, the middle and the highest salary of a group of employees."""
+
+    currency: str
+    min_minor: int
+    median_minor: int
+    max_minor: int
+
+
+@dataclass(frozen=True)
+class EmployeeSummary:
+    headcount: int
+    payroll_cost_minor: int
+    reporting_currency: str
+    # True when all these employees have the same currency.
+    has_one_currency: bool
+    # None when no active employee matches.
+    salary: SalaryFigures | None
+
+
+_ALL = "all"
+
+
+def summarize(session: Session, query: EmployeeQuery) -> EmployeeSummary:
+    """The pay figures of the active employees that the list shows for the same query.
+
+    The payroll cost is in the reporting currency. When all these employees have one
+    currency, the salary figures are in that currency. If not, they are in the
+    reporting currency.
+    """
+
+    def active_matching(*columns: ColumnElement) -> Select:
+        return _matching(active_employees_with_rate(*columns), query)
+
+    headcount, cost, currencies, a_currency = session.execute(
+        active_matching(
+            func.count(),
+            func.coalesce(func.sum(reporting_minor(Employee.salary_minor)), 0),
+            func.count(Employee.currency.distinct()),
+            func.min(Employee.currency),
+        )
+    ).one()
+    if headcount == 0:
+        return EmployeeSummary(0, 0, REPORTING_CURRENCY, True, None)
+
+    has_one_currency = currencies == 1
+    salary = Employee.salary_minor if has_one_currency else reporting_minor(Employee.salary_minor)
+    lowest, highest = session.execute(active_matching(func.min(salary), func.max(salary))).one()
+    median = median_by_group(
+        session, active_matching(literal(_ALL).label(GROUP), salary.label(VALUE))
+    )[_ALL]
+    return EmployeeSummary(
+        headcount=headcount,
+        payroll_cost_minor=int(cost),
+        reporting_currency=REPORTING_CURRENCY,
+        has_one_currency=has_one_currency,
+        salary=SalaryFigures(
+            currency=a_currency if has_one_currency else REPORTING_CURRENCY,
+            min_minor=int(lowest),
+            median_minor=median,
+            max_minor=int(highest),
+        ),
+    )
+
+
 def _matching(statement: Select, query: EmployeeQuery) -> Select:
     if query.search:
-        pattern = f"%{_escape_like(query.search.strip())}%"
-        statement = statement.where(
-            or_(
-                Employee.full_name.ilike(pattern, escape="\\"),
-                Employee.email.ilike(pattern, escape="\\"),
-                Employee.employee_code.ilike(pattern, escape="\\"),
-            )
-        )
+        statement = statement.where(matches_search(query.search))
     filters = {
         Employee.country: query.country,
         Employee.department: query.department,
@@ -73,10 +140,6 @@ def _matching(statement: Select, query: EmployeeQuery) -> Select:
         if value:
             statement = statement.where(column == value)
     return statement
-
-
-def _escape_like(text: str) -> str:
-    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
 def _order(sort: str) -> tuple[ColumnElement, ...]:

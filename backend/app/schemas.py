@@ -2,7 +2,7 @@
 shapes for the UI. Change the two files together."""
 
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -95,6 +95,7 @@ class OverviewOut(BaseModel):
     reporting_currency: str
     payroll_cost_minor: int
     headcount: int
+    median_salary_minor: int
     rates_as_of: date | None
     group_by: GroupBy
     groups: list[GroupFiguresOut]
@@ -134,6 +135,7 @@ class PayHealthSummaryOut(BaseModel):
     below_count: int
     above_count: int
     correction_cost_minor: int
+    payroll_cost_minor: int
     reporting_currency: str
 
 
@@ -149,28 +151,27 @@ class OutlierOut(BaseModel):
     country: str
     currency: str
     salary_minor: int
+    range_status: Literal["below", "above"]
     band_limit_minor: int
     difference_minor: int
 
 
-class GapOut(BaseModel):
+class SalaryFiguresOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    key: str
-    label: str
     currency: str
-    men: int
-    women: int
-    mean_gap_pct: float | None
-    median_gap_pct: float | None
-    is_flagged: bool
-    has_enough_data: bool
+    min_minor: int
+    median_minor: int
+    max_minor: int
 
 
-class PayEquityOut(BaseModel):
+class EmployeeSummaryOut(BaseModel):
+    """The pay figures of the active employees of one list query."""
+
     model_config = ConfigDict(from_attributes=True)
 
-    organization: GapOut
-    countries: list[GapOut]
-    flag_threshold_pct: float
-    min_group_size: int
+    headcount: int
+    payroll_cost_minor: int
+    reporting_currency: str
+    has_one_currency: bool
+    salary: SalaryFiguresOut | None

@@ -11,6 +11,26 @@ from app.reference import ACTIVE
 GROUP = "grp"
 VALUE = "val"
 
+LIKE_ESCAPE = "\\"
+
+
+def matches_search(text: str) -> ColumnElement[bool]:
+    """True for an employee whose name, email or employee code has `text` in it.
+
+    The case does not matter. The signs `%` and `_` in `text` are text, not wildcards.
+    """
+    pattern = f"%{_escape_like(text.strip())}%"
+    return or_(
+        Employee.full_name.ilike(pattern, escape=LIKE_ESCAPE),
+        Employee.email.ilike(pattern, escape=LIKE_ESCAPE),
+        Employee.employee_code.ilike(pattern, escape=LIKE_ESCAPE),
+    )
+
+
+def _escape_like(text: str) -> str:
+    escaped = text.replace(LIKE_ESCAPE, LIKE_ESCAPE + LIKE_ESCAPE)
+    return escaped.replace("%", LIKE_ESCAPE + "%").replace("_", LIKE_ESCAPE + "_")
+
 
 def reporting_minor(amount: ColumnElement[int]) -> ColumnElement[int]:
     """`amount` in the reporting currency. The same formula as `calculations.money.convert_minor`.

@@ -179,3 +179,16 @@ def test_refuses_a_grouping_that_is_not_supported(client):
 
     assert response.status_code == 422
     assert response.json()["detail"][0]["field"] == "group_by"
+
+
+def test_returns_the_median_salary_of_the_organization_in_the_reporting_currency(client, acme):
+    # In USD: 18,000, 54,000, 60,000, 66,000, 70,000 and 90,000. The middle two give 63,000.
+    assert overview(client)["median_salary_minor"] == 6_300_000
+
+
+def test_returns_the_same_organization_median_for_each_grouping(client, acme):
+    assert overview(client, "department")["median_salary_minor"] == 6_300_000
+
+
+def test_returns_a_median_salary_of_zero_when_there_are_no_active_employees(client):
+    assert overview(client)["median_salary_minor"] == 0

@@ -1,4 +1,4 @@
-"""FR-09, FR-10, FR-13: pay health."""
+"""FR-09, FR-10, FR-13: pay health, the list of outliers and its search."""
 
 import pytest
 
@@ -32,8 +32,10 @@ def summary(client):
     return response.json()
 
 
-def outliers(client, status, **params):
-    response = client.get("/api/insights/pay-health/employees", params={"status": status, **params})
+def outliers(client, status=None, **params):
+    if status:
+        params["status"] = status
+    response = client.get("/api/insights/pay-health/employees", params=params)
     assert response.status_code == 200
     return response.json()
 
@@ -144,6 +146,7 @@ def test_shows_zero_when_no_employee_is_outside_the_band(client, make):
         "below_count": 0,
         "above_count": 0,
         "correction_cost_minor": 0,
+        "payroll_cost_minor": 6_000_000,
         "reporting_currency": "USD",
     }
     assert outliers(client, "below")["items"] == []
@@ -219,3 +222,78 @@ def test_orders_by_the_difference_as_a_part_of_the_band_and_not_by_the_amount(cl
     make.employee(country="IN", currency="INR", full_name="Near Minimum", salary_minor=99_000_000)
 
     assert names(outliers(client, "below")) == ["Far Below", "Near Minimum"]
+
+
+def test_finds_an_outlier_by_a_part_of_the_name(client, acme):
+    assert names(outliers(client, "below", search="10000 eur")) == ["Below By 10000 EUR"]
+
+
+def test_finds_an_outlier_by_a_part_of_the_email(client, make):
+    make.rate("USD", 1_000_000)
+    make.band(**BAND)
+    make.employee(salary_minor=4_000_000, full_name="Asha Rao", email="asha.rao@acme.example")
+    make.employee(salary_minor=4_000_000, full_name="Liam Smith", email="liam.smith@acme.example")
+
+    assert names(outliers(client, "below", search="liam.sm")) == ["Liam Smith"]
+
+
+def test_finds_an_outlier_by_the_employee_code(client, make):
+    make.rate("USD", 1_000_000)
+    make.band(**BAND)
+    make.employee(salary_minor=4_000_000)
+    make.employee(salary_minor=4_000_000, full_name="Second Employee")
+
+    assert names(outliers(client, "below", search="E00002")) == ["Second Employee"]
+
+
+def test_the_total_of_a_search_counts_the_matches_only(client, acme):
+    body = outliers(client, "below", search="5000")
+
+    assert body["total"] == 1
+    assert names(body) == ["Below By 5000"]
+
+
+def test_a_search_treats_a_percent_sign_and_an_underscore_as_text(client, make):
+    make.rate("USD", 1_000_000)
+    make.band(**BAND)
+    make.employee(salary_minor=4_000_000, full_name="Asha Rao")
+
+    assert outliers(client, "below", search="%")["items"] == []
+    assert outliers(client, "below", search="_")["items"] == []
+
+
+def test_a_search_works_with_the_country_filter(client, acme):
+    assert names(outliers(client, "below", search="Below", country="DE")) == ["Below By 10000 EUR"]
+    assert outliers(client, "below", search="Above", country="DE")["items"] == []
+
+
+def test_returns_the_payroll_cost_that_the_correction_cost_is_a_part_of(client, acme):
+    # The active employees with an exchange rate: 305,000 USD and 40,000 EUR at 1.08.
+    assert summary(client)["payroll_cost_minor"] == 34_820_000
+
+
+def test_lists_all_outliers_when_the_request_has_no_status(client, acme):
+    body = outliers(client)
+
+    assert body["total"] == 3
+    assert set(names(body)) == {"Below By 5000", "Above By 10000", "Below By 10000 EUR"}
+
+
+def test_each_outlier_states_its_range_status_and_the_limit_that_it_is_outside(client, acme):
+    by_name = {item["full_name"]: item for item in outliers(client)["items"]}
+
+    below, above = by_name["Below By 5000"], by_name["Above By 10000"]
+    assert (below["range_status"], below["band_limit_minor"], below["difference_minor"]) == (
+        "below",
+        5_000_000,
+        500_000,
+    )
+    assert (above["range_status"], above["band_limit_minor"], above["difference_minor"]) == (
+        "above",
+        7_000_000,
+        1_000_000,
+    )
+
+
+def test_a_list_of_one_status_also_states_the_range_status(client, acme):
+    assert {item["range_status"] for item in outliers(client, "above")["items"]} == {"above"}

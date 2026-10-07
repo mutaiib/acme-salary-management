@@ -11,6 +11,7 @@ from app.schemas import (
     BandOut,
     EmployeeDetailOut,
     EmployeeOut,
+    EmployeeSummaryOut,
     PageOut,
     SalaryChangeIn,
     SalaryChangeOut,
@@ -47,6 +48,22 @@ def list_employees(
         sort=sort,
     )
     return service.list_employees(session, query)
+
+
+@router.get("/summary", response_model=EmployeeSummaryOut)
+def summarize_employees(
+    search: str | None = None,
+    country: str | None = None,
+    department: str | None = None,
+    job_level: int | None = None,
+    status: Status | None = None,
+    session: Session = Depends(get_session),
+):
+    """The pay figures for the same filters as the list. It must be before `/{employee_id}`."""
+    query = EmployeeQuery(
+        search=search, country=country, department=department, job_level=job_level, status=status
+    )
+    return service.summarize(session, query)
 
 
 @router.get("/{employee_id}", response_model=EmployeeDetailOut)

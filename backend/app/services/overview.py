@@ -6,7 +6,7 @@ Tests: tests/api/test_overview.py, tests/unit/test_money.py.
 from dataclasses import dataclass
 from datetime import date
 
-from sqlalchemy import func
+from sqlalchemy import func, literal
 from sqlalchemy.orm import Session
 
 from app.models import Employee
@@ -25,6 +25,9 @@ GROUP_COLUMNS = {
     "department": Employee.department,
     "job_level": Employee.job_level,
 }
+
+# The one group of the median of the organization.
+_ALL = "all"
 
 
 @dataclass(frozen=True)
@@ -45,6 +48,8 @@ class Overview:
     reporting_currency: str
     payroll_cost_minor: int
     headcount: int
+    # The median salary of all active employees, in the reporting currency.
+    median_salary_minor: int
     rates_as_of: date | None
     group_by: GroupBy
     groups: list[GroupFigures]
@@ -70,6 +75,10 @@ def overview(session: Session, group_by: GroupBy) -> Overview:
         session, active_employees_with_rate(group.label(GROUP), salary.label(VALUE))
     )
 
+    organization_median = median_by_group(
+        session, active_employees_with_rate(literal(_ALL).label(GROUP), cost.label(VALUE))
+    )
+
     groups = [
         GroupFigures(
             key=str(key),
@@ -87,6 +96,7 @@ def overview(session: Session, group_by: GroupBy) -> Overview:
         reporting_currency=REPORTING_CURRENCY,
         payroll_cost_minor=sum(g.payroll_cost_minor for g in groups),
         headcount=sum(g.headcount for g in groups),
+        median_salary_minor=organization_median.get(_ALL, 0),
         rates_as_of=rates_as_of(session),
         group_by=group_by,
         groups=_ordered(group_by, groups),
