@@ -1,0 +1,43 @@
+# Traceability
+
+Each requirement points to the slice that delivers it and to the tests that check it. Backend tests are in `backend/tests/`. UI tests are in `frontend/src/`.
+
+## Functional requirements
+
+| ID | Requirement (short) | Slice | Backend tests | UI tests |
+|---|---|---|---|---|
+| FR-01 | Total payroll cost in the reporting currency, with the rate date | S2 | `unit/test_money.py`, `api/test_overview.py` | `pages/overview/OverviewPage.test.tsx` |
+| FR-02 | Headcount, minimum, median and maximum salary by country, department and job level | S2 | `unit/test_money.py`, `api/test_overview.py` | `pages/overview/OverviewPage.test.tsx` |
+| FR-03 | Find an employee; filter the list | S0, S1 | `api/test_employees_list.py`, `api/test_employee_search.py` | `pages/employees/EmployeesPage.test.tsx` |
+| FR-04 | Change a salary with a reason and an effective date | S1 | `api/test_salary_changes.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-05 | Refuse a salary that is zero or negative, and show the cause | S1 | `api/test_salary_changes.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-06 | Keep each salary change; show the salary history | S1 | `api/test_salary_changes.py`, `unit/test_seed.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-07 | Set a salary band for each job level in a country | S3 | `unit/test_ranges.py`, `api/test_bands.py` | `pages/bands/BandsPage.test.tsx` |
+| FR-08 | Compa-ratio and range penetration of each employee | S3 | `unit/test_ranges.py`, `api/test_employee_detail.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx`, `components/RangeBar.test.tsx` |
+| FR-09 | Employees below range and above range | S4 | `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
+| FR-10 | Cost to move all below-range salaries to the band minimum | S4 | `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
+| FR-11 | Mean and median gender pay gap for the organization and each country | S5 | `unit/test_pay_gap.py`, `api/test_pay_equity.py` | `pages/pay-equity/PayEquityPage.test.tsx` |
+| FR-12 | Flag each country with a gap of more than 5% | S5 | `unit/test_pay_gap.py`, `api/test_pay_equity.py` | `pages/pay-equity/PayEquityPage.test.tsx` |
+| FR-13 | Deactivate an employee; insights count active employees only | S1, S2, S4, S5 | `api/test_deactivate.py`, `api/test_overview.py`, `api/test_pay_health.py`, `api/test_pay_equity.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+
+## Quality requirements
+
+| ID | Requirement (short) | Evidence |
+|---|---|---|
+| NFR-01 | A list page responds in less than 300 ms | `docs/performance.md`: the slowest list request has a 95th percentile of 26 ms |
+| NFR-02 | A pay insight responds in less than 500 ms | `docs/performance.md`: the slowest insight has a 95th percentile of 106 ms |
+| NFR-03 | The seed script creates exactly 10,000 employees in less than 30 seconds; two runs give the same data | `unit/test_seed.py`; `docs/performance.md`: 0.5 seconds |
+| NFR-04 | Money is an integer in minor units | `unit/test_money.py`, `unit/test_ranges.py`; no `float` in `app/calculations/money.py` |
+| NFR-05 | The unit tests complete in less than 10 seconds, with no network, clock or shared database state | `docs/performance.md`; `api/conftest.py` gives each test a new in-memory database and a fixed date |
+| NFR-06 | One command installs, seeds and starts the system | `make start` in the `Makefile` |
+| NFR-07 | No gender pay gap for a group with fewer than 5 employees of each gender | `unit/test_pay_gap.py`, `api/test_pay_equity.py`, `pages/pay-equity/PayEquityPage.test.tsx` |
+
+## Tests against the seeded data
+
+Three tests load the seeded dataset and compare an insight to the anomalies that the seed script planted:
+
+| Test | Check |
+|---|---|
+| `unit/test_seed.py::test_plants_the_recorded_number_of_salaries_outside_the_band` | The dataset contains the recorded number of outliers |
+| `api/test_pay_health.py::test_finds_exactly_the_outliers_that_the_seed_script_planted` | Pay health finds exactly these outliers |
+| `api/test_pay_equity.py::test_flags_exactly_the_countries_that_the_seed_script_planted` | Pay equity flags exactly Germany, India and the United Kingdom |

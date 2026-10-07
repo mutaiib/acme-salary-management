@@ -193,6 +193,19 @@ frontend/
 - `review-org-standards`, tier `excellent`: checks the code against `CLAUDE.md`.
 - `review-coupling`: not selected. No slice is floored, and the dependency rule is checked in each slice.
 
+## Differences between the plan and the build
+
+The build follows the plan. These points are different:
+
+| Plan | Build | Reason |
+|---|---|---|
+| `GroupTable` is a shared component | `GroupTable` is in `pages/overview/` | Only one screen uses it. The constitution puts a component in the library when 2 screens use it. |
+| `GapCell` shared component | `GapValue` in `pages/pay-equity/` | Same reason. |
+| Search tests extend `test_employees_list.py` | New file `test_employee_search.py` | One file for each behavior is easier to read. |
+| No `services/meta.py` | `services/meta.py` has the rate date query | A router must not query the database. |
+| A flag for a gap of more than 5% | A flag for a gap of more than 5% in favor of men or of women | A gap in favor of women is also a difference to explain. The spec has this change. |
+| The UI lint tool is not named | `oxlint` | It is the default of the Vite template. |
+
 ## Escalation Log
 
 | Slice | Agent | From -> To | Reason | Time |
