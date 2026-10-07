@@ -66,6 +66,15 @@ class CountryOut(BaseModel):
     currency: str
 
 
+class ExchangeRateOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    currency: str
+    # The value of 1 unit of the currency, in micro-units of the reporting currency.
+    rate_micro: int
+    as_of_date: date
+
+
 class MetaOut(BaseModel):
     countries: list[CountryOut]
     departments: list[str]
