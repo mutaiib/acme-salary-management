@@ -40,6 +40,13 @@ export function formatCount(count: number): string {
   return new Intl.NumberFormat(LOCALE).format(count)
 }
 
+const MICRO = 1_000_000
+
+/** Formats an exchange rate in micro-units, for example `1.08` or `0.012`. */
+export function formatRate(rateMicro: number): string {
+  return new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 6 }).format(rateMicro / MICRO)
+}
+
 /** Formats an ISO date (`2026-01-31`) or an ISO date and time as `31 Jan 2026`. */
 export function formatDate(isoDate: string): string {
   return new Intl.DateTimeFormat('en-GB', {

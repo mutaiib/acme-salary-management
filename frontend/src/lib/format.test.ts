@@ -6,9 +6,16 @@ import {
   formatJobLevel,
   formatMoney,
   formatMoneyShort,
+  formatRate,
   formatRecordedDate,
   formatShare,
 } from './format'
+
+test('formats an exchange rate without zeros at the end', () => {
+  expect(formatRate(1_080_000)).toBe('1.08')
+  expect(formatRate(12_000)).toBe('0.012')
+  expect(formatRate(1_000_000)).toBe('1')
+})
 
 test('formats a whole amount without minor units', () => {
   expect(formatMoney(6_500_000, 'USD')).toBe('$65,000')

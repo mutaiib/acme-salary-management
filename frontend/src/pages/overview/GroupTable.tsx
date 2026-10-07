@@ -15,14 +15,17 @@ interface Props {
   reportingCurrency: string
 }
 
-/** The salaries of a group: the minimum, the median and the maximum, with a mark at the median. */
+/**
+ * The salaries of a group: the minimum, the median and the maximum. The bar goes from
+ * the minimum to the maximum, and the fill ends at the median.
+ */
 function SalaryRange({ group }: { group: GroupFigures }) {
   return (
     <Stack gap={1}>
       <ProgressBar
         label={`Position of the median salary between the minimum and the maximum: ${group.label}`}
         isLabelHidden
-        value={0}
+        value={group.median_minor - group.min_minor}
         max={group.max_minor - group.min_minor}
         variant="neutral"
         marks={[{ value: group.median_minor - group.min_minor, label: 'Median' }]}

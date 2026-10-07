@@ -50,6 +50,13 @@ export interface Country {
   currency: string
 }
 
+export interface ExchangeRate {
+  currency: string
+  /** The value of 1 unit of the currency, in micro-units of the reporting currency. */
+  rate_micro: number
+  as_of_date: string
+}
+
 export interface Meta {
   countries: Country[]
   departments: string[]

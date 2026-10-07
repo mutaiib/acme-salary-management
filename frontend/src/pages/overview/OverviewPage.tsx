@@ -1,3 +1,4 @@
+import { Link } from '@astryxdesign/core/Link'
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Text } from '@astryxdesign/core/Text'
@@ -95,8 +96,12 @@ export function OverviewPage() {
               >
                 <Text type="supporting">
                   The amounts are for one year. The payroll cost is in {data.reporting_currency}.{' '}
-                  {shown.note}
-                  {data.rates_as_of && ` Exchange rates of ${formatDate(data.rates_as_of)}.`}
+                  {shown.note}{' '}
+                  {data.rates_as_of && (
+                    <Link href="/exchange-rates">
+                      Exchange rates of {formatDate(data.rates_as_of)}
+                    </Link>
+                  )}
                 </Text>
                 <GroupTable
                   groupHeader={shown.header}

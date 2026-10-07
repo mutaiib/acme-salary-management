@@ -1,6 +1,10 @@
 import { getJson } from './client'
-import type { Meta } from './types'
+import type { ExchangeRate, Meta } from './types'
 
 export function getMeta(): Promise<Meta> {
   return getJson('/api/meta')
+}
+
+export function listExchangeRates(): Promise<ExchangeRate[]> {
+  return getJson('/api/meta/exchange-rates')
 }

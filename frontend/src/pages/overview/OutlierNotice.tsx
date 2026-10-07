@@ -1,5 +1,5 @@
 import { Banner } from '@astryxdesign/core/Banner'
-import { Button } from '@astryxdesign/core/Button'
+import { Link } from '@astryxdesign/core/Link'
 import { getPayHealth } from '../../api/insights'
 import { useApi } from '../../hooks/useApi'
 import { formatCount, formatMoney } from '../../lib/format'
@@ -20,7 +20,11 @@ export function OutlierNotice() {
       status="warning"
       title={`${formatCount(data.below_count + data.above_count)} salaries are outside the salary band`}
       description={`${formatCount(data.below_count)} are below range and ${formatCount(data.above_count)} are above range. The correction cost is ${cost} for one year.`}
-      endContent={<Button label="Go to Pay health" variant="secondary" href="/pay-health" />}
+      endContent={
+        <Link href="/pay-health" isStandalone>
+          Go to Pay health
+        </Link>
+      }
     />
   )
 }

@@ -62,6 +62,42 @@ function stubOverview() {
   })
 }
 
+const PAY_HEALTH = {
+  below_count: 290,
+  above_count: 193,
+  correction_cost_minor: 108_590_700,
+  payroll_cost_minor: 57_528_236_720,
+  reporting_currency: 'USD',
+}
+
+test('tells how many salaries are outside the salary band, with a link to Pay health', async () => {
+  stubApi({ '/api/insights/overview': BY_COUNTRY, '/api/insights/pay-health': PAY_HEALTH })
+
+  renderScreen(<OverviewPage />)
+
+  const notice = await screen.findByRole('alert')
+  expect(within(notice).getByText('483 salaries are outside the salary band')).toBeInTheDocument()
+  expect(
+    within(notice).getByText(/290 are below range and 193 are above range/),
+  ).toBeInTheDocument()
+  expect(within(notice).getByRole('link', { name: 'Go to Pay health' })).toHaveAttribute(
+    'href',
+    '/pay-health',
+  )
+})
+
+test('shows no notice when all salaries are in the salary band', async () => {
+  stubApi({
+    '/api/insights/overview': BY_COUNTRY,
+    '/api/insights/pay-health': { ...PAY_HEALTH, below_count: 0, above_count: 0 },
+  })
+
+  renderScreen(<OverviewPage />)
+
+  await screen.findByTestId('payroll-cost')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
 test('shows the total payroll cost in the reporting currency', async () => {
   stubOverview()
 
@@ -83,7 +119,8 @@ test('shows the date of the exchange rates', async () => {
 
   renderScreen(<OverviewPage />)
 
-  expect(await screen.findByText(/Exchange rates of 1 Jan 2026/)).toBeInTheDocument()
+  const link = await screen.findByRole('link', { name: 'Exchange rates of 1 Jan 2026' })
+  expect(link).toHaveAttribute('href', '/exchange-rates')
 })
 
 test('shows the figures of each country, with the salaries in the local currency', async () => {
