@@ -67,7 +67,7 @@ test('shows the total number of employees', async () => {
 
   renderScreen(<EmployeesPage />)
 
-  expect(await screen.findByText('10,000 employees')).toBeInTheDocument()
+  expect(await screen.findByText(/^10,000 employees\./)).toBeInTheDocument()
 })
 
 test('shows the next page when the HR Manager goes to the next page', async () => {

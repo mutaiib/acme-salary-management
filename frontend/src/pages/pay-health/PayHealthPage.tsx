@@ -74,7 +74,7 @@ export function PayHealthPage() {
     <Stack gap={5} padding={6}>
       <PageHeader
         title="Pay health"
-        description="The employees who have a salary outside the salary band for their job."
+        description="The employees who have a salary outside the salary band for their job. Each amount is for one year."
       />
       <MetaBanner state={meta} />
       <DataState state={summary}>

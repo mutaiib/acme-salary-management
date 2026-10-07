@@ -140,7 +140,9 @@ export function EmployeesPage() {
         {(data) => (
           <Stack gap={3}>
             <Stack direction="horizontal" hAlign="between" vAlign="center" gap={3} wrap="wrap">
-              <Text type="supporting">{formatCount(data.total)} employees</Text>
+              <Text type="supporting">
+                {formatCount(data.total)} employees. Each salary is for one year, in the local currency.
+              </Text>
               <FilterSelect
                 label="Sort by"
                 value={query.sort}
