@@ -1,3 +1,5 @@
+export type EmployeeStatus = 'active' | 'inactive'
+
 export interface Employee {
   id: number
   employee_code: string
@@ -11,7 +13,7 @@ export interface Employee {
   salary_minor: number
   gender: string
   hire_date: string
-  status: 'active' | 'inactive'
+  status: EmployeeStatus
 }
 
 export interface Page<T> {
@@ -19,4 +21,35 @@ export interface Page<T> {
   page: number
   page_size: number
   total: number
+}
+
+export interface SalaryChange {
+  id: number
+  /** Null for the first salary of the employee. */
+  old_salary_minor: number | null
+  new_salary_minor: number
+  currency: string
+  reason: string
+  effective_date: string
+  created_at: string
+}
+
+export interface SalaryChangeRequest {
+  new_salary_minor: number
+  reason: string
+  effective_date: string
+}
+
+export interface Country {
+  code: string
+  name: string
+  currency: string
+}
+
+export interface Meta {
+  countries: Country[]
+  departments: string[]
+  job_levels: number[]
+  reporting_currency: string
+  rates_as_of: string | null
 }
