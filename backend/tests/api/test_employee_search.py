@@ -1,3 +1,6 @@
+"""FR-03: search, filters and sort of the employee list."""
+
+
 def codes(response):
     return [item["employee_code"] for item in response.json()["items"]]
 

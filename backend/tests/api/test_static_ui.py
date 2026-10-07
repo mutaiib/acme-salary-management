@@ -1,3 +1,5 @@
+"""NFR-06: the API serves the built UI."""
+
 from fastapi.testclient import TestClient
 
 from app.main import create_app

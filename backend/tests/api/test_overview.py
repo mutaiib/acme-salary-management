@@ -1,3 +1,5 @@
+"""FR-01, FR-02, FR-13: the pay overview."""
+
 from datetime import date
 
 import pytest

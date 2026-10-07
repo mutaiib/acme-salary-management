@@ -1,3 +1,5 @@
+"""FR-01, FR-03: the fixed values for the filters, and the dates."""
+
 from datetime import date
 
 

@@ -1,3 +1,5 @@
+"""NFR-03: the seed generator."""
+
 from collections import Counter
 
 from app.reference import COUNTRIES, JOB_LEVELS

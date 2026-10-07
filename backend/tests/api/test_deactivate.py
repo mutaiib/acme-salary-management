@@ -1,3 +1,6 @@
+"""FR-13: deactivation of an employee."""
+
+
 def test_deactivates_an_active_employee(client, make):
     employee = make.employee(status="active")
 

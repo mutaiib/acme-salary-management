@@ -1,3 +1,5 @@
+"""FR-04, FR-05, FR-06: salary changes and the salary history."""
+
 from sqlalchemy import func, select
 
 from app.models import SalaryChange

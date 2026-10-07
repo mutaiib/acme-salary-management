@@ -1,3 +1,6 @@
+"""FR-07: salary bands."""
+
+
 def test_lists_the_band_of_each_job_level_in_each_country(client, make):
     make.band(country="US", job_level=2)
     make.band(

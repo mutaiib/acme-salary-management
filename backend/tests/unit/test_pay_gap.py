@@ -1,3 +1,5 @@
+"""FR-11, FR-12, NFR-07: gender pay gap calculations."""
+
 from decimal import Decimal
 from fractions import Fraction
 

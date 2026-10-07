@@ -1,3 +1,5 @@
+"""NFR-03, FR-06: the seed script writes the dataset."""
+
 from sqlalchemy import func, select
 
 from app.models import Employee, ExchangeRate, SalaryBand, SalaryChange

@@ -1,3 +1,5 @@
+"""FR-01, FR-02, NFR-04: money arithmetic."""
+
 import pytest
 
 from app.calculations.money import convert_minor, median_minor

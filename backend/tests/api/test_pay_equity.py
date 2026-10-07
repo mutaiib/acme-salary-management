@@ -1,3 +1,5 @@
+"""FR-11, FR-12, FR-13, NFR-07: pay equity."""
+
 import pytest
 
 from app.seed import generate_dataset, write_dataset

@@ -1,3 +1,5 @@
+"""FR-09, FR-10, FR-13: pay health."""
+
 import pytest
 
 from app.seed import generate_dataset, write_dataset

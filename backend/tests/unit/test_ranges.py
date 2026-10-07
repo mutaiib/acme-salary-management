@@ -1,3 +1,5 @@
+"""FR-07, FR-08, FR-09: salary band calculations."""
+
 from decimal import Decimal
 
 import pytest

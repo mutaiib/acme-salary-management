@@ -1,6 +1,6 @@
 # Constitution
 
-This document governs all work in this repository. It applies to people and to AI agents. If a task conflicts with an article, stop and tell the developer.
+This document governs all work in this repository. It applies to people and to AI agents. If a task conflicts with an article, stop. Tell the developer.
 
 The product is salary management software for the HR Manager of ACME. Read `docs/requirements.md` for the scope and `docs/glossary.md` for the terms.
 
@@ -10,7 +10,7 @@ The product is salary management software for the HR Manager of ACME. Read `docs
 2. Build in vertical slices. Each slice gives the HR Manager one capability through the API and the UI.
 3. In each slice, complete the backend step before the UI step.
 4. Make one commit for each green step. Do not commit code with a test that fails.
-5. Do not write code without a requirement ID (`FR-nn` or `NFR-nn`).
+5. Do not write code without a requirement ID (`FR-nn` or `NFR-nn`). Each test file names the requirements that it checks.
 6. Do not add a feature that is not in `docs/requirements.md`.
 7. Do not add an abstraction before a second implementation exists.
 8. Keep money as an integer in minor units. Do not use floating-point numbers for money.
@@ -31,6 +31,9 @@ frontend/src/
   components/     shared component library, built from Astryx components
   pages/          one directory for each screen
   api/            typed API client
+  hooks/          shared React hooks
+  lib/            formats and small pure functions
+  test/           test helpers
 ```
 
 - A router must not query the database.
