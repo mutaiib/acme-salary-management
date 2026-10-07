@@ -1,6 +1,7 @@
 import { Button } from '@astryxdesign/core/Button'
 import { Stack } from '@astryxdesign/core/Stack'
 import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
+import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
 import { listBands } from '../../api/bands'
 import type { Band } from '../../api/types'
@@ -11,12 +12,15 @@ import {
   FilterBar,
   jobLevelColumn,
   MetaBanner,
+  Money,
   moneyColumn,
   PageHeader,
+  Panel,
+  SegmentBar,
   type TableRow,
 } from '../../components'
 import { useApi } from '../../hooks/useApi'
-import { useMeta } from '../../hooks/useMeta'
+import { countryNameOf, useMeta } from '../../hooks/useMeta'
 import { useUrlFilters } from '../../hooks/useUrlFilters'
 import { formatJobLevel } from '../../lib/format'
 import { BandEditDialog } from './BandEditDialog'
@@ -28,19 +32,36 @@ export function BandsPage() {
   const bands = useApi(() => listBands(country || undefined), [country])
   const [editing, setEditing] = useState<Band | null>(null)
 
-  const countryName = (code: string) =>
-    meta.data?.countries.find((item) => item.code === code)?.name ?? code
+  const countryName = (code: string) => countryNameOf(meta.data, code)
 
-  const columns: TableColumn<TableRow<Band>>[] = [
-    {
-      key: 'country',
-      header: 'Country',
-      width: proportional(2),
-      renderCell: (band) => countryName(band.country),
-    },
+  // The bars of one country use one scale: the highest band maximum of the country.
+  const columnsFor = (topMinor: number): TableColumn<TableRow<Band>>[] => [
     jobLevelColumn<Band>('Job level'),
+    {
+      key: 'band',
+      header: 'Band',
+      width: proportional(3),
+      renderCell: (band) => (
+        <SegmentBar
+          label={`Salary band of ${countryName(band.country)}, ${formatJobLevel(band.job_level)}`}
+          from={band.min_minor}
+          to={band.max_minor}
+          max={topMinor}
+        />
+      ),
+    },
     moneyColumn<Band>('min_minor', 'Minimum'),
-    moneyColumn<Band>('mid_minor', 'Midpoint'),
+    {
+      key: 'mid_minor',
+      header: 'Midpoint',
+      width: proportional(1),
+      align: 'end',
+      renderCell: (band) => (
+        <Text weight="semibold">
+          <Money amountMinor={band.mid_minor} currency={band.currency} />
+        </Text>
+      ),
+    },
     moneyColumn<Band>('max_minor', 'Maximum'),
     {
       key: 'actions',
@@ -50,7 +71,7 @@ export function BandsPage() {
       renderCell: (band) => (
         <Button
           label={`Edit the band of ${countryName(band.country)}, ${formatJobLevel(band.job_level)}`}
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={() => setEditing(band)}
         >
@@ -64,7 +85,7 @@ export function BandsPage() {
     <Stack gap={4} padding={6}>
       <PageHeader
         title="Salary bands"
-        description="The pay range for each job level in each country. A band is the reference point for a salary."
+        description="The pay range for one year, for each job level in each country. Each bar shows a band, from its minimum to its maximum, on the scale of its country."
       />
       <MetaBanner state={meta} />
       <FilterBar>
@@ -80,7 +101,29 @@ export function BandsPage() {
         emptyTitle="No salary bands"
         emptyDescription="Run the seed script to create the salary bands."
       >
-        {(data) => <DataTable rows={data} columns={columns} idKey="id" hasHover />}
+        {(data) => (
+          <Stack gap={4}>
+            {bandsByCountry(data).map(([code, countryBands]) => (
+              <Panel
+                key={code}
+                title={countryName(code)}
+                end={
+                  <Text type="supporting">
+                    {countryBands[0].currency}, {countryBands.length}{' '}
+                    {countryBands.length === 1 ? 'job level' : 'job levels'}
+                  </Text>
+                }
+              >
+                <DataTable
+                  rows={countryBands}
+                  columns={columnsFor(Math.max(...countryBands.map((band) => band.max_minor)))}
+                  idKey="id"
+                  hasHover
+                />
+              </Panel>
+            ))}
+          </Stack>
+        )}
       </DataState>
       {editing && (
         <BandEditDialog
@@ -92,4 +135,13 @@ export function BandsPage() {
       )}
     </Stack>
   )
+}
+
+/** The bands of each country, in the order of the list from the API. */
+function bandsByCountry(bands: Band[]): [string, Band[]][] {
+  const groups = new Map<string, Band[]>()
+  for (const band of bands) {
+    groups.set(band.country, [...(groups.get(band.country) ?? []), band])
+  }
+  return [...groups]
 }

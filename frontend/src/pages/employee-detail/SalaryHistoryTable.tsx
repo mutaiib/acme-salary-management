@@ -2,7 +2,7 @@ import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
 import type { SalaryChange } from '../../api/types'
 import { DataTable, Money, moneyColumn, type TableRow } from '../../components'
-import { formatDate } from '../../lib/format'
+import { formatDate, formatRecordedDate } from '../../lib/format'
 
 const COLUMNS: TableColumn<TableRow<SalaryChange>>[] = [
   {
@@ -29,7 +29,7 @@ const COLUMNS: TableColumn<TableRow<SalaryChange>>[] = [
     key: 'created_at',
     header: 'Recorded on',
     width: pixel(140),
-    renderCell: (change) => formatDate(change.created_at),
+    renderCell: (change) => formatRecordedDate(change.created_at),
   },
 ]
 

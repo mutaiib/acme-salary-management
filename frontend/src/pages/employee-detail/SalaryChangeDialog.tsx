@@ -1,20 +1,35 @@
 import { DateInput } from '@astryxdesign/core/DateInput'
+import { NumberInput } from '@astryxdesign/core/NumberInput'
+import { Stack } from '@astryxdesign/core/Stack'
+import { Text } from '@astryxdesign/core/Text'
 import { TextArea } from '@astryxdesign/core/TextArea'
 import type { ISODateString } from '@astryxdesign/core/utils'
 import { useState } from 'react'
 import { changeSalary } from '../../api/employees'
-import type { Employee } from '../../api/types'
+import type { Band, EmployeeDetail } from '../../api/types'
 import { FormDialog, MoneyInput } from '../../components'
 import { errorStatus, useSubmit } from '../../hooks/useSubmit'
 import { formatMoney } from '../../lib/format'
+import { changePct, raisedBy } from '../../lib/money'
+import { roomToMaximum } from '../../lib/ranges'
+import { RangeBar } from './RangeBar'
 
 interface Props {
-  employee: Employee
+  employee: EmployeeDetail
   /** The date of the server. It is the default and the latest effective date. */
   today: string | undefined
   isOpen: boolean
   onClose: () => void
   onChanged: () => void
+}
+
+/** How far a new salary is from the band maximum, in words. */
+function roomNote(band: Band, salaryMinor: number, currency: string): string {
+  const room = roomToMaximum(salaryMinor, band)
+  const amount = formatMoney(Math.abs(room), currency)
+  return room >= 0
+    ? `Room to the band maximum: ${amount}.`
+    : `This salary is ${amount} above the band maximum.`
 }
 
 // The names of the inputs of this form, as the API names them.
@@ -69,14 +84,36 @@ export function SalaryChangeDialog({ employee, today, isOpen, onClose, onChanged
       isSubmitting={form.isSubmitting}
       error={form.formError}
     >
-      <MoneyInput
-        label="New salary"
-        description="The base salary for one year, before tax."
-        amountMinor={salaryMinor}
-        onChange={setSalaryMinor}
-        currency={employee.currency}
-        error={form.fieldErrors.new_salary_minor}
-      />
+      <Stack direction="horizontal" gap={3} vAlign="start" wrap="wrap">
+        <MoneyInput
+          label="New salary"
+          description="For one year, before tax."
+          amountMinor={salaryMinor}
+          onChange={setSalaryMinor}
+          currency={employee.currency}
+          error={form.fieldErrors.new_salary_minor}
+        />
+        {/* The two inputs show the same change. A value in one sets the other. */}
+        <NumberInput
+          label="Increase"
+          description="From the current salary."
+          value={salaryMinor === null ? null : changePct(employee.salary_minor, salaryMinor)}
+          onChange={(pct) => setSalaryMinor(raisedBy(employee.salary_minor, pct))}
+          units="%"
+          step={0.5}
+          width={140}
+        />
+      </Stack>
+      {employee.band && (
+        <Stack gap={1}>
+          <RangeBar band={employee.band} salaryMinor={salaryMinor ?? employee.salary_minor} />
+          {salaryMinor !== null && (
+            <Text type="supporting">
+              {roomNote(employee.band, salaryMinor, employee.currency)}
+            </Text>
+          )}
+        </Stack>
+      )}
       <TextArea
         label="Reason"
         description="The salary history shows this text."

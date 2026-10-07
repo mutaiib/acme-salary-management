@@ -12,7 +12,7 @@ test('shows the data and the current salary of the employee', async () => {
 
   expect(await screen.findByRole('heading', { level: 1, name: 'Asha Rao' })).toBeInTheDocument()
   expect(screen.getByText('E00007')).toBeInTheDocument()
-  expect(screen.getByText('Software Engineer, Engineering')).toBeInTheDocument()
+  expect(screen.getByText('Software Engineer · Engineering · Level 2 · United States')).toBeInTheDocument()
   expect(screen.getByTestId('current-salary')).toHaveTextContent(/^\$65,000$/)
 })
 

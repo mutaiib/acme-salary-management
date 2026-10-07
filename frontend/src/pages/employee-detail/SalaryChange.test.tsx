@@ -166,3 +166,60 @@ test('sends nothing when the HR Manager cancels the salary change', async () => 
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(api.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
 })
+
+test('shows the room to the band maximum for the new salary', async () => {
+  openEmployeeDetail()
+
+  // The band maximum of Asha is $78,000.
+  const dialog = await fillSalaryChange('70000', 'Annual review')
+
+  expect(within(dialog).getByText(/Room to the band maximum: \$8,000\./)).toBeInTheDocument()
+})
+
+test('states that a new salary is above the band maximum', async () => {
+  openEmployeeDetail()
+
+  const dialog = await fillSalaryChange('80000', 'Annual review')
+
+  expect(within(dialog).getByText(/This salary is \$2,000 above the band maximum\./)).toBeInTheDocument()
+})
+
+test('sets the new salary from an increase in percent', async () => {
+  let sent: unknown
+  openEmployeeDetail({
+    'POST /api/employees/7/salary-changes': (_url: URL, body: unknown) => {
+      sent = body
+      return salaryChange(2)
+    },
+  })
+  await userEvent.click(await screen.findByRole('button', { name: 'Change salary' }))
+  const dialog = await screen.findByRole('dialog')
+
+  // The current salary of Asha is $65,000.
+  const increase = within(dialog).getByLabelText(/Increase/)
+  await userEvent.clear(increase)
+  await userEvent.type(increase, '10')
+  await userEvent.tab()
+  await userEvent.type(within(dialog).getByLabelText(/Reason/), 'Annual review')
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+  await waitFor(() => expect(sent).toMatchObject({ new_salary_minor: 7_150_000 }))
+})
+
+test('shows the increase in percent for a new salary', async () => {
+  openEmployeeDetail()
+
+  const dialog = await fillSalaryChange('71500', 'Annual review')
+
+  expect(within(dialog).getByLabelText(/Increase/)).toHaveValue('10')
+})
+
+test('shows the salary band in the dialog', async () => {
+  openEmployeeDetail()
+  await userEvent.click(await screen.findByRole('button', { name: 'Change salary' }))
+  const dialog = await screen.findByRole('dialog')
+
+  // The band of Asha: $52,000, $65,000 and $78,000.
+  expect(within(dialog).getByText('$52,000')).toBeInTheDocument()
+  expect(within(dialog).getByText('$78,000')).toBeInTheDocument()
+})

@@ -11,7 +11,7 @@ interface Props {
 }
 
 /**
- * A salary band as a bar from the minimum to the maximum, with a mark at the midpoint.
+ * A salary band as a bar from the minimum to the maximum. The midpoint is in the middle.
  * The fill ends at the salary. A salary outside the band stays at the end of the bar.
  */
 export function RangeBar({ band, salaryMinor }: Props) {
@@ -26,7 +26,6 @@ export function RangeBar({ band, salaryMinor }: Props) {
         value={positionOnBand(salaryMinor, band)}
         max={100}
         variant={isOutside ? 'warning' : 'accent'}
-        marks={[{ value: positionOnBand(band.mid_minor, band), label: 'Midpoint' }]}
       />
       <Stack direction="horizontal" hAlign="between">
         <BandPoint name="Minimum" amount={money(band.min_minor)} />

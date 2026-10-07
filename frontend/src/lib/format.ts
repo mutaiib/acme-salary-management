@@ -51,6 +51,20 @@ export function formatDate(isoDate: string): string {
 }
 
 /**
+ * Formats the time of a record as a date in the time zone of the HR Manager.
+ * The API gives the time in UTC, so near midnight the date can differ from the UTC date.
+ */
+export function formatRecordedDate(utcDateTime: string, timeZone?: string): string {
+  const hasZone = /(Z|[+-]\d{2}:\d{2})$/.test(utcDateTime)
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone,
+  }).format(new Date(hasZone ? utcDateTime : `${utcDateTime}Z`))
+}
+
+/**
  * Formats a part of a total as a percentage, for example `61.5%`.
  * A small part can use 2 decimal places, for example `0.19%`.
  */

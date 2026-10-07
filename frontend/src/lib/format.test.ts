@@ -6,6 +6,7 @@ import {
   formatJobLevel,
   formatMoney,
   formatMoneyShort,
+  formatRecordedDate,
   formatShare,
 } from './format'
 
@@ -55,4 +56,10 @@ test('formats a total of thousands in a short form', () => {
 
 test('keeps all digits of a total below 100,000', () => {
   expect(formatMoneyShort(6_500_000, 'USD')).toBe('$65,000')
+})
+
+test('formats the time of a record as a date in the time zone of the HR Manager', () => {
+  // 19:22 UTC on 7 October is 00:52 on 8 October in India.
+  expect(formatRecordedDate('2026-10-07T19:22:00', 'Asia/Kolkata')).toBe('8 Oct 2026')
+  expect(formatRecordedDate('2026-10-07T19:22:00', 'UTC')).toBe('7 Oct 2026')
 })

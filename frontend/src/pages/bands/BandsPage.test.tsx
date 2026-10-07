@@ -19,8 +19,8 @@ const IN_LEVEL_3 = band(2, {
 })
 
 async function openEditDialog() {
-  const row = (await screen.findByRole('cell', { name: 'United States' })).closest('tr')!
-  await userEvent.click(within(row).getByRole('button', { name: /Edit/ }))
+  const country = await screen.findByRole('region', { name: 'United States' })
+  await userEvent.click(within(country).getByRole('button', { name: /Edit/ }))
   return screen.findByRole('dialog')
 }
 
@@ -36,7 +36,9 @@ test('shows the minimum, the midpoint and the maximum of each band', async () =>
 
   renderScreen(<BandsPage />)
 
-  const row = (await screen.findByRole('cell', { name: 'India' })).closest('tr')!
+  const country = await screen.findByRole('region', { name: 'India' })
+  const row = within(country).getByText('Level 3').closest('tr')!
+  expect(within(country).getByText('INR, 1 job level')).toBeInTheDocument()
   expect(within(row).getByText('Level 3')).toBeInTheDocument()
   expect(within(row).getByText('₹1,800,000')).toBeInTheDocument()
   expect(within(row).getByText('₹2,250,000')).toBeInTheDocument()
@@ -47,7 +49,7 @@ test('sends the country filter in the address to the API', async () => {
   const api = stubApi({ '/api/meta': META, '/api/bands': [IN_LEVEL_3] })
 
   renderScreen(<BandsPage />, { at: '/?country=IN' })
-  await screen.findByRole('cell', { name: 'India' })
+  await screen.findByRole('region', { name: 'India' })
 
   expect(requestsTo(api, '/api/bands').at(-1)!.searchParams.get('country')).toBe('IN')
 })

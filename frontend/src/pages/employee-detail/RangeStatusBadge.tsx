@@ -1,16 +1,17 @@
 import { Badge } from '@astryxdesign/core/Badge'
+import { Icon } from '@astryxdesign/core/Icon'
 import { Text } from '@astryxdesign/core/Text'
 import type { RangeStatus } from '../../api/types'
 
-/** The range status. Only a salary outside the band gets a badge, so the outliers stand out. */
+/** The range status. A salary outside the band has the warning color, so the outliers stand out. */
 export function RangeStatusBadge({ status }: { status: RangeStatus }) {
   switch (status) {
     case 'below':
-      return <Badge variant="warning" label="Below range" />
+      return <Badge variant="warning" label="Below range" icon={<Icon icon="arrowDown" />} />
     case 'above':
-      return <Badge variant="warning" label="Above range" />
+      return <Badge variant="warning" label="Above range" icon={<Icon icon="arrowUp" />} />
     case 'in_range':
-      return <Text type="supporting">In range</Text>
+      return <Badge variant="success" label="In range" icon={<Icon icon="check" />} />
     case 'no_band':
       return <Text type="supporting">No salary band</Text>
     default: {
