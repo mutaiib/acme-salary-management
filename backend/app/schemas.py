@@ -80,3 +80,31 @@ class OverviewOut(BaseModel):
     rates_as_of: date | None
     group_by: str
     groups: list[GroupFiguresOut]
+
+
+class BandIn(BaseModel):
+    min_minor: int
+    mid_minor: int
+    max_minor: int
+
+
+class BandOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_level: int
+    country: str
+    currency: str
+    min_minor: int
+    mid_minor: int
+    max_minor: int
+
+
+class EmployeeDetailOut(EmployeeOut):
+    """An employee with the position of the salary in the salary band."""
+
+    band: BandOut | None
+    # A ratio and a percentage are not money, so they are plain numbers in JSON.
+    compa_ratio: float | None
+    range_penetration: float | None
+    range_status: str

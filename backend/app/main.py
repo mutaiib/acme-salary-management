@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.errors import add_error_handlers
-from app.routers import employees, insights, meta
+from app.routers import bands, employees, insights, meta
 
 DEFAULT_STATIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
@@ -17,6 +17,7 @@ def create_app(static_dir: Path | None = None) -> FastAPI:
     app.include_router(employees.router)
     app.include_router(meta.router)
     app.include_router(insights.router)
+    app.include_router(bands.router)
     _serve_ui(app, static_dir or Path(os.environ.get("SALARY_STATIC_DIR", DEFAULT_STATIC_DIR)))
     return app
 

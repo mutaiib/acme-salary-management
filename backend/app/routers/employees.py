@@ -7,7 +7,15 @@ from sqlalchemy.orm import Session
 from app.db import get_session
 from app.models import Employee, SalaryChange
 from app.routers.deps import get_now, get_today
-from app.schemas import EmployeeOut, EmployeePage, SalaryChangeIn, SalaryChangeOut
+from app.schemas import (
+    BandOut,
+    EmployeeDetailOut,
+    EmployeeOut,
+    EmployeePage,
+    SalaryChangeIn,
+    SalaryChangeOut,
+)
+from app.services import bands as band_service
 from app.services import employees as service
 from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, SORT_OPTIONS, EmployeeQuery
 
@@ -39,9 +47,17 @@ def list_employees(
     return service.list_employees(session, query)
 
 
-@router.get("/{employee_id}", response_model=EmployeeOut)
+@router.get("/{employee_id}", response_model=EmployeeDetailOut)
 def get_employee(employee_id: int, session: Session = Depends(get_session)):
-    return service.get_employee(session, employee_id)
+    employee = service.get_employee(session, employee_id)
+    position = band_service.position_of(session, employee)
+    return EmployeeDetailOut(
+        **EmployeeOut.model_validate(employee).model_dump(),
+        band=BandOut.model_validate(position.band) if position.band else None,
+        compa_ratio=position.compa_ratio,
+        range_penetration=position.range_penetration,
+        range_status=position.range_status,
+    )
 
 
 @router.post("/{employee_id}/salary-changes", response_model=SalaryChangeOut, status_code=201)
