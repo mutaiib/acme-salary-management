@@ -28,9 +28,9 @@ backend/app/
     deps.py           the clock as an input: get_today, get_now
     error_handlers.py turns the errors of the services into HTTP responses
   services/       use cases and database queries
-    sql.py            shared SQL: active employees, currency conversion, median
+    sql.py            shared SQL: active employees, currency conversion, median, search
     pagination.py     one page of a list
-  calculations/   pure pay calculations: money, salary bands, pay gap, salary change rules
+  calculations/   pure pay calculations: money, salary bands, salary change rules
   models.py       database tables
   schemas.py      request and response shapes
   reference.py    countries, currencies, jobs, and the allowed values of a status or a gender
@@ -41,6 +41,8 @@ backend/tests/
   api/            the API on a new in-memory database for each test
 frontend/src/
   components/     shared component library, built from Astryx components
+  themes/         the Astryx neutral theme as source, from `astryx theme add`
+  theme.ts        the theme of the application: the neutral theme with a blue accent
   pages/          one directory for each screen; a test file is next to its source file
   api/            typed API client; types.ts has the same shapes as backend/app/schemas.py
   hooks/          shared React hooks
@@ -58,7 +60,9 @@ Patterns to follow. Read `docs/architecture.md` for the reasons.
 - **Clock.** A service gets `today` and `now` as arguments. A router gets them from `routers/deps.py`. Do not call `date.today()` or `datetime.now()` in a service.
 - **Errors.** A service raises `DomainError(field, cause)` or `NotFoundError`. The API returns `422 {"detail": [{"field", "cause"}]}` or `404`. A business rule goes into a pure function in `calculations/`, as `validate_band` does.
 - **Insights.** Use `active_employees_with_rate` from `services/sql.py`, so that all insights count the same employees.
-- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`.
+- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`. Put a section of a screen in a `Panel`. Explain a term with the `help` text of a `Stat`, which opens from an info button.
+- **Amounts on a screen.** A salary shows all its digits (`formatMoney`). A large total shows a short form with the full amount on hover (`formatMoneyShort`). Each amount states its period: "for one year".
+- **Design brief.** `.claude/DESIGN.md` has the principles, the page patterns and the color rules.
 - **A screen test.** Replace the API with `stubApi`, and render with `renderScreen`.
 - **API shapes.** Change `backend/app/schemas.py` and `frontend/src/api/types.ts` together.
 - **Traceability.** Start a new test file with the requirement IDs. Add the file to `docs/traceability.md`.

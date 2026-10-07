@@ -21,6 +21,9 @@ dist/
 .env.*
 !.env.example
 
+# Reports and screenshots of the browser checks
+/tests/
+
 # Tools
 .claude/settings.local.json
 .claude/*.local.md

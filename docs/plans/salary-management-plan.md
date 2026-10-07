@@ -179,6 +179,8 @@ frontend/
 
 ## Slice 5: Pay equity
 
+Removed from the product after the review of the developer. See `docs/requirements.md`.
+
 1. **ACs**: spec Slice 5.
 2. **Design intent**: the gap is a pure function of two pay values. The minimum group size is a named constant.
 3. **Structure**

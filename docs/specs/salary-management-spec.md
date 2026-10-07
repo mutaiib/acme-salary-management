@@ -95,6 +95,8 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 
 ## Slice 5: Pay equity (FR-11, FR-12, NFR-07)
 
+Removed from the product after the review of the developer. See `docs/requirements.md`.
+
 - [x] The Pay equity screen shows the mean gap and the median gap for the organization, in USD.
 - [x] The Pay equity screen shows the mean gap and the median gap for each country, in the local currency.
 - [x] Each group shows the number of men and the number of women.
@@ -112,6 +114,9 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 ```
 GET  /api/employees?search=&country=&department=&job_level=&status=&sort=&page=&page_size=
      -> 200 { items: [Employee], page, page_size, total } | 422
+GET  /api/employees/summary?search=&country=&department=&job_level=&status=
+     -> 200 { headcount, payroll_cost_minor, reporting_currency, has_one_currency,
+              salary: { currency, min_minor, median_minor, max_minor } | null } | 422
 GET  /api/employees/{id}
      -> 200 Employee + { band: Band | null, compa_ratio, range_penetration, range_status } | 404
 POST /api/employees/{id}/salary-changes   { new_salary_minor, reason, effective_date }
@@ -124,24 +129,24 @@ GET  /api/meta
      -> 200 { countries: [{ code, name, currency }], departments, job_levels,
               reporting_currency, rates_as_of, today }
 GET  /api/insights/overview?group_by=country|department|job_level
-     -> 200 { reporting_currency, payroll_cost_minor, headcount, rates_as_of, group_by,
-              groups: [Group] } | 422
+     -> 200 { reporting_currency, payroll_cost_minor, headcount, median_salary_minor,
+              rates_as_of, group_by, groups: [Group] } | 422
 GET  /api/bands?country=
      -> 200 [Band]
 PUT  /api/bands/{id}                      { min_minor, mid_minor, max_minor }
      -> 200 Band | 404 | 422
 GET  /api/insights/pay-health
-     -> 200 { below_count, above_count, correction_cost_minor, reporting_currency }
-GET  /api/insights/pay-health/employees?status=below|above&country=&job_level=&page=&page_size=
+     -> 200 { below_count, above_count, correction_cost_minor, payroll_cost_minor,
+              reporting_currency }
+GET  /api/insights/pay-health/employees?status=below|above&country=&job_level=&search=&page=&page_size=
      -> 200 { items: [Outlier], page, page_size, total } | 422
-GET  /api/insights/pay-equity
-     -> 200 { organization: Gap, countries: [Gap], flag_threshold_pct, min_group_size }
+     (without a status, the list has all outliers; each Outlier has a range_status)
 
 Each 422 response: { detail: [{ field, cause }] }
 Each 404 response: { detail: cause }
 
 These fields can be null: SalaryChange.old_salary_minor, rates_as_of, band, compa_ratio,
-range_penetration, mean_gap_pct, median_gap_pct.
+range_penetration, salary (of the summary).
 
 Employee:     { id, employee_code, full_name, email, job_title, job_level, department,
                 country, currency, salary_minor, gender, hire_date, status }

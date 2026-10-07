@@ -4,8 +4,8 @@ Salary management software for the HR Manager of ACME: 10,000 employees in 8 cou
 
 The application follows this sequence:
 
-1. **See** the pay: payroll cost and headcount by country, department and job level.
-2. **Find** the problems: salaries outside the salary band, and the gender pay gap.
+1. **See** the pay: payroll cost, headcount and median salary, by country, department and job level.
+2. **Find** the problems: salaries outside the salary band.
 3. **Change** a salary, with a reason and an effective date.
 4. **Prove** the salary change: each employee has a salary history.
 
@@ -45,26 +45,26 @@ The API documentation is at http://localhost:8000/docs.
 |---|---|
 | Pay overview | What does ACME spend on salaries, and where? |
 | Pay health | Who has a salary below or above the salary band? What does the correction cost? |
-| Pay equity | Do men and women have different pay? In which countries? |
-| Employees | Who is this employee, and what is the salary history? |
+| Employees | What does ACME pay a group of employees, for example Engineering in Germany? Who is this employee, and what is the salary history? |
 | Salary bands | What is the pay range for a job level in a country? |
 
 ## Technology
 
 - Backend: Python, FastAPI, SQLAlchemy, SQLite.
 - UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system.
-- Tests: pytest (209 tests), Vitest with React Testing Library (113 tests).
+- Tests: pytest (203 tests), Vitest with React Testing Library (139 tests).
 
 ## Structure
 
 ```
 backend/app/
-  calculations/   pure pay calculations: money, salary bands, pay gap
+  calculations/   pure pay calculations: money, salary bands, salary change rules
   services/       use cases and database queries
   routers/        HTTP endpoints
   seed.py         creates the 10,000 employees
 frontend/src/
   components/     shared component library, built from Astryx components
+  themes/         the Astryx neutral theme as source; `theme.ts` gives it a blue accent
   pages/          one directory for each screen
   api/            typed API client
   hooks/, lib/    shared hooks, formats and small pure functions
@@ -82,7 +82,8 @@ docs/             requirements, design notes and decisions
 | [docs/performance.md](docs/performance.md) | Measured response times |
 | [docs/traceability.md](docs/traceability.md) | Each requirement, with its slice and its tests |
 | [docs/ai-usage.md](docs/ai-usage.md) | The AI tools, the prompts, and the corrections |
-| [docs/specs/](docs/specs/) and [docs/plans/](docs/plans/) | Discovery, specification and plan |
+| [docs/specs/](docs/specs/) and [docs/plans/](docs/plans/) | Discovery, specification and plan, and the check of the brief in a browser |
+| [.claude/DESIGN.md](.claude/DESIGN.md) | The design brief for the screens |
 | [CLAUDE.md](CLAUDE.md) | The constitution: the rules for all work in this repository |
 
 ## Method

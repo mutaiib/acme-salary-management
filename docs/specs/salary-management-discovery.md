@@ -1,5 +1,7 @@
 # Discovery: ACME Salary Management
 
+This document is the record of the discovery, before the build. After the review of the screens, the developer removed pay equity from the scope. See `docs/requirements.md`.
+
 Source: the assessment brief (`docs/brief/`), a review of compensation tools, and the scope decisions of the developer.
 
 ## Why
