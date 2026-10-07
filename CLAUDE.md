@@ -28,6 +28,7 @@ backend/app/
   models.py       database tables
   calculations/   pure pay calculations
 frontend/src/
+  components/     shared component library, built from Astryx components
   pages/          one directory for each screen
   api/            typed API client
 ```
@@ -60,8 +61,9 @@ Code comments and commit messages follow the same rules where practical.
 1. Use Astryx components (`@astryxdesign/core`) for all UI elements.
 2. Use Astryx theme tokens for color, space and type. Do not write a color value by hand.
 3. Read the component documentation before you use a component: `npm run astryx -- component <Name>`.
-4. Each screen must have a loading state, an empty state and an error state.
-5. Each screen must be usable with a keyboard.
+4. Put a UI element that 2 or more screens use in the shared component library (`frontend/src/components/`). A screen must not copy it.
+5. Each screen must have a loading state, an empty state and an error state.
+6. Each screen must be usable with a keyboard.
 
 ## Article 5: Commands
 
