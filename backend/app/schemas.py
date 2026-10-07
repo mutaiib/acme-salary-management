@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, ConfigDict
 
@@ -26,3 +26,33 @@ class EmployeePage(BaseModel):
     page: int
     page_size: int
     total: int
+
+
+class SalaryChangeIn(BaseModel):
+    new_salary_minor: int
+    reason: str
+    effective_date: date
+
+
+class SalaryChangeOut(BaseModel):
+    id: int
+    old_salary_minor: int | None
+    new_salary_minor: int
+    currency: str
+    reason: str
+    effective_date: date
+    created_at: datetime
+
+
+class CountryOut(BaseModel):
+    code: str
+    name: str
+    currency: str
+
+
+class MetaOut(BaseModel):
+    countries: list[CountryOut]
+    departments: list[str]
+    job_levels: list[int]
+    reporting_currency: str
+    rates_as_of: date | None

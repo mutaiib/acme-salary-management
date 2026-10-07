@@ -1,10 +1,15 @@
+from datetime import date, datetime
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.schemas import EmployeePage
+from app.models import Employee, SalaryChange
+from app.routers.deps import get_now, get_today
+from app.schemas import EmployeeOut, EmployeePage, SalaryChangeIn, SalaryChangeOut
 from app.services import employees as service
-from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, EmployeeQuery
+from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, SORT_OPTIONS, EmployeeQuery
 
 router = APIRouter(prefix="/api/employees", tags=["employees"])
 
@@ -13,6 +18,73 @@ router = APIRouter(prefix="/api/employees", tags=["employees"])
 def list_employees(
     page: int = Query(1, ge=1),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+    search: str | None = None,
+    country: str | None = None,
+    department: str | None = None,
+    job_level: int | None = None,
+    status: str | None = None,
+    sort: Literal[SORT_OPTIONS] = "employee_code",  # type: ignore[valid-type]
     session: Session = Depends(get_session),
 ):
-    return service.list_employees(session, EmployeeQuery(page=page, page_size=page_size))
+    query = EmployeeQuery(
+        page=page,
+        page_size=page_size,
+        search=search,
+        country=country,
+        department=department,
+        job_level=job_level,
+        status=status,
+        sort=sort,
+    )
+    return service.list_employees(session, query)
+
+
+@router.get("/{employee_id}", response_model=EmployeeOut)
+def get_employee(employee_id: int, session: Session = Depends(get_session)):
+    return service.get_employee(session, employee_id)
+
+
+@router.post("/{employee_id}/salary-changes", response_model=SalaryChangeOut, status_code=201)
+def change_salary(
+    employee_id: int,
+    body: SalaryChangeIn,
+    session: Session = Depends(get_session),
+    today: date = Depends(get_today),
+    now: datetime = Depends(get_now),
+):
+    change = service.change_salary(
+        session,
+        employee_id,
+        new_salary_minor=body.new_salary_minor,
+        reason=body.reason,
+        effective_date=body.effective_date,
+        today=today,
+        now=now,
+    )
+    return _change_out(change, service.get_employee(session, employee_id))
+
+
+@router.get("/{employee_id}/salary-changes", response_model=list[SalaryChangeOut])
+def list_salary_changes(employee_id: int, session: Session = Depends(get_session)):
+    employee = service.get_employee(session, employee_id)
+    return [
+        _change_out(change, employee)
+        for change in service.list_salary_changes(session, employee_id)
+    ]
+
+
+@router.post("/{employee_id}/deactivate", response_model=EmployeeOut)
+def deactivate(employee_id: int, session: Session = Depends(get_session)):
+    return service.deactivate(session, employee_id)
+
+
+def _change_out(change: SalaryChange, employee: Employee) -> SalaryChangeOut:
+    return SalaryChangeOut(
+        id=change.id,
+        old_salary_minor=change.old_salary_minor,
+        new_salary_minor=change.new_salary_minor,
+        currency=employee.currency,
+        reason=change.reason,
+        effective_date=change.effective_date,
+        created_at=change.created_at,
+    )
