@@ -33,9 +33,10 @@ This document gives one meaning to each term. All project documents and the code
 | Salary band | The pay range for one job level in one country. A band has a minimum, a midpoint and a maximum. |
 | Compa-ratio | The salary divided by the band midpoint. |
 | Range penetration | The position of the salary in the band, as a percentage. |
-| Range status | One of `below range`, `in range`, `above range`, `no band`. |
+| Range status | One of: below range, in range, above range, no salary band. The API values are `below`, `in_range`, `above` and `no_band`. |
 | Below range | The salary is less than the band minimum. |
 | Above range | The salary is more than the band maximum. |
+| Outlier | An active employee who is below range or above range. |
 | Correction cost | The cost to move all below-range salaries to the band minimum, for one year, in the reporting currency. |
 
 ## Fairness
@@ -59,4 +60,6 @@ gender pay gap     = (pay of men - pay of women) / pay of men x 100
 
 Example: a salary of 45,000 in a band of 35,000 / 50,000 / 65,000 has a compa-ratio of 0.90 and a range penetration of 33.3%.
 
-A positive gender pay gap means that men have the higher pay. A gap of more than 5% gets a flag.
+A positive gender pay gap means that men have the higher pay. A negative gap means that women have the higher pay.
+
+A group gets a flag when the mean gap or the median gap is more than 5%, in favor of men or of women.

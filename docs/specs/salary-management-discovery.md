@@ -62,13 +62,13 @@ The reason for each item is in `docs/requirements.md`.
 ## Module Structure
 
 - `calculations/` owns: compa-ratio, range penetration, range status, gender pay gap, currency conversion. Depends on: (none)
-- `employees/` owns: Employee, Salary change. Depends on: `calculations/`
-- `bands/` owns: Salary band. Depends on: (none)
+- `employees/` owns: Employee, Salary change. Depends on: (none)
+- `bands/` owns: Salary band, position in range. Depends on: `calculations/`
 - `insights/` owns: Pay overview, Pay health, Pay equity. Depends on: `calculations/`, `employees/`, `bands/`
 
 ## Open Questions
 
-- Which host gets the deployment? The plan proposes Render. The developer must supply the account.
+- Which host gets the deployment? The developer selects the host and supplies the account.
 - Is the reporting currency USD for ACME? The first version uses USD.
 
 ## Revised Assessment

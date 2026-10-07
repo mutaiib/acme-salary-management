@@ -205,6 +205,13 @@ The build follows the plan. These points are different:
 | No `services/meta.py` | `services/meta.py` has the rate date query | A router must not query the database. |
 | A flag for a gap of more than 5% | A flag for a gap of more than 5% in favor of men or of women | A gap in favor of women is also a difference to explain. The spec has this change. |
 | The UI lint tool is not named | `oxlint` | It is the default of the Vite template. |
+| `RangeBar` and `RangeStatusBadge` are shared components | They are in `pages/employee-detail/` | Only one screen uses them. |
+| `SalaryChangeDialog.test.tsx` | The dialog tests are in `EmployeeDetailPage.test.tsx` | The tests open the dialog from the screen, as the HR Manager does. |
+| `usd_minor_expr`, `median_by`, `band_for`, `_outside_band` | `usd_minor`, `median_by_group`, `position_of`, `_is_outside` | The names in the code are shorter or more exact. |
+| `change_salary(..., today)` | `change_salary(..., today, now)` | The time of the record is also an input, so no service reads the clock. |
+| The guards of a salary change | 2 more guards: the effective date is not before the hire date, and not before the last salary change | The end-of-spec review found that an old date made the salary history disagree with the current salary. |
+| The UI reads "today" from the browser | The UI reads "today" from `GET /api/meta` | The browser and the server can be in different time zones. |
+| No limit on an amount | An amount has a maximum of 10,000,000,000.00 units | A larger amount made the SQL arithmetic inexact. |
 
 ## Escalation Log
 

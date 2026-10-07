@@ -2,12 +2,12 @@
 
 Salary management software for the HR Manager of ACME: 10,000 employees in 8 countries.
 
-The application follows one sequence:
+The application follows this sequence:
 
 1. **See** the pay: payroll cost and headcount by country, department and job level.
 2. **Find** the problems: salaries outside the salary band, and the gender pay gap.
-3. **Correct** a salary, with a reason and an effective date.
-4. **Prove** the change: each employee has a salary history.
+3. **Change** a salary, with a reason and an effective date.
+4. **Prove** the salary change: each employee has a salary history.
 
 - Live application: _add the URL after the deployment_
 - Video demo: _add the link_
@@ -20,7 +20,14 @@ You need Python 3.12 or later with [uv](https://docs.astral.sh/uv/), and Node.js
 make start
 ```
 
-This command installs the dependencies, creates the database with 10,000 employees, builds the UI, and starts the system. Open http://localhost:8000.
+This command does 4 steps:
+
+1. It installs the dependencies.
+2. It creates the database with 10,000 employees.
+3. It builds the UI.
+4. It starts the system.
+
+Then open http://localhost:8000.
 
 | Command | Result |
 |---|---|
@@ -46,7 +53,7 @@ The API documentation is at http://localhost:8000/docs.
 
 - Backend: Python, FastAPI, SQLAlchemy, SQLite.
 - UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system.
-- Tests: pytest (153 tests), Vitest with React Testing Library (61 tests).
+- Tests: pytest (183 tests), Vitest with React Testing Library (90 tests).
 
 ## Structure
 
@@ -60,6 +67,7 @@ frontend/src/
   components/     shared component library, built from Astryx components
   pages/          one directory for each screen
   api/            typed API client
+  hooks/, lib/    shared hooks, formats and small pure functions
 docs/             requirements, design notes and decisions
 ```
 
@@ -79,4 +87,12 @@ docs/             requirements, design notes and decisions
 
 ## Method
 
-The work follows the workflow of [Bee](https://github.com/incubyte/ai-plugins/tree/main/bee), the Claude Code plugin of Incubyte: discovery, specification, plan, then vertical slices with the tests first. The documents use ASD-STE100 Simplified Technical English.
+The work follows the workflow of [Bee](https://github.com/incubyte/ai-plugins/tree/main/bee), the Claude Code plugin of Incubyte:
+
+1. Discovery
+2. Specification
+3. Plan
+4. Vertical slices, with the tests first
+5. Review
+
+The documents use the writing rules of ASD-STE100 Simplified Technical English.

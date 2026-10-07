@@ -10,25 +10,29 @@ The HR Manager gets one web application that does two things:
 1. It manages salary data, with a record of each change.
 2. It answers questions about how the organization pays people.
 
-The application follows one sequence: see the pay, find the problems, correct a salary, prove the change.
+The application follows this sequence:
+1. See the pay.
+2. Find the problems.
+3. Change a salary.
+4. Prove the salary change.
 
 ## Scope and features
 
 | ID | Requirement |
 |---|---|
 | FR-01 | The system must show the total payroll cost in one reporting currency. The system must show the date of the exchange rates. |
-| FR-02 | The system must show the headcount and the minimum, median and maximum salary for each country, department and job level. |
-| FR-03 | The HR Manager can find an employee by name, email or employee code. The HR Manager can filter the list by country, department, job level and status. |
-| FR-04 | The HR Manager can change a salary. Each salary change must have a reason and an effective date. |
+| FR-02 | The system must show the headcount, the payroll cost, and the minimum, median and maximum salary for each country, department and job level. |
+| FR-03 | The system must let the HR Manager find an employee by name, email or employee code. The system must let the HR Manager filter the list by country, department, job level and status, and sort the list. |
+| FR-04 | The system must let the HR Manager change a salary. Each salary change must have a reason and an effective date. |
 | FR-05 | The system must refuse a salary that is zero or negative. The system must show the cause. |
-| FR-06 | The system must keep each salary change. The HR Manager can see the salary history of an employee. |
-| FR-07 | The HR Manager can set a salary band for each job level in a country. A band has a minimum, a midpoint and a maximum. |
+| FR-06 | The system must keep each salary change. The system must show the salary history of an employee. |
+| FR-07 | The system must let the HR Manager set a salary band for each job level in a country. A band has a minimum, a midpoint and a maximum. |
 | FR-08 | The system must show the compa-ratio and the range penetration of each employee. |
 | FR-09 | The system must show the employees who are below range and the employees who are above range. |
 | FR-10 | The system must show the cost to move all below-range salaries to the band minimum. |
 | FR-11 | The system must show the mean and the median gender pay gap for the organization and for each country. |
-| FR-12 | The system must flag each country that has a gender pay gap of more than 5%. |
-| FR-13 | The HR Manager can deactivate an employee. The insights must count active employees only. |
+| FR-12 | The system must flag each country that has a mean gap or a median gap of more than 5%, in favor of men or of women. |
+| FR-13 | The system must let the HR Manager deactivate an employee. The insights must count active employees only. |
 
 | ID | Quality requirement |
 |---|---|
@@ -51,7 +55,7 @@ The application follows one sequence: see the pay, find the problems, correct a 
 | Authentication and roles | The brief gives one user role. This is the first item for production. |
 | Add an employee, or change the name, department or job level | This data belongs to the HR information system. |
 | Bonus, benefits, payroll and tax | The system manages base salary only, so that each figure is exact. |
-| Live exchange rates and market pay data | Static rates with a date, and bands that HR enters, are sufficient and testable. |
+| Live exchange rates and market pay data | Static rates with a date, and bands that the HR Manager enters, are sufficient and testable. |
 
 ## Technical constraints
 
