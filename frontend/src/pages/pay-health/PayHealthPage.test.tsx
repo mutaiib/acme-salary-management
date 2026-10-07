@@ -40,6 +40,36 @@ function outlier(number: number, overrides: Partial<Outlier> = {}): Outlier {
 
 const OUTLIERS_PATH = '/api/insights/pay-health/employees'
 
+test('shows the difference to the band limit with its sign, and as a share of the limit', async () => {
+  stubPayHealth({
+    [OUTLIERS_PATH]: pageOf([
+      outlier(1),
+      outlier(2, { range_status: 'above', salary_minor: 7_500_000, band_limit_minor: 7_000_000 }),
+    ]),
+  })
+
+  renderScreen(<PayHealthPage />)
+
+  const below = (await screen.findByText('Employee 1')).closest('tr')!
+  expect(within(below).getByText('-$5,000')).toBeInTheDocument()
+  expect(within(below).getByText('10.0% below the band minimum')).toBeInTheDocument()
+  const above = screen.getByText('Employee 2').closest('tr')!
+  expect(within(above).getByText('+$5,000')).toBeInTheDocument()
+  expect(within(above).getByText('7.1% above the band maximum')).toBeInTheDocument()
+  expect(screen.queryByRole('columnheader', { name: 'Range status' })).not.toBeInTheDocument()
+})
+
+test('opens the record of an outlier with the way back to Pay health', async () => {
+  stubPayHealth({ [OUTLIERS_PATH]: pageOf([outlier(7, { full_name: 'Asha Rao' })]) })
+
+  renderScreen(<PayHealthPage />)
+
+  expect(await screen.findByRole('link', { name: 'Asha Rao' })).toHaveAttribute(
+    'href',
+    '/employees/7?from=pay-health',
+  )
+})
+
 function stubPayHealth(replies: Record<string, unknown> = {}) {
   return stubApi({
     '/api/meta': META,
@@ -83,7 +113,7 @@ test('lists a below-range employee with the salary, the band minimum and the dif
   const row = (await screen.findByText('Asha Rao')).closest('tr')!
   expect(within(row).getByText('$45,000')).toBeInTheDocument()
   expect(within(row).getByText('$50,000')).toBeInTheDocument()
-  expect(within(row).getByText('$5,000')).toBeInTheDocument()
+  expect(within(row).getByText('-$5,000')).toBeInTheDocument()
   expect(screen.getByRole('columnheader', { name: 'Band minimum' })).toBeInTheDocument()
 })
 
@@ -101,7 +131,8 @@ test('lists all outliers first, with the range status of each one', async () => 
   renderScreen(<PayHealthPage />)
 
   const row = (await screen.findByText('Over Paid')).closest('tr')!
-  expect(within(row).getByText('Above range')).toBeInTheDocument()
+  expect(within(row).getByText('+$5,000')).toBeInTheDocument()
+  expect(within(row).getByText('7.1% above the band maximum')).toBeInTheDocument()
   expect(requestsTo(api, OUTLIERS_PATH).at(-1)!.searchParams.get('status')).toBeNull()
   expect(
     screen.getByRole('heading', { level: 2, name: 'Employees outside the salary band' }),
@@ -169,16 +200,6 @@ test('sends the filters in the address to the API', async () => {
   expect(query.get('job_level')).toBe('3')
 })
 
-test('links each row to the Employee detail screen', async () => {
-  stubPayHealth({ [OUTLIERS_PATH]: pageOf([outlier(7, { full_name: 'Asha Rao' })]) })
-
-  renderScreen(<PayHealthPage />)
-
-  expect(await screen.findByRole('link', { name: 'Asha Rao' })).toHaveAttribute(
-    'href',
-    '/employees/7',
-  )
-})
 
 test('shows the next page of the list', async () => {
   const api = stubPayHealth({ [OUTLIERS_PATH]: pageOf([outlier(1)], 1, 60) })
@@ -213,6 +234,8 @@ test('shows an error message when the API does not respond', async () => {
 
 /** Types with fake timers, so that a test controls the delay of the search. */
 function fakeClock() {
+  // The clock also moves with real time, so that `findBy` and `waitFor` can poll.
+  // The test moves it past the delay of the search itself.
   vi.useFakeTimers({ shouldAdvanceTime: true })
   return userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 }

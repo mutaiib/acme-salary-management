@@ -71,7 +71,8 @@ test('shows the compa-ratio, the range penetration and the band of the employee'
   expect(await screen.findByTestId('compa-ratio')).toHaveTextContent(/^0\.90$/)
   expect(screen.getByTestId('range-penetration')).toHaveTextContent(/^33\.3%$/)
   const section = within(screen.getByTestId('position-in-range'))
-  expect(section.getByText('In range')).toBeInTheDocument()
+  // The bar shows the position, so a salary in range gets no badge. Only an exception does.
+  expect(section.queryByText('In range')).not.toBeInTheDocument()
   expect(section.getByText('$35,000')).toBeInTheDocument()
   expect(section.getByText('$65,000')).toBeInTheDocument()
 })
@@ -124,4 +125,24 @@ test('shows the current salary with its label', async () => {
 
   const figure = await screen.findByRole('group', { name: 'Current salary' })
   expect(within(figure).getByText('$65,000')).toBeInTheDocument()
+})
+
+test('goes back to the Employees list by default', async () => {
+  openEmployeeDetail()
+
+  const back = await screen.findByRole('link', { name: 'Back to Employees' })
+  expect(back).toHaveAttribute('href', '/employees')
+})
+
+test('goes back to Pay health when the HR Manager came from Pay health', async () => {
+  stubApi({
+    '/api/meta': META,
+    '/api/employees/7': ASHA,
+    '/api/employees/7/salary-changes': [salaryChange(1)],
+  })
+
+  renderScreen(<EmployeeDetailPage />, { at: '/employees/7?from=pay-health', path: '/employees/:id' })
+
+  const back = await screen.findByRole('link', { name: 'Back to Pay health' })
+  expect(back).toHaveAttribute('href', '/pay-health')
 })

@@ -1,29 +1,20 @@
-import { Icon } from '@astryxdesign/core/Icon'
-import { ProgressBar } from '@astryxdesign/core/ProgressBar'
+import { Badge } from '@astryxdesign/core/Badge'
 import { Stack } from '@astryxdesign/core/Stack'
 import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
 import type { Meta, Outlier, OutlierStatus } from '../../api/types'
-import {
-  DataTable,
-  EmployeeLink,
-  jobLevelColumn,
-  Money,
-  moneyColumn,
-  type TableRow,
-} from '../../components'
+import { DataTable, EmployeeLink, jobLevelColumn, moneyColumn, type TableRow } from '../../components'
 import { countryNameOf } from '../../hooks/useMeta'
+import { formatMoney, formatShare } from '../../lib/format'
 
 // Without a status, the list has the two kinds of outlier, so the headers name the two.
 const LIMIT_HEADER = { all: 'Band limit', below: 'Band minimum', above: 'Band maximum' }
 const DIFFERENCE_HEADER = { all: 'Outside by', below: 'Below by', above: 'Above by' }
+// The range status, in words, after the share of the band limit.
 const STATUS_TEXT: Record<OutlierStatus, string> = {
-  below: 'Below range',
-  above: 'Above range',
+  below: 'below the band minimum',
+  above: 'above the band maximum',
 }
-
-// A full bar is a difference of this part of the band limit. All pages use the same scale.
-const FULL_BAR_SHARE = 0.25
 
 interface Props {
   /** The status of the list. Without a status, the list has all outliers. */
@@ -33,9 +24,10 @@ interface Props {
   meta: Meta | undefined
 }
 
-/** The part of the band limit that the difference is. It compares rows of different currencies. */
-function differenceShare(outlier: Outlier): number {
-  return outlier.difference_minor / outlier.band_limit_minor
+function DifferenceBadge({ outlier }: { outlier: Outlier }) {
+  const isBelow = outlier.range_status === 'below'
+  const amount = formatMoney(outlier.difference_minor, outlier.currency)
+  return <Badge variant={isBelow ? 'red' : 'green'} label={`${isBelow ? '-' : '+'}${amount}`} />
 }
 
 export function OutlierTable({ status, outliers, meta }: Props) {
@@ -45,10 +37,10 @@ export function OutlierTable({ status, outliers, meta }: Props) {
     {
       key: 'full_name',
       header: 'Employee',
-      width: proportional(3),
+      width: proportional(2),
       renderCell: (outlier) => (
         <Stack gap={0}>
-          <EmployeeLink id={outlier.id} name={outlier.full_name} />
+          <EmployeeLink id={outlier.id} name={outlier.full_name} from="pay-health" />
           <Text type="supporting">{outlier.job_title}</Text>
         </Stack>
       ),
@@ -57,39 +49,24 @@ export function OutlierTable({ status, outliers, meta }: Props) {
     {
       key: 'country',
       header: 'Country',
-      width: pixel(140),
+      width: pixel(130),
       renderCell: (outlier) => countryNameOf(meta, outlier.country),
-    },
-    {
-      key: 'range_status',
-      header: 'Range status',
-      width: pixel(140),
-      renderCell: (outlier) => (
-        <Stack direction="horizontal" gap={1} vAlign="center">
-          <Icon icon={outlier.range_status === 'below' ? 'arrowDown' : 'arrowUp'} size="sm" />
-          <Text type="inherit" textWrap="nowrap">
-            {STATUS_TEXT[outlier.range_status]}
-          </Text>
-        </Stack>
-      ),
     },
     moneyColumn<Outlier>('salary_minor', 'Salary'),
     moneyColumn<Outlier>('band_limit_minor', LIMIT_HEADER[list]),
     {
       key: 'difference_minor',
       header: DIFFERENCE_HEADER[list],
-      width: proportional(2),
+      width: pixel(220),
+      align: 'end',
+      // A below-range salary is red with a minus, an above-range salary green with a plus.
+      // The share of the band limit compares rows of different currencies, and names the status.
       renderCell: (outlier) => (
-        <Stack direction="horizontal" gap={3} vAlign="center">
-          <ProgressBar
-            label={`${DIFFERENCE_HEADER[list]}: ${outlier.full_name}`}
-            isLabelHidden
-            value={Math.min(differenceShare(outlier), FULL_BAR_SHARE)}
-            max={FULL_BAR_SHARE}
-            variant="warning"
-          />
-          <Text weight="semibold" hasTabularNumbers textWrap="nowrap">
-            <Money amountMinor={outlier.difference_minor} currency={outlier.currency} />
+        <Stack gap={1} hAlign="end">
+          <DifferenceBadge outlier={outlier} />
+          <Text type="supporting" textWrap="nowrap">
+            {formatShare(outlier.difference_minor, outlier.band_limit_minor)}{' '}
+            {STATUS_TEXT[outlier.range_status]}
           </Text>
         </Stack>
       ),

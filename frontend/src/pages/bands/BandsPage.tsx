@@ -16,7 +16,6 @@ import {
   moneyColumn,
   PageHeader,
   Panel,
-  SegmentBar,
   type TableRow,
 } from '../../components'
 import { useApi } from '../../hooks/useApi'
@@ -34,22 +33,8 @@ export function BandsPage() {
 
   const countryName = (code: string) => countryNameOf(meta.data, code)
 
-  // The bars of one country use one scale: the highest band maximum of the country.
-  const columnsFor = (topMinor: number): TableColumn<TableRow<Band>>[] => [
+  const columns: TableColumn<TableRow<Band>>[] = [
     jobLevelColumn<Band>('Job level'),
-    {
-      key: 'band',
-      header: 'Band',
-      width: proportional(3),
-      renderCell: (band) => (
-        <SegmentBar
-          label={`Salary band of ${countryName(band.country)}, ${formatJobLevel(band.job_level)}`}
-          from={band.min_minor}
-          to={band.max_minor}
-          max={topMinor}
-        />
-      ),
-    },
     moneyColumn<Band>('min_minor', 'Minimum'),
     {
       key: 'mid_minor',
@@ -85,7 +70,7 @@ export function BandsPage() {
     <Stack gap={4} padding={6}>
       <PageHeader
         title="Salary bands"
-        description="The pay range for one year, for each job level in each country. Each bar shows a band, from its minimum to its maximum, on the scale of its country."
+        description="The pay range for one year, for each job level in each country. A salary below the minimum or above the maximum shows on the Pay health screen."
       />
       <MetaBanner state={meta} />
       <FilterBar>
@@ -114,12 +99,7 @@ export function BandsPage() {
                   </Text>
                 }
               >
-                <DataTable
-                  rows={countryBands}
-                  columns={columnsFor(Math.max(...countryBands.map((band) => band.max_minor)))}
-                  idKey="id"
-                  hasHover
-                />
+                <DataTable rows={countryBands} columns={columns} idKey="id" hasHover />
               </Panel>
             ))}
           </Stack>

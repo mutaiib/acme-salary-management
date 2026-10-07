@@ -10,7 +10,7 @@ import { MetadataList, MetadataListItem } from '@astryxdesign/core/MetadataList'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { getEmployee, listSalaryChanges } from '../../api/employees'
 import { DataState, MetaBanner, PageHeader, Panel, Stat } from '../../components'
 import { useApi } from '../../hooks/useApi'
@@ -49,6 +49,12 @@ function EmployeeDetail({ id }: { id: number }) {
   const meta = useMeta()
   const today = meta.data?.today
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null)
+  // The list that the HR Manager came from. `EmployeeLink` puts it in the address.
+  const [params] = useSearchParams()
+  const back =
+    params.get('from') === 'pay-health'
+      ? { href: '/pay-health', label: 'Back to Pay health' }
+      : { href: '/employees', label: 'Back to Employees' }
 
   const countryName = (code: string) => countryNameOf(meta.data, code)
 
@@ -63,8 +69,8 @@ function EmployeeDetail({ id }: { id: number }) {
 
   return (
     <Stack gap={5} padding={6}>
-      <Link href="/employees" isStandalone>
-        Back to Employees
+      <Link href={back.href} isStandalone>
+        {back.label}
       </Link>
       <MetaBanner state={meta} />
       <DataState state={employee}>

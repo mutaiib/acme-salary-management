@@ -11,8 +11,9 @@ interface Props {
 }
 
 /**
- * A salary band as a bar from the minimum to the maximum. The midpoint is in the middle.
- * The fill ends at the salary. A salary outside the band stays at the end of the bar.
+ * A salary band as a bar from the minimum to the maximum. The fill ends at the salary.
+ * A salary outside the band stays at the end of the bar. The three amounts below the bar
+ * name its points; a mark on the fill looked like a break in the bar.
  */
 export function RangeBar({ band, salaryMinor }: Props) {
   const isOutside = salaryMinor < band.min_minor || salaryMinor > band.max_minor
