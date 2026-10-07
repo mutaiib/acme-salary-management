@@ -56,4 +56,7 @@ def test_does_not_serve_a_file_outside_the_ui_directory(tmp_path):
 
     response = client.get("/%2e%2e/secret.txt")
 
-    assert "secret" not in response.text.replace("ACME UI", "")
+    # A path outside the UI directory gets the UI, as an unknown screen path does.
+    assert response.status_code == 200
+    assert "ACME UI" in response.text
+    assert "secret" not in response.text
