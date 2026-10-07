@@ -128,13 +128,13 @@ def test_a_correction_to_the_minimum_lowers_the_below_range_count_by_1(client, a
 def test_paginates_the_list(client, make):
     make.rate("USD", 1_000_000)
     make.band(**BAND)
-    for _ in range(30):
+    for _ in range(12):
         make.employee(salary_minor=4_000_000)
 
     body = outliers(client, "below", page=2)
 
-    assert len(body["items"]) == 5
-    assert body["total"] == 30
+    assert len(body["items"]) == 2
+    assert body["total"] == 12
 
 
 def test_shows_zero_when_no_employee_is_outside_the_band(client, make):

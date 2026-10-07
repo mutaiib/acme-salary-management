@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from sqlalchemy import ColumnElement, Select, func, select
 from sqlalchemy.orm import Session
 
-DEFAULT_PAGE_SIZE = 25
+DEFAULT_PAGE_SIZE = 10
 MAX_PAGE_SIZE = 100
 MAX_PAGE = 1_000_000
 
