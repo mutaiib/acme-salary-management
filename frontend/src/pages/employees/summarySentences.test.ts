@@ -28,11 +28,12 @@ test('gives the payroll cost for one year in the reporting currency', () => {
   })
 })
 
-test('gives the median salary in the currency of the salaries', () => {
+test('gives the median salary in the currency of the salaries, with its meaning', () => {
   expect(summaryFigures(GERMANY_ENGINEERING)[2]).toEqual({
     label: 'Median salary',
     value: '€51,700',
     hint: 'For one year, in EUR',
+    help: 'The median is the middle salary. Half of these employees get less, and half get more.',
   })
 })
 
@@ -40,16 +41,10 @@ test('gives no figure when no active employee matches', () => {
   expect(summaryFigures({ ...GERMANY_ENGINEERING, headcount: 0, salary: null })).toEqual([])
 })
 
-test('explains the median salary in plain words', () => {
-  expect(summarySentences(GERMANY_ENGINEERING)[0]).toBe(
-    'Half of these employees get less than the median salary, and half get more.',
-  )
-})
-
-test('states the lowest and the highest salary', () => {
-  expect(summarySentences(GERMANY_ENGINEERING)[1]).toBe(
-    'The lowest salary is €24,000. The highest salary is €170,400.',
-  )
+test('states the lowest and the highest salary in one sentence', () => {
+  expect(summarySentences(GERMANY_ENGINEERING)).toEqual([
+    'The lowest salary is €24,000, and the highest is €170,400.',
+  ])
 })
 
 test('does not explain the currency when the salaries have the reporting currency only', () => {
@@ -58,7 +53,7 @@ test('does not explain the currency when the salaries have the reporting currenc
     salary: { ...GERMANY_ENGINEERING.salary!, currency: 'USD' },
   }
 
-  expect(summarySentences(unitedStates)).toHaveLength(2)
+  expect(summarySentences(unitedStates)).toHaveLength(1)
 })
 
 test('states that salaries of different currencies are in the reporting currency', () => {
@@ -69,7 +64,7 @@ test('states that salaries of different currencies are in the reporting currency
   }
 
   expect(summarySentences(allCountries).at(-1)).toBe(
-    'These salaries are in USD, because these employees have different currencies.',
+    'They are in USD, because these employees have different currencies.',
   )
 })
 

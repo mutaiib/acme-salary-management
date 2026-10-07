@@ -20,7 +20,7 @@ export function employee(number: number, overrides: Partial<Employee> = {}): Emp
 }
 
 export function pageOf<T>(items: T[], page = 1, total = items.length): Page<T> {
-  return { items, page, page_size: 25, total }
+  return { items, page, page_size: 10, total }
 }
 
 export function salaryChange(number: number, overrides: Partial<SalaryChange> = {}): SalaryChange {

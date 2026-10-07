@@ -1,8 +1,11 @@
+import { Badge } from '@astryxdesign/core/Badge'
 import { Card } from '@astryxdesign/core/Card'
 import { Divider } from '@astryxdesign/core/Divider'
 import { Grid } from '@astryxdesign/core/Grid'
+import { Icon } from '@astryxdesign/core/Icon'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Text } from '@astryxdesign/core/Text'
+import { Sparkles } from 'lucide-react'
 import { getEmployeeSummary } from '../../api/employees'
 import type { EmployeeListQuery } from '../../api/employees'
 import { Stat } from '../../components'
@@ -27,11 +30,6 @@ export function PaySummary({ filters }: { filters: Filters }) {
     return null
   }
   const sentences = summarySentences(summary.data)
-  if (filters.status !== 'active') {
-    sentences.push(
-      'These figures count active employees only. The list below can also show inactive employees.',
-    )
-  }
 
   return (
     <Card padding={5}>
@@ -44,13 +42,17 @@ export function PaySummary({ filters }: { filters: Filters }) {
               value={figure.value}
               fullValue={figure.fullValue}
               note={figure.hint}
+              help={figure.help}
             />
           ))}
         </Grid>
         <Divider />
-        <Text type="supporting" as="p">
-          {sentences.join(' ')}
-        </Text>
+        <Stack direction="horizontal" gap={2} vAlign="center" wrap="wrap">
+          <Badge variant="purple" label="In words" icon={<Icon icon={Sparkles} />} />
+          <Text type="supporting" as="p">
+            {sentences.join(' ')}
+          </Text>
+        </Stack>
       </Stack>
     </Card>
   )

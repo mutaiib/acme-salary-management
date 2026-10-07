@@ -13,6 +13,8 @@ export interface SummaryFigure {
   fullValue?: string
   /** The unit and the period of the value. */
   hint: string
+  /** The meaning of the figure, for the info button beside its label. */
+  help?: string
 }
 
 /** The headline figures of the listed employees: the number, the cost and the median salary. */
@@ -33,13 +35,14 @@ export function summaryFigures(summary: EmployeeSummary): SummaryFigure[] {
       label: 'Median salary',
       value: formatMoney(salary.median_minor, salary.currency),
       hint: `For one year, in ${salary.currency}`,
+      help: 'The median is the middle salary. Half of these employees get less, and half get more.',
     },
   ]
 }
 
 /**
- * The figures in plain words: the meaning of the median salary, and the lowest and
- * the highest salary. One employee gives no sentence, because there is no comparison.
+ * The lowest and the highest salary, in one sentence, and the currency when the salaries
+ * have more than one. One employee gives no sentence, because there is no comparison.
  */
 export function summarySentences(summary: EmployeeSummary): string[] {
   const { headcount, salary } = summary
@@ -49,13 +52,10 @@ export function summarySentences(summary: EmployeeSummary): string[] {
   const money = (amountMinor: number) => formatMoney(amountMinor, salary.currency)
 
   const sentences = [
-    'Half of these employees get less than the median salary, and half get more.',
-    `The lowest salary is ${money(salary.min_minor)}. The highest salary is ${money(salary.max_minor)}.`,
+    `The lowest salary is ${money(salary.min_minor)}, and the highest is ${money(salary.max_minor)}.`,
   ]
   if (!summary.has_one_currency) {
-    sentences.push(
-      `These salaries are in ${salary.currency}, because these employees have different currencies.`,
-    )
+    sentences.push(`They are in ${salary.currency}, because these employees have different currencies.`)
   }
   return sentences
 }

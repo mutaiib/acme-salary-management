@@ -7,7 +7,7 @@ function pageFrom(text: string | null): number {
 }
 
 /** The numbers of rows that a list can show on one page. The first one is the default. */
-export const PAGE_SIZES = [25, 50, 100]
+export const PAGE_SIZES = [10, 25, 50, 100]
 
 /** The page size in the address. A value that is not in the list gives the default. */
 function pageSizeFrom(text: string | null): number {

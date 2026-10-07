@@ -98,6 +98,8 @@ test('shows an error message when the API does not respond', async () => {
 
 /** Types with fake timers, so that a test controls the delay of the search. */
 function fakeClock() {
+  // The clock also moves with real time, so that `findBy` and `waitFor` can poll.
+  // The test moves it past the delay of the search itself.
   vi.useFakeTimers({ shouldAdvanceTime: true })
   return userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 }
@@ -313,10 +315,10 @@ test('answers in words what the listed employees get', async () => {
   expect(within(figure('Median salary')).getByText('€51,700')).toBeInTheDocument()
   expect(within(figure('Median salary')).getByText('For one year, in EUR')).toBeInTheDocument()
   expect(
-    within(answer).getByText(/Half of these employees get less than the median salary/),
+    within(figure('Median salary')).getByRole('button', { name: 'What is this: Median salary?' }),
   ).toBeInTheDocument()
   expect(
-    within(answer).getByText(/The lowest salary is €24,000. The highest salary is €170,400./),
+    within(answer).getByText('The lowest salary is €24,000, and the highest is €170,400.'),
   ).toBeInTheDocument()
 })
 
@@ -362,32 +364,6 @@ test('keeps the list when the pay figures do not load', async () => {
 
   expect(await screen.findByText('Employee 1')).toBeInTheDocument()
   expect(await screen.findByText('The pay figures did not load.')).toBeInTheDocument()
-})
-
-test('states that the pay figures count active employees only, when the list can show others', async () => {
-  stubApi({
-    '/api/meta': META,
-    '/api/employees': pageOf([employee(1)]),
-    '/api/employees/summary': GERMANY_ENGINEERING,
-  })
-
-  renderScreen(<EmployeesPage />, { at: '/?country=DE' })
-
-  const answer = await screen.findByRole('region', { name: 'The pay of these employees' })
-  expect(within(answer).getByText(/These figures count active employees only/)).toBeInTheDocument()
-})
-
-test('does not add the note on active employees when the list shows active employees only', async () => {
-  stubApi({
-    '/api/meta': META,
-    '/api/employees': pageOf([employee(1)]),
-    '/api/employees/summary': GERMANY_ENGINEERING,
-  })
-
-  renderScreen(<EmployeesPage />, { at: '/?status=active' })
-
-  const answer = await screen.findByRole('region', { name: 'The pay of these employees' })
-  expect(within(answer).queryByText(/These figures count active employees only/)).not.toBeInTheDocument()
 })
 
 test('asks for the number of rows in the address', async () => {
