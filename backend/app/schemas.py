@@ -56,3 +56,27 @@ class MetaOut(BaseModel):
     job_levels: list[int]
     reporting_currency: str
     rates_as_of: date | None
+
+
+class GroupFiguresOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    key: str
+    label: str
+    headcount: int
+    payroll_cost_minor: int
+    currency: str
+    min_minor: int
+    median_minor: int
+    max_minor: int
+
+
+class OverviewOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    reporting_currency: str
+    payroll_cost_minor: int
+    headcount: int
+    rates_as_of: date | None
+    group_by: str
+    groups: list[GroupFiguresOut]
