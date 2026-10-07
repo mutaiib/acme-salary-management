@@ -5,6 +5,7 @@ import { Theme } from '@astryxdesign/core/theme'
 import { neutralTheme } from '@astryxdesign/theme-neutral/built'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { RouterLink } from './components/RouterLink'
+import { EmployeeDetailPage } from './pages/employee-detail/EmployeeDetailPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
 
 const SCREENS = [{ path: '/employees', label: 'Employees' }]
@@ -37,6 +38,7 @@ export function App() {
         >
           <Routes>
             <Route path="/employees" element={<EmployeesPage />} />
+            <Route path="/employees/:id" element={<EmployeeDetailPage />} />
             <Route path="*" element={<Navigate to="/employees" replace />} />
           </Routes>
         </AppShell>
