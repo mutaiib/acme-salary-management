@@ -2,8 +2,15 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.schemas import OutlierOut, OutlierPage, OverviewOut, PayHealthSummaryOut
+from app.schemas import (
+    OutlierOut,
+    OutlierPage,
+    OverviewOut,
+    PayEquityOut,
+    PayHealthSummaryOut,
+)
 from app.services import overview as overview_service
+from app.services import pay_equity as pay_equity_service
 from app.services import pay_health as pay_health_service
 from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
 from app.services.overview import GroupBy
@@ -38,6 +45,11 @@ def list_outliers(
         page_size=result.page_size,
         total=result.total,
     )
+
+
+@router.get("/pay-equity", response_model=PayEquityOut)
+def get_pay_equity(session: Session = Depends(get_session)):
+    return pay_equity_service.pay_equity(session)
 
 
 def _outlier_out(outlier: Outlier) -> OutlierOut:

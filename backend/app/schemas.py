@@ -138,3 +138,26 @@ class OutlierPage(BaseModel):
     page: int
     page_size: int
     total: int
+
+
+class GapOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    key: str
+    label: str
+    currency: str
+    men: int
+    women: int
+    mean_gap_pct: float | None
+    median_gap_pct: float | None
+    is_flagged: bool
+    has_enough_data: bool
+
+
+class PayEquityOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    organization: GapOut
+    countries: list[GapOut]
+    flag_threshold_pct: float
+    min_group_size: int
