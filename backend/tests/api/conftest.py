@@ -17,20 +17,32 @@ NOW = datetime(2026, 3, 1, 9, 0, 0)
 
 
 @pytest.fixture
-def session() -> Iterator[Session]:
+def session_factory() -> Iterator[sessionmaker[Session]]:
     engine = create_engine(
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     Base.metadata.create_all(engine)
-    with sessionmaker(engine, expire_on_commit=False)() as session:
-        yield session
+    yield sessionmaker(engine, expire_on_commit=False)
     engine.dispose()
 
 
 @pytest.fixture
-def client(session: Session) -> TestClient:
+def session(session_factory) -> Iterator[Session]:
+    """The session of the test itself: to build rows and to read the database."""
+    with session_factory() as session:
+        yield session
+
+
+@pytest.fixture
+def client(session_factory) -> TestClient:
+    def session_for_one_request() -> Iterator[Session]:
+        # As in production, each request has its own session. A write that the
+        # service does not commit is lost, and the next request does not see it.
+        with session_factory() as session:
+            yield session
+
     app = create_app()
-    app.dependency_overrides[get_session] = lambda: session
+    app.dependency_overrides[get_session] = session_for_one_request
     app.dependency_overrides[get_today] = lambda: TODAY
     app.dependency_overrides[get_now] = lambda: NOW
     return TestClient(app)
