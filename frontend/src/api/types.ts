@@ -128,3 +128,23 @@ export interface Outlier {
   band_limit_minor: number
   difference_minor: number
 }
+
+/** The unadjusted gender pay gap of one group. The gaps are null when the group is too small. */
+export interface Gap {
+  key: string
+  label: string
+  currency: string
+  men: number
+  women: number
+  mean_gap_pct: number | null
+  median_gap_pct: number | null
+  is_flagged: boolean
+  has_enough_data: boolean
+}
+
+export interface PayEquity {
+  organization: Gap
+  countries: Gap[]
+  flag_threshold_pct: number
+  min_group_size: number
+}

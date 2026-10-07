@@ -5,6 +5,7 @@ import type {
   OutlierStatus,
   Overview,
   Page,
+  PayEquity,
   PayHealthSummary,
 } from './types'
 
@@ -25,4 +26,8 @@ export interface OutlierQuery {
 
 export function listOutliers(query: OutlierQuery): Promise<Page<Outlier>> {
   return getJson('/api/insights/pay-health/employees', { ...query })
+}
+
+export function getPayEquity(): Promise<PayEquity> {
+  return getJson('/api/insights/pay-equity')
 }

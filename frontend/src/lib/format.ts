@@ -27,3 +27,8 @@ export function formatDate(isoDate: string): string {
 export function formatShare(part: number, total: number): string {
   return total === 0 ? '0.0%' : `${((part / total) * 100).toFixed(1)}%`
 }
+
+/** Formats a pay gap with 1 decimal place, for example `9.9%` or `-0.9%`. */
+export function formatGap(gapPct: number): string {
+  return `${gapPct.toFixed(1)}%`
+}
