@@ -7,8 +7,12 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { RouterLink } from './components/RouterLink'
 import { EmployeeDetailPage } from './pages/employee-detail/EmployeeDetailPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
+import { OverviewPage } from './pages/overview/OverviewPage'
 
-const SCREENS = [{ path: '/employees', label: 'Employees' }]
+const SCREENS = [
+  { path: '/overview', label: 'Overview' },
+  { path: '/employees', label: 'Employees' },
+]
 
 export function App() {
   const { pathname } = useLocation()
@@ -37,9 +41,10 @@ export function App() {
           }
         >
           <Routes>
+            <Route path="/overview" element={<OverviewPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/employees/:id" element={<EmployeeDetailPage />} />
-            <Route path="*" element={<Navigate to="/employees" replace />} />
+            <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>
         </AppShell>
       </LinkProvider>

@@ -22,3 +22,8 @@ export function formatDate(isoDate: string): string {
     timeZone: 'UTC',
   }).format(new Date(`${isoDate.slice(0, 10)}T00:00:00Z`))
 }
+
+/** Formats a part of a total as a percentage with 1 decimal place, for example `61.5%`. */
+export function formatShare(part: number, total: number): string {
+  return total === 0 ? '0.0%' : `${((part / total) * 100).toFixed(1)}%`
+}

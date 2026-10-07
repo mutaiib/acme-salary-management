@@ -53,3 +53,27 @@ export interface Meta {
   reporting_currency: string
   rates_as_of: string | null
 }
+
+export interface GroupFigures {
+  key: string
+  label: string
+  headcount: number
+  /** In the reporting currency. */
+  payroll_cost_minor: number
+  /** The currency of the minimum, the median and the maximum. */
+  currency: string
+  min_minor: number
+  median_minor: number
+  max_minor: number
+}
+
+export type GroupBy = 'country' | 'department' | 'job_level'
+
+export interface Overview {
+  reporting_currency: string
+  payroll_cost_minor: number
+  headcount: number
+  rates_as_of: string | null
+  group_by: string
+  groups: GroupFigures[]
+}
