@@ -2,7 +2,6 @@ import { AppShell } from '@astryxdesign/core/AppShell'
 import { LinkProvider } from '@astryxdesign/core/Link'
 import { SideNav, SideNavHeading, SideNavItem, SideNavSection } from '@astryxdesign/core/SideNav'
 import { Theme } from '@astryxdesign/core/theme'
-import { neutralTheme } from '@astryxdesign/theme-neutral/built'
 import type { ReactElement } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { RouterLink } from './components/RouterLink'
@@ -12,6 +11,7 @@ import { EmployeesPage } from './pages/employees/EmployeesPage'
 import { OverviewPage } from './pages/overview/OverviewPage'
 import { PayEquityPage } from './pages/pay-equity/PayEquityPage'
 import { PayHealthPage } from './pages/pay-health/PayHealthPage'
+import { acmeTheme } from './theme'
 
 interface Screen {
   path: string
@@ -46,7 +46,7 @@ export function App() {
   const { pathname } = useLocation()
 
   return (
-    <Theme theme={neutralTheme}>
+    <Theme theme={acmeTheme}>
       <LinkProvider component={RouterLink}>
         <AppShell
           height="fill"
