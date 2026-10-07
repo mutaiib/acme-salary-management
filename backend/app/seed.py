@@ -63,10 +63,6 @@ INACTIVE_PCT = 3
 BELOW_RANGE_PCT = 3
 ABOVE_RANGE_PCT = 2
 
-# Countries where the generator pays women lower in the band, so that the
-# gender pay gap is more than 5%.
-GAP_COUNTRIES = ("DE", "GB", "IN")
-
 FIRST_NAMES = {
     MALE: [
         "Aarav",
@@ -207,7 +203,6 @@ class Planted:
 
     below_range: int
     above_range: int
-    gap_countries: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -216,7 +211,7 @@ class Dataset:
     bands: list[Row] = field(default_factory=list)
     employees: list[Row] = field(default_factory=list)
     salary_changes: list[Row] = field(default_factory=list)
-    planted: Planted = Planted(0, 0, ())
+    planted: Planted = Planted(0, 0)
 
 
 def generate_dataset(count: int, seed: int) -> Dataset:
@@ -286,7 +281,7 @@ def _employees(rng: random.Random, count: int, band_of: dict[tuple, Row]) -> lis
                 "department": department,
                 "country": country,
                 "currency": COUNTRIES[country].currency,
-                "salary_minor": _salary_in_band(rng, band_of[(level, country)], country, gender),
+                "salary_minor": _salary_in_band(rng, band_of[(level, country)]),
                 "gender": gender,
                 "hire_date": REFERENCE_DATE - timedelta(days=rng.randint(30, 3650)),
                 "status": INACTIVE if rng.randrange(100) < INACTIVE_PCT else ACTIVE,
@@ -299,7 +294,6 @@ def _profiles(rng: random.Random, count: int) -> list[tuple[str, int, str]]:
     """The (country, job level, gender) of each employee, in a random order.
 
     The generator gives men and women the same job level mix in each country.
-    A gender pay gap then comes only from the position in the band, not from the job levels.
     """
     profiles: list[tuple[str, int, str]] = []
     countries = _allocate(count, COUNTRY_SHARE)
@@ -324,13 +318,8 @@ def _pick(rng: random.Random, shares: dict[str, int]) -> str:
     return rng.choices(list(shares), weights=list(shares.values()))[0]
 
 
-def _salary_in_band(rng: random.Random, band: Row, country: str, gender: str) -> int:
-    if gender == FEMALE and country in GAP_COUNTRIES:
-        position = rng.triangular(0.0, 0.75, 0.15)
-    elif gender == FEMALE:
-        position = rng.triangular(0.0, 1.0, 0.45)
-    else:
-        position = rng.triangular(0.0, 1.0, 0.5)
+def _salary_in_band(rng: random.Random, band: Row) -> int:
+    position = rng.triangular(0.0, 1.0, 0.5)
     # The random position is a float. It becomes an integer before it touches money.
     position_per_mille = int(position * 1_000)
     low, high = int(band["min_minor"]), int(band["max_minor"])
@@ -358,7 +347,7 @@ def _plant_salaries_outside_the_band(
         employee["salary_minor"] = _to_hundreds(
             int(band["max_minor"]) * rng.randint(103, 115) // 100
         )
-    return Planted(below_range=below_count, above_range=above_count, gap_countries=GAP_COUNTRIES)
+    return Planted(below_range=below_count, above_range=above_count)
 
 
 def _first_salary_changes(employees: list[Row]) -> list[Row]:

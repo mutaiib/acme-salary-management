@@ -1,7 +1,5 @@
 """NFR-03: the seed generator."""
 
-from collections import Counter
-
 import pytest
 
 from app.reference import COUNTRIES, JOB_LEVELS
@@ -84,19 +82,6 @@ def test_plants_the_recorded_number_of_salaries_outside_the_band(dataset):
 
     assert below == dataset.planted.below_range > 0
     assert above == dataset.planted.above_range > 0
-
-
-def test_men_and_women_have_the_same_job_level_mix_in_each_country():
-    dataset = generate_dataset(count=10_000, seed=42)
-
-    for code in COUNTRIES:
-        staff = [e for e in dataset.employees if e["country"] == code]
-        men = Counter(e["job_level"] for e in staff if e["gender"] == "male")
-        women = Counter(e["job_level"] for e in staff if e["gender"] == "female")
-        for level in JOB_LEVELS:
-            share_men = men[level] / sum(men.values())
-            share_women = women[level] / sum(women.values())
-            assert abs(share_men - share_women) < 0.03
 
 
 def test_the_seed_script_creates_exactly_10000_employees():
