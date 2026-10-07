@@ -2,7 +2,7 @@
 
 ## Overview
 
-This spec turns the assessment brief into criteria that a person can check in the running system. Source: `docs/brief/`. The system runs at http://localhost:5173.
+This spec turns the assessment brief into criteria that a person can check in the running system. Source: `docs/brief/`. The check used the development UI at http://localhost:5173 (`make dev-ui`).
 
 The Bee browser verifier checked the criteria in a browser on 8 October 2026. A tick is a criterion that passed. 2 criteria are not met, and each one states the cause. After that check, the last screens that did not state the period of an amount got the text "for one year".
 
@@ -29,13 +29,13 @@ Each criterion is one question. It passes when the HR Manager can read the answe
 - [x] "What does the organization pay in total for one year?"
 - [x] "How many employees does the organization pay?"
 - [x] "What does the organization pay in each country?"
-- [x] "What is the middle salary in each department?"
+- [x] "What is the median salary in each department?"
 - [x] "What is the lowest salary and the highest salary at each job level?"
 - [x] "Which employees get less than the salary band for their job?"
 - [x] "What does it cost to correct those salaries?"
 - [x] "Is the salary of this one employee correct for the job?"
 - [x] "What does the organization pay the Engineering department in Germany?"
-- [x] "What is the middle salary at job level 3 in India, and in the United Kingdom?"
+- [x] "What is the median salary at job level 3 in India, and in the United Kingdom?"
 - [ ] "How did the payroll cost change from last year to this year?" Not met. An insight is for today only. See `docs/tradeoffs.md`.
 - [ ] "Who are the employees with the highest salary in one country?" Not met. The screen shows the highest salary of a filter, not the employee. The list has no sort by salary. See `docs/tradeoffs.md`.
 
@@ -54,4 +54,4 @@ Each criterion is one question. It passes when the HR Manager can read the answe
 - Risk level: MODERATE
 - Base address: http://localhost:5173
 
-[ ] Reviewed
+[X] Reviewed

@@ -6,7 +6,7 @@ Source: the assessment brief (`docs/brief/`), a review of compensation tools, an
 
 ## Why
 
-The HR team of ACME manages the salary data of 10,000 employees in Excel files. The brief calls this work "tedious". An Excel file does not record who changed a salary or why. It cannot answer a pay question without manual work.
+The HR team of ACME manages the salary data of 10,000 employees in Excel files. The brief calls this work "tedious". An Excel file does not record when a salary changed, or why. It cannot answer a pay question without manual work.
 
 ## Who
 
@@ -17,7 +17,7 @@ The HR Manager of ACME. There is one user role.
 - The HR Manager knows the payroll cost of the organization, and where the organization spends it.
 - The HR Manager finds the employees who have a salary outside the salary band for their job.
 - The HR Manager sees if the organization pays men and women differently.
-- The HR Manager corrects a salary in less than one minute.
+- The HR Manager corrects a salary in one dialog.
 - The HR Manager can show the reason and the date of each salary change.
 
 ## Problem Statement
@@ -81,4 +81,4 @@ Size: EPIC
 Risk: MODERATE (the application shows business figures to a user; it has no payment, no authentication and no data migration)
 Greenfield: yes
 
-[ ] Reviewed
+[X] Reviewed

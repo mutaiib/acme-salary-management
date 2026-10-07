@@ -36,8 +36,8 @@ This plan replaces the first plan for "pay questions and screen clarity". The de
 
 | Decision | Reason |
 |---|---|
-| A bar is an Astryx `ProgressBar`. A band bar puts 3 of them end to end (`SegmentBar`). | The developer asked for Astryx components only. Astryx has no bar that starts after zero. |
-| The Pay health bar has one fixed scale: a full bar is 25% of the band limit. | A scale for each page gave bars of almost the same length, and the pages did not compare. |
+| A bar is an Astryx `ProgressBar`. A band bar of 3 of them end to end (`SegmentBar`) left the product after the last review. | Astryx has no bar that starts after zero, and the 3 bars did not read as one. The Salary bands screen is a table. |
+| The Pay health list shows the difference as an amount with a sign and a color, and as a share of the band limit. The bar left the list after the last review. | The outliers of the seed data are all near 15%, so the bars had almost the same length and gave no information. |
 | The Pay health cards do not select a list. A switch on the list does. | The developer could not see all outliers with the cards. |
 | A total has a short form. A salary does not. | A total of 12 digits is hard to compare. A salary must be exact. |
 | `DataState` adds no wrapper without an error. | Astryx moves the first element of a wrapper in a card to the card edge. The table then lost the space above it. |

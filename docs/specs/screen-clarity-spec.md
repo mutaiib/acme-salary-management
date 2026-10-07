@@ -19,18 +19,18 @@ Sources:
 
 - [x] The Pay health list shows all outliers first.
 - [x] The system must let the HR Manager show only the below-range employees or only the above-range employees.
-- [x] Each row states the range status of the employee.
+- [x] Each row states the range status of the employee: a minus sign and red for below range, a plus sign and green for above range.
 - [x] The system must let the HR Manager find an outlier by a part of the name, the email or the employee code.
 - [x] The search uses the country filter and the job level filter at the same time.
-- [x] Each row shows the difference to the band limit as an amount and as a bar.
+- [x] Each row shows the difference to the band limit as an amount and as a share of the band limit.
 
 ## Slice 2: The pay of a group of employees (FR-01, FR-02, FR-03)
 
-- [x] The Employees screen shows 3 figures for the employees that match the search and the filters: the number of active employees, the payroll cost and the median salary.
+- [x] The Employees screen shows 3 figures for the employees in the list. The figures are the headcount, the payroll cost and the median salary.
 - [x] Each figure states its period and its currency.
-- [x] The screen explains the median salary in plain words.
-- [x] The screen states the lowest salary and the highest salary of these employees.
-- [x] The figures count active employees only. The screen states this when the list can show inactive employees.
+- [x] The median salary figure explains the median from its info button.
+- [x] The screen states the lowest salary and the highest salary of these employees in one sentence.
+- [x] The figures count active employees only. The label of the first figure says so.
 - [x] The salary figures use the local currency when all these employees have one currency. In all other conditions they use the reporting currency.
 - [x] The list stays on the screen when the figures do not load.
 
@@ -38,8 +38,8 @@ Sources:
 
 - [x] All screens use Astryx components only. The colors come from the tokens of the theme.
 - [x] The accent color is blue. A link and a primary button use it.
-- [x] A status has one color rule: green for a normal status, yellow for a salary outside the band, grey for an inactive employee.
-- [x] Each section of a screen is in a card with a title.
+- [x] A normal status has no badge. An outlier in the Pay health list is red (below range) or green (above range). The Employee detail screen shows a yellow badge for an outlier. An inactive employee has a grey badge.
+- [x] Each section of an insight screen and of the Employee detail screen is in a card with a title. A list screen has its filters and its table without a card.
 - [x] The space above each table in a card is the same.
 - [x] A filter shows its name in the closed field, so a row of filters has one line.
 - [x] The status filter of the Employees screen shows its 3 values at the same time.
@@ -53,7 +53,7 @@ Sources:
 
 ## Slice 4: Figures that explain themselves (FR-01, FR-02, FR-08, FR-10)
 
-- [x] A large total shows in a short form, for example `$567.68M`. The full amount shows when the pointer is on the figure.
+- [x] A large total shows in a short form, for example `$575.28M`. The full amount shows when the pointer is on the figure.
 - [x] A salary always shows all its digits.
 - [x] Each screen states that an amount is for one year.
 - [x] The salary history shows the date of a record in the time zone of the HR Manager.
@@ -64,13 +64,16 @@ Sources:
 - [x] The Pay health screen shows the correction cost as a share of the payroll cost.
 - [x] The salary change dialog shows the salary band, and the amount between the new salary and the band maximum.
 - [x] The salary change dialog has an input for the increase in percent. A value in it sets the new salary.
-- [x] The Salary bands screen shows the bands of each country in one card, and each band as a bar on the scale of the country.
+- [x] The Salary bands screen shows the bands of each country in one card. A bar of 3 progress bars for each band left the screen, because it did not read as one bar.
 - [x] The theme is the Astryx neutral theme as source, with a blue accent.
-- [x] The Employee detail screen shows the salary, the range status and the position in the salary band in one card.
+- [x] The Employee detail screen shows the salary and the position in the salary band in one card. A badge shows only for a salary outside the band.
+- [x] The Pay overview links to a screen with the exchange rates.
+- [x] Each navigation item has an icon. The button that collapses the navigation is at the top.
+- [x] The system opens with a Welcome screen (FR-14). It states the problem, the purpose of the system and what the system can do. A button opens the Pay overview. The Welcome screen has no navigation.
 
 ## Slice 5: The number of rows on a page (FR-03, FR-09)
 
-- [x] The system must let the HR Manager show 25, 50 or 100 rows on a page of the Employees list and of the Pay health list.
+- [x] The system must let the HR Manager show 10, 25, 50 or 100 rows on a page of the Employees list and of the Pay health list.
 - [x] A new page size starts the list at page 1.
 - [x] The address keeps the page size.
 
@@ -78,7 +81,7 @@ Sources:
 
 - A change of the payroll cost in time. The developer chose a fixed label for the period ("for one year").
 - The cost for each employee. It is near the median salary and can confuse.
-- An export to a file, a proposal of raises for many employees, and a selection of rows. They are a part of the compensation cycle that the developer left out.
+- An export to a file, a proposal of salary changes for many employees, and a selection of rows. They are a part of the compensation cycle that the developer left out.
 - A sort by a click on a column header.
 - Pay equity. The developer removed it from the product. See `docs/requirements.md`.
 - A bulk salary change. The developer asked for one and stopped it before the write step. See `docs/tradeoffs.md`.
@@ -88,7 +91,7 @@ Sources:
 - Risk level: MODERATE
 - New API fields: `median_salary_minor` on the Pay overview; `payroll_cost_minor` on the Pay health summary; `range_status` on each outlier.
 - New API behavior: `GET /api/insights/pay-health/employees` has an optional `status` and a `search`. `GET /api/employees/summary` gives the figures of a list.
-- New shared components: `Panel`, `SegmentBar`, `SearchBox`, `TermHelp`, `LoadingBar`. `Stat` shows a full value on hover and an explanation from an info button.
+- New shared components: `Panel`, `SearchBox`, `TermHelp`, `LoadingBar`. `Stat` shows a full value on hover and an explanation from an info button.
 - A table that is the first element in a card moves into the padding of the card. `DataState` adds no wrapper when there is no error, so the space stays the same.
 
-[ ] Reviewed
+[X] Reviewed

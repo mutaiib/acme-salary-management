@@ -19,6 +19,8 @@ The product is salary management software for the HR Manager of ACME. Read `docs
 11. A test name must describe the scenario, for example `refuses_a_salary_of_zero`.
 12. A unit test must not use the network, the system clock or shared database state.
 
+Known exceptions to 1.1 and 1.4: `docs/ai-usage.md`, section "Limits to state", lists the steps that did not have a test first, and tells how the commits came from snapshots.
+
 ## Article 2: Structure
 
 ```
@@ -30,7 +32,11 @@ backend/app/
   services/       use cases and database queries
     sql.py            shared SQL: active employees, currency conversion, median, search
     pagination.py     one page of a list
-  calculations/   pure pay calculations: money, salary bands, salary change rules
+  calculations/   pure pay calculations
+    money.py          minor units, currency conversion, median
+    ranges.py         compa-ratio, range penetration, range status, the band rule
+    salary_changes.py the rules of a salary change
+  db.py           engine, Base, get_session
   models.py       database tables
   schemas.py      request and response shapes
   reference.py    countries, currencies, jobs, and the allowed values of a status or a gender
@@ -56,11 +62,11 @@ frontend/src/
 
 Patterns to follow. Read `docs/architecture.md` for the reasons.
 
-- **Money.** An amount is an integer in minor units, and its name ends with `_minor`. An exchange rate ends with `_micro`. A percentage ends with `_pct`. A half rounds up.
+- **Money.** An amount is an integer in minor units, and its name ends with `_minor`. An exchange rate ends with `_micro`. A percentage ends with `_pct`. A half rounds up. The UI keeps an amount as an integer in a JavaScript number, and converts it only in `lib/money.ts`.
 - **Clock.** A service gets `today` and `now` as arguments. A router gets them from `routers/deps.py`. Do not call `date.today()` or `datetime.now()` in a service.
 - **Errors.** A service raises `DomainError(field, cause)` or `NotFoundError`. The API returns `422 {"detail": [{"field", "cause"}]}` or `404`. A business rule goes into a pure function in `calculations/`, as `validate_band` does.
 - **Insights.** Use `active_employees_with_rate` from `services/sql.py`, so that all insights count the same employees.
-- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`. Put a section of a screen in a `Panel`. Explain a term with the `help` text of a `Stat`, which opens from an info button.
+- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`. Put a section of an insight screen or of a record screen in a `Panel`. Explain a term with the `help` text of a `Stat`, which opens from an info button.
 - **Amounts on a screen.** A salary shows all its digits (`formatMoney`). A large total shows a short form with the full amount on hover (`formatMoneyShort`). Each amount states its period: "for one year".
 - **Design brief.** `.claude/DESIGN.md` has the principles, the page patterns and the color rules.
 - **A screen test.** Replace the API with `stubApi`, and render with `renderScreen`.
@@ -95,6 +101,8 @@ Code comments and commit messages follow the same rules where practical.
 5. Each screen must have a loading state, an empty state and an error state.
 6. Each screen must be usable with a keyboard.
 
+Known exceptions to 4.1 and 4.2: the `<form>` element in `FormDialog`, and the 2 CSS rules for the required star in `index.css`. `docs/tradeoffs.md` gives the reason for each.
+
 ## Article 5: Commands
 
 Run these commands from the root of the repository.
@@ -113,6 +121,13 @@ To run one test file:
 cd backend && uv run pytest tests/unit/test_money.py -q
 cd frontend && npx vitest run src/lib/format.test.ts
 ```
+
+Environment variables, with their defaults:
+
+| Variable | Default | Use |
+|---|---|---|
+| `SALARY_DB_URL` | `sqlite:///./salary.db` | The database, in `backend/app/db.py` |
+| `SALARY_STATIC_DIR` | `frontend/dist` | The built UI that the API serves, in `backend/app/main.py` |
 
 To read the documentation of an Astryx component:
 

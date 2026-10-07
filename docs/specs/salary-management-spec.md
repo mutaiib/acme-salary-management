@@ -2,7 +2,7 @@
 
 ## Overview
 
-The HR Manager of ACME manages the salaries of 10,000 employees and answers questions about how the organization pays people. The application follows this sequence:
+The HR Manager of ACME manages the salaries of 10,000 employees and answers questions about how the organization pays people. The system follows this sequence:
 1. See the pay.
 2. Find the problems.
 3. Change a salary.
@@ -12,7 +12,7 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 
 ## Slice 0: Walking skeleton
 
-- [x] The Employees screen shows the first 25 employees, ordered by employee code.
+- [x] The Employees screen shows the first 10 employees, ordered by employee code.
 - [x] Each row shows the employee code, name, job title, job level, department, country and salary with its currency.
 - [x] The screen shows the total number of employees.
 - [x] The system must let the HR Manager go to the next page and to the previous page.
@@ -75,7 +75,7 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 - [x] The Employee detail screen shows the salary band of the employee.
 - [x] The Employee detail screen shows the compa-ratio with 2 decimal places.
 - [x] The Employee detail screen shows the range penetration with 1 decimal place.
-- [x] The Employee detail screen shows the range status: below range, in range, above range or no salary band.
+- [x] The Employee detail screen shows the range status of an exception: below range, above range or no salary band. A salary in range shows on the range bar only.
 - [x] The Employee detail screen shows the position of the salary on a range bar.
 - [x] A salary of 45,000 in a band of 35,000 / 50,000 / 65,000 shows a compa-ratio of 0.90 and a range penetration of 33.3%.
 - [x] A salary equal to the band minimum or the band maximum is in range.
@@ -86,28 +86,16 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 - [x] The Pay health screen shows the correction cost in USD.
 - [x] The Pay health screen lists the below-range employees with the salary, the band minimum and the difference.
 - [x] The Pay health screen lists the above-range employees with the salary, the band maximum and the difference.
-- [x] The system must let the HR Manager filter the lists by country and by job level.
+- [x] The system must let the HR Manager filter the list by country and by job level.
 - [x] Each row opens the Employee detail screen.
 - [x] After the HR Manager moves a below-range salary to the band minimum, the number of below-range employees decreases by 1.
 - [x] An inactive employee does not show in the lists.
-- [x] Each list shows the employee who is farthest from the salary band first.
+- [x] The list shows the employee who is farthest from the salary band first.
 - [x] The system shows an empty state when no employee is outside the salary band.
 
 ## Slice 5: Pay equity (FR-11, FR-12, NFR-07)
 
-Removed from the product after the review of the developer. See `docs/requirements.md`.
-
-- [x] The Pay equity screen shows the mean gap and the median gap for the organization, in USD.
-- [x] The Pay equity screen shows the mean gap and the median gap for each country, in the local currency.
-- [x] Each group shows the number of men and the number of women.
-- [x] A group with a mean gap or a median gap of more than 5%, in favor of men or of women, has a flag.
-- [x] A group with fewer than 5 men or fewer than 5 women shows "not enough data" and no gap.
-- [x] The Pay equity screen shows the number of countries that have a flag.
-- [x] The countries that have a flag show first, with the largest gap at the top.
-- [x] The screen shows the label "unadjusted" and a description of its meaning.
-- [x] A negative gap states in words that women have the higher pay.
-- [x] The system shows an empty state when there are no active employees.
-- [x] An inactive employee does not count in a gap.
+The developer removed this slice after the review of the screens. See `docs/requirements.md`. The history of this file has its 11 criteria.
 
 ## API Shape
 
@@ -128,6 +116,8 @@ POST /api/employees/{id}/deactivate
 GET  /api/meta
      -> 200 { countries: [{ code, name, currency }], departments, job_levels,
               reporting_currency, rates_as_of, today }
+GET  /api/meta/exchange-rates
+     -> 200 [{ currency, rate_micro, as_of_date }]
 GET  /api/insights/overview?group_by=country|department|job_level
      -> 200 { reporting_currency, payroll_cost_minor, headcount, median_salary_minor,
               rates_as_of, group_by, groups: [Group] } | 422
@@ -155,9 +145,7 @@ Band:         { id, job_level, country, currency, min_minor, mid_minor, max_mino
 Group:        { key, label, headcount, payroll_cost_minor, currency,
                 min_minor, median_minor, max_minor }
 Outlier:      { id, employee_code, full_name, job_title, job_level, department, country,
-                currency, salary_minor, band_limit_minor, difference_minor }
-Gap:          { key, label, currency, men, women, mean_gap_pct, median_gap_pct,
-                is_flagged, has_enough_data }
+                currency, salary_minor, range_status, band_limit_minor, difference_minor }
 ```
 
 ## Out of Scope
@@ -178,4 +166,4 @@ Gap:          { key, label, currency, men, women, mean_gap_pct, median_gap_pct,
 - Key dependencies: FastAPI, SQLAlchemy, SQLite; React 19, Vite, Astryx.
 - Risk level: MODERATE
 
-[ ] Reviewed
+[X] Reviewed

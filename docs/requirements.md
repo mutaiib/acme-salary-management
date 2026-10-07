@@ -1,6 +1,6 @@
 # Requirements: ACME Salary Management
 
-Status: written before the build. Terms: see `glossary.md`.
+Status: written before the build, and changed when the scope changed. Terms: see `glossary.md`.
 
 ## Goal
 
@@ -20,9 +20,9 @@ The system follows this sequence:
 
 | ID | Requirement |
 |---|---|
-| FR-01 | The system must show the total payroll cost in one reporting currency. The system must show the median salary of the organization in the reporting currency. The system must show the date of the exchange rates. |
-| FR-02 | The system must show these figures for each country, department and job level: the headcount, the payroll cost and its share of the total, and the minimum, median and maximum salary. |
-| FR-03 | The system must let the HR Manager find an employee by name, email or employee code. The system must let the HR Manager filter the list by country, department, job level and status, sort the list, and set the number of rows on a page. The system must show the number, the payroll cost and the median salary of the employees in the list. |
+| FR-01 | The system must show the total payroll cost in one reporting currency. The system must show the median salary of the organization in the reporting currency. The system must show the exchange rates and their date. |
+| FR-02 | The system must show figures for each country, for each department and for each job level. The figures are the headcount, the payroll cost, its share of the total, and the minimum, median and maximum salary. |
+| FR-03 | The system must let the HR Manager find an employee by name, email or employee code. The system must let the HR Manager filter the list by country, department, job level and status. The system must let the HR Manager sort the list and set the number of rows on a page. The system must show the number, the payroll cost and the median salary of the employees in the list. |
 | FR-04 | The system must let the HR Manager change a salary. Each salary change must have a reason and an effective date. The system must let the HR Manager give the change as a new salary or as an increase in percent. |
 | FR-05 | The system must refuse a salary that is zero or negative. The system must show the cause. |
 | FR-06 | The system must keep each salary change. The system must show the salary history of an employee. |
@@ -31,8 +31,9 @@ The system follows this sequence:
 | FR-09 | The system must show the employees who are below range and the employees who are above range. The system must let the HR Manager see all outliers or one kind, and find an outlier by name, email or employee code. |
 | FR-10 | The system must show the cost to move all below-range salaries to the band minimum. The system must show that cost as a share of the payroll cost. |
 | FR-13 | The system must let the HR Manager deactivate an employee. The insights must count active employees only. |
+| FR-14 | The system must open with a screen that states its purpose and what it can do. |
 
-The numbers FR-11 and FR-12 are not in use. Pay equity left the scope (see the next section). The other numbers do not change.
+The numbers FR-11, FR-12 and NFR-07 are not in use. Pay equity left the scope (see the next section). The other numbers do not change.
 
 | ID | Quality requirement |
 |---|---|
@@ -44,11 +45,11 @@ The numbers FR-11 and FR-12 are not in use. Pay equity left the scope (see the n
 | NFR-06 | One command must install, seed and start the system. |
 | NFR-08 | The system must write a log line for each salary change, band change and deactivation. |
 
-## What is left out, and why
+## What the product leaves out, and why
 
 | Left out | Reason |
 |---|---|
-| Pay equity (the gender pay gap, FR-11 and FR-12) | The developer removed it after the review of the screens. The value of an unadjusted gap for the HR Manager was not clear. The remaining insights answer the questions of the brief. |
+| Pay equity (the gender pay gap, FR-11 and FR-12) | The developer removed it after the review of the screens. The value of an unadjusted gap for the HR Manager was not clear. The other insights answer the questions of the brief. |
 | Compensation cycle (budget, merit matrix, proposals, a bulk salary change) | It is a product in itself. It is the next iteration. |
 | Excel or CSV import and export | It has many validation cases and a low value for a first version. |
 | Pay compression and quartile analysis | They are extensions of pay health. |

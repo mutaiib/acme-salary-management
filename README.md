@@ -2,7 +2,7 @@
 
 Salary management software for the HR Manager of ACME: 10,000 employees in 8 countries.
 
-The application follows this sequence:
+The system follows this sequence:
 
 1. **See** the pay: payroll cost, headcount and median salary, by country, department and job level.
 2. **Find** the problems: salaries outside the salary band.
@@ -43,16 +43,18 @@ The API documentation is at http://localhost:8000/docs.
 
 | Screen | Question that it answers |
 |---|---|
+| Welcome | What is this system for? The first screen states the problem and what the system can do. |
 | Pay overview | What does ACME spend on salaries, and where? |
 | Pay health | Who has a salary below or above the salary band? What does the correction cost? |
 | Employees | What does ACME pay a group of employees, for example Engineering in Germany? Who is this employee, and what is the salary history? |
 | Salary bands | What is the pay range for a job level in a country? |
+| Exchange rates | Which rates convert a salary to USD? The Pay overview links to this screen. |
 
 ## Technology
 
 - Backend: Python, FastAPI, SQLAlchemy, SQLite.
 - UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system.
-- Tests: pytest (203 tests), Vitest with React Testing Library (139 tests).
+- Tests: pytest (206 tests), Vitest with React Testing Library (147 tests).
 
 ## Structure
 
@@ -75,13 +77,13 @@ docs/             requirements, design notes and decisions
 
 | Document | Content |
 |---|---|
-| [docs/requirements.md](docs/requirements.md) | Goal, scope, and the features that are left out |
+| [docs/requirements.md](docs/requirements.md) | Goal, scope, and the features that the product leaves out |
 | [docs/glossary.md](docs/glossary.md) | The pay terms and the formulas |
 | [docs/architecture.md](docs/architecture.md) | Diagram and main decisions |
 | [docs/tradeoffs.md](docs/tradeoffs.md) | The choices and their cost |
 | [docs/performance.md](docs/performance.md) | Measured response times |
 | [docs/traceability.md](docs/traceability.md) | Each requirement, with its slice and its tests |
-| [docs/ai-usage.md](docs/ai-usage.md) | The AI tools, the prompts, and the corrections |
+| [docs/ai-usage.md](docs/ai-usage.md) | How the developer used AI: the requests, the decisions, and the errors in the AI output that the work found |
 | [docs/specs/](docs/specs/) and [docs/plans/](docs/plans/) | Discovery, specification and plan, and the check of the brief in a browser |
 | [.claude/DESIGN.md](.claude/DESIGN.md) | The design brief for the screens |
 | [CLAUDE.md](CLAUDE.md) | The constitution: the rules for all work in this repository |
@@ -93,7 +95,7 @@ The work follows the workflow of [Bee](https://github.com/incubyte/ai-plugins/tr
 1. Discovery
 2. Specification
 3. Plan
-4. Vertical slices, with the tests first
+4. Vertical slices, with the tests first for most steps (`docs/ai-usage.md` lists the exceptions)
 5. Review
 
 The documents use the writing rules of ASD-STE100 Simplified Technical English.

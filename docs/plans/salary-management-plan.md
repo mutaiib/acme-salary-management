@@ -35,7 +35,7 @@ Spec: `docs/specs/salary-management-spec.md`. Format: Bee `/bee:planner`. This p
 - **Median**: SQL window query (`ROW_NUMBER`, `COUNT` over a partition). The median of an even count is the mean of the two middle values, rounded half up.
 - **Clock**: the router gets `today` from a dependency (`get_today`). A test replaces it. No service reads the clock.
 - **Errors**: one handler maps `DomainError` and request validation errors to `422 { detail: [{ field, cause }] }`.
-- **Pagination**: `page` starts at 1; `page_size` is 25 by default and 100 at most.
+- **Pagination**: `page` starts at 1; `page_size` is 10 by default and 100 at most.
 - **Database**: `SALARY_DB_URL`, default `sqlite:///./salary.db`. API tests use an in-memory database with one connection.
 - **Seed**: `random.Random(42)` and the fixed reference date 2026-01-01. The seed does not read the clock.
 - **UI data**: a `useApi` hook returns `{ data, error, isLoading, reload }`. There is no cache library.
@@ -169,7 +169,7 @@ frontend/
    - UI: `PayHealthPage` with 2 tabs (below, above), `StatCard` x3, `OutlierTable`.
 4. **Collaborators**: join `employees` to `salary_bands` on `(job_level, country)` and to `exchange_rates` on currency.
 5. **Control flow**: correction cost = sum, for each below-range active employee, of the converted difference between the band minimum and the salary.
-6. **Test strategy**: new `tests/api/test_pay_health.py` (counts, cost, list content, filters, inactive excluded, count decreases after a correction). One test on the seeded dataset: the counts equal the planted anomaly counts. UI: `PayHealthPage.test.tsx`.
+6. **Test strategy**: new `tests/api/test_pay_health.py` (counts, cost, list content, filters, inactive excluded, count decreases after a correction). One test on the seeded dataset: the counts equal the counts of the planted outliers. UI: `PayHealthPage.test.tsx`.
 7. **Standards**: `clean-code: DRY` (one outlier condition).
 8. **Tier**: `excellent`.
 9. **Quality checks**
@@ -214,34 +214,33 @@ The build follows the plan. These points are different:
 | Plan | Build | Reason |
 |---|---|---|
 | `GroupTable` is a shared component | `GroupTable` is in `pages/overview/` | Only one screen uses it. The constitution puts a component in the library when 2 screens use it. |
-| `GapCell` shared component | `GapValue` in `pages/pay-equity/` | Same reason. |
+| `GapCell` shared component | `GapValue` in `pages/pay-equity/` (removed with pay equity) | Same reason. |
 | Search tests extend `test_employees_list.py` | New file `test_employee_search.py` | One file for each behavior is easier to read. |
 | No `services/meta.py` | `services/meta.py` has the rate date query | A router must not query the database. |
 | A flag for a gap of more than 5% | A flag for a gap of more than 5% in favor of men or of women | A gap in favor of women is also a difference to explain. The spec has this change. |
 | The UI lint tool is not named | `oxlint` | It is the default of the Vite template. |
 | `RangeBar` and `RangeStatusBadge` are shared components | They are in `pages/employee-detail/` | Only one screen uses them. |
-| `SalaryChangeDialog.test.tsx` | The dialog tests are in `EmployeeDetailPage.test.tsx` | The tests open the dialog from the screen, as the HR Manager does. |
-| `usd_minor_expr`, `median_by`, `band_for`, `_outside_band` | `usd_minor`, `median_by_group`, `position_of`, `_is_outside` | The names in the code are shorter or more exact. |
+| `SalaryChangeDialog.test.tsx` | The dialog tests are in `SalaryChange.test.tsx` | The tests open the dialog from the screen, as the HR Manager does. |
+| `usd_minor_expr`, `median_by`, `band_for`, `_outside_band` | `reporting_minor`, `median_by_group`, `position_of`, `_is_outside` | The names in the code are shorter or more exact. |
 | `change_salary(..., today)` | `change_salary(..., today, now)` | The time of the record is also an input, so no service reads the clock. |
 | The guards of a salary change | 2 more guards: the effective date is not before the hire date, and not before the last salary change | The end-of-spec review found that an old date made the salary history disagree with the current salary. |
 | The UI reads "today" from the browser | The UI reads "today" from `GET /api/meta` | The browser and the server can be in different time zones. |
 | No limit on an amount | An amount has a maximum of 10,000,000,000.00 units | A larger amount made the SQL arithmetic inexact. |
 | No limit on the reason or the page number | The reason has a maximum of 500 characters. The page number has a maximum of 1,000,000. | A very large value gave a server error. |
 | A "totals query" in the overview | The service adds the group figures to get the totals | A total then always equals the sum of its parts. There are 8 groups at most. |
-| `tests/api/` has one file for each router | One file for each behavior: 14 files | A short file is easier to read. `test_static_ui.py` and `test_seed_write.py` have no router. |
+| `tests/api/` has one file for each router | One file for each behavior: 13 files | A short file is easier to read. `test_static_ui.py` and `test_seed_write.py` have no router. |
 | `median_by(session, group_col, value_expr, filters)` | `median_by_group(session, rows)`, and `active_employees_with_rate(*columns)` | The caller gives one query with a group column and a value column. All insights share the query on active employees. |
 | `band_for(...) -> SalaryBand` | `position_of(...) -> RangePosition` | The function returns the band and the 3 range figures together. |
 | The band rule: minimum < midpoint < maximum | 0 < minimum < midpoint < maximum | A band minimum of zero has no meaning. |
 | The guards of a salary change are in the service | They are a pure function, `calculations/salary_changes.validate_salary_change` | A unit test checks each rule without a database, as for the band rule. |
 | Pagination is in the employees service | `services/pagination.py` | Pay health also has a list with pages. |
 | `errors.py` has the error handlers | `routers/error_handlers.py` has them | A service must not load the web framework. |
-| The layout lists 2 API files, 1 hook and 1 `lib` file | The build has 6 API files, 5 hooks and 3 `lib` files | Each screen added an API file. The review moved shared logic into hooks and `lib`. |
+| The layout lists 2 API files, 1 hook and 1 `lib` file | The build has 6 API files, 6 hooks and 3 `lib` files | Each screen added an API file. The review moved shared logic into hooks and `lib`. |
 | No rule for an employee without an exchange rate | The employee is not in an insight | The pay health summary and its list did not agree. Now all insights use one query. |
 | `enough_data` | `has_enough_data`, and `is_flagged` | A boolean name that reads as a question. |
 
 ## Escalation Log
 
-| Slice | Agent | From -> To | Reason | Time |
-|---|---|---|---|---|
+No escalation.
 
-[ ] Reviewed
+[X] Reviewed
