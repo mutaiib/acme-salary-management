@@ -1,7 +1,7 @@
 from collections import Counter
 
 from app.reference import COUNTRIES, JOB_LEVELS
-from app.seed import generate_dataset
+from app.seed import EMPLOYEE_COUNT, SEED, generate_dataset
 
 SMALL = 2_000
 
@@ -95,3 +95,8 @@ def test_men_and_women_have_the_same_job_level_mix_in_each_country():
             share_men = men[level] / sum(men.values())
             share_women = women[level] / sum(women.values())
             assert abs(share_men - share_women) < 0.03
+
+
+def test_the_seed_script_creates_exactly_10000_employees():
+    assert EMPLOYEE_COUNT == 10_000
+    assert len(generate_dataset(count=EMPLOYEE_COUNT, seed=SEED).employees) == 10_000

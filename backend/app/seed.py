@@ -12,7 +12,6 @@ from datetime import date, datetime, timedelta
 from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
-from app.db import Base, SessionLocal, engine
 from app.models import Employee, ExchangeRate, SalaryBand, SalaryChange
 from app.reference import ACTIVE, COUNTRIES, INACTIVE, JOB_LEVELS, job_title
 
@@ -250,7 +249,7 @@ def _local_midpoint(level: int, country: str, currency: str) -> int:
     """The band midpoint in whole local units, to the nearest 1,000."""
     usd = LEVEL_MIDPOINT_USD[level] * COUNTRY_PAY_PCT[country] // 100
     local = usd * 1_000_000 // RATES_MICRO[currency]
-    return round(local / 1_000) * 1_000
+    return (local + 500) // 1_000 * 1_000
 
 
 def _employees(rng: random.Random, count: int, band_of: dict[tuple, Row]) -> list[Row]:
@@ -316,8 +315,10 @@ def _salary_in_band(rng: random.Random, band: Row, country: str, gender: str) ->
         position = rng.triangular(0.0, 1.0, 0.45)
     else:
         position = rng.triangular(0.0, 1.0, 0.5)
+    # The random position is a float. It becomes an integer before it touches money.
+    position_per_mille = int(position * 1_000)
     low, high = int(band["min_minor"]), int(band["max_minor"])
-    return _to_hundreds(low + int((high - low) * position))
+    return _to_hundreds(low + (high - low) * position_per_mille // 1_000)
 
 
 def _to_hundreds(amount_minor: int) -> int:
@@ -369,6 +370,9 @@ def write_dataset(session: Session, dataset: Dataset) -> None:
 
 
 def main() -> None:
+    # The import is here so that the generator has no database dependency.
+    from app.db import Base, SessionLocal, engine
+
     started = time.perf_counter()
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
