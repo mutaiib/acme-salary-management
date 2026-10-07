@@ -108,3 +108,33 @@ class EmployeeDetailOut(EmployeeOut):
     compa_ratio: float | None
     range_penetration: float | None
     range_status: str
+
+
+class PayHealthSummaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    below_count: int
+    above_count: int
+    correction_cost_minor: int
+    reporting_currency: str
+
+
+class OutlierOut(BaseModel):
+    id: int
+    employee_code: str
+    full_name: str
+    job_title: str
+    job_level: int
+    department: str
+    country: str
+    currency: str
+    salary_minor: int
+    band_limit_minor: int
+    difference_minor: int
+
+
+class OutlierPage(BaseModel):
+    items: list[OutlierOut]
+    page: int
+    page_size: int
+    total: int
