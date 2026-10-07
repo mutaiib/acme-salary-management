@@ -52,6 +52,8 @@ export interface Meta {
   job_levels: number[]
   reporting_currency: string
   rates_as_of: string | null
+  /** The date of the server, as an ISO date. The UI uses it for "today". */
+  today: string
 }
 
 export interface GroupFigures {

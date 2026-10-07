@@ -1,9 +1,10 @@
+// FR-04, FR-05, FR-06, FR-08, FR-13: the Employee detail screen.
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
 import type { EmployeeDetail, SalaryChange } from '../../api/types'
 import { refuse, stubApi } from '../../test/api'
-import { band, employeeDetail, salaryChange } from '../../test/data'
+import { band, employeeDetail, META, salaryChange } from '../../test/data'
 import { renderScreen } from '../../test/render'
 import { EmployeeDetailPage } from './EmployeeDetailPage'
 
@@ -11,6 +12,7 @@ const ASHA = employeeDetail(7, { full_name: 'Asha Rao', salary_minor: 6_500_000 
 
 function open(replies: Record<string, unknown> = {}, who: EmployeeDetail = ASHA) {
   const api = stubApi({
+    '/api/meta': META,
     '/api/employees/7': who,
     '/api/employees/7/salary-changes': [salaryChange(1)],
     ...replies,
@@ -36,7 +38,7 @@ test('shows the data and the current salary of the employee', async () => {
   expect(await screen.findByRole('heading', { level: 1, name: 'Asha Rao' })).toBeInTheDocument()
   expect(screen.getByText('E00007')).toBeInTheDocument()
   expect(screen.getByText('Software Engineer, Engineering')).toBeInTheDocument()
-  expect(screen.getByTestId('current-salary')).toHaveTextContent('$65,000')
+  expect(screen.getByTestId('current-salary')).toHaveTextContent(/^\$65,000$/)
 })
 
 test('shows the old salary, the new salary, the reason and the date of each salary change', async () => {
@@ -70,7 +72,7 @@ test('shows no old salary for the first salary', async () => {
   expect(within(row).getByText('None')).toBeInTheDocument()
 })
 
-test('sends the new salary in minor units with the reason and the date', async () => {
+test('sends the new salary in minor units, the reason, and the server date as the effective date', async () => {
   let sent: unknown
   open({
     'POST /api/employees/7/salary-changes': (_url: URL, body: unknown) => {
@@ -83,9 +85,12 @@ test('sends the new salary in minor units with the reason and the date', async (
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
 
   await waitFor(() =>
-    expect(sent).toMatchObject({ new_salary_minor: 7_000_000, reason: 'Annual review' }),
+    expect(sent).toEqual({
+      new_salary_minor: 7_000_000,
+      reason: 'Annual review',
+      effective_date: META.today,
+    }),
   )
-  expect((sent as { effective_date: string }).effective_date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
 })
 
 test('shows the new salary and the new history row after a salary change', async () => {
@@ -188,8 +193,8 @@ test('shows the compa-ratio, the range penetration and the band of the employee'
     },
   )
 
-  expect(await screen.findByTestId('compa-ratio')).toHaveTextContent('0.90')
-  expect(screen.getByTestId('range-penetration')).toHaveTextContent('33.3%')
+  expect(await screen.findByTestId('compa-ratio')).toHaveTextContent(/^0\.90$/)
+  expect(screen.getByTestId('range-penetration')).toHaveTextContent(/^33\.3%$/)
   const section = within(screen.getByTestId('position-in-range'))
   expect(section.getByText('In range')).toBeInTheDocument()
   expect(section.getByText('$35,000')).toBeInTheDocument()
@@ -216,4 +221,45 @@ test('shows that an employee has no salary band', async () => {
 
   expect(await screen.findByText('No salary band')).toBeInTheDocument()
   expect(screen.queryByTestId('compa-ratio')).not.toBeInTheDocument()
+})
+
+test('shows a whole range penetration with 1 decimal place', async () => {
+  open({}, { ...ASHA, compa_ratio: 1, range_penetration: 50 })
+
+  expect(await screen.findByTestId('range-penetration')).toHaveTextContent(/^50\.0%$/)
+  expect(screen.getByTestId('compa-ratio')).toHaveTextContent(/^1\.00$/)
+})
+
+test('shows the cause next to the effective date when the API refuses the date', async () => {
+  open({
+    'POST /api/employees/7/salary-changes': refuse(422, [
+      { field: 'effective_date', cause: 'The effective date must not be before the hire date.' },
+    ]),
+  })
+
+  const dialog = await fillSalaryChange('70000', 'Annual review')
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+  expect(
+    await within(dialog).findByText('The effective date must not be before the hire date.'),
+  ).toBeInTheDocument()
+})
+
+test('shows the cause when the API refuses a salary of zero', async () => {
+  open({
+    'POST /api/employees/7/salary-changes': refuse(422, [
+      { field: 'new_salary_minor', cause: 'The salary must be more than zero.' },
+    ]),
+  })
+
+  const dialog = await fillSalaryChange('0', 'Annual review')
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+  expect(await within(dialog).findByText('The salary must be more than zero.')).toBeInTheDocument()
+})
+
+test('shows an empty state for an employee without a salary history', async () => {
+  open({ '/api/employees/7/salary-changes': [] })
+
+  expect(await screen.findByText('No salary history')).toBeInTheDocument()
 })

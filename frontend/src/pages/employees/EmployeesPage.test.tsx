@@ -1,3 +1,4 @@
+// FR-03: the Employees screen.
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
@@ -30,6 +31,7 @@ test('shows the pay data of each employee', async () => {
   const row = (await screen.findByText('Asha Rao')).closest('tr')!
   expect(within(row).getByText('E00001')).toBeInTheDocument()
   expect(within(row).getByText('Senior Software Engineer')).toBeInTheDocument()
+  expect(within(row).getByText('Level 3')).toBeInTheDocument()
   expect(within(row).getByText('Engineering')).toBeInTheDocument()
   expect(within(row).getByText('IN')).toBeInTheDocument()
   expect(within(row).getByText('₹2,500,000')).toBeInTheDocument()
@@ -133,4 +135,43 @@ test('shows a badge for an inactive employee', async () => {
   renderScreen(<EmployeesPage />)
 
   expect(await screen.findByText('Inactive')).toBeInTheDocument()
+})
+
+test('shows the previous page when the HR Manager goes back', async () => {
+  const api = stubApi({
+    '/api/meta': META,
+    '/api/employees': (url: URL) =>
+      url.searchParams.get('page') === '2'
+        ? pageOf([employee(26, { full_name: 'Second Page' })], 2, 30)
+        : pageOf([employee(1, { full_name: 'First Page' })], 1, 30),
+  })
+  renderScreen(<EmployeesPage />, { at: '/?page=2' })
+  await screen.findByText('Second Page')
+
+  await userEvent.click(screen.getByRole('button', { name: /previous/i }))
+
+  expect(await screen.findByText('First Page')).toBeInTheDocument()
+  expect(lastQuery(api).get('page')).toBe('1')
+})
+
+test('sends the country to the API when the HR Manager selects a country', async () => {
+  const api = stubApi({ '/api/meta': META, '/api/employees': pageOf([employee(1)]) })
+  renderScreen(<EmployeesPage />)
+  await screen.findByText('Employee 1')
+
+  await userEvent.click(screen.getByRole('combobox', { name: 'Country' }))
+  await userEvent.click(await screen.findByRole('option', { name: 'India' }))
+
+  await waitFor(() => expect(lastQuery(api).get('country')).toBe('IN'))
+})
+
+test('sends the sort to the API when the HR Manager selects a sort', async () => {
+  const api = stubApi({ '/api/meta': META, '/api/employees': pageOf([employee(1)]) })
+  renderScreen(<EmployeesPage />)
+  await screen.findByText('Employee 1')
+
+  await userEvent.click(screen.getByRole('combobox', { name: 'Sort by' }))
+  await userEvent.click(await screen.findByRole('option', { name: 'Name' }))
+
+  await waitFor(() => expect(lastQuery(api).get('sort')).toBe('name'))
 })

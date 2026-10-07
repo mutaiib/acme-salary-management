@@ -1,10 +1,10 @@
 import { pixel, proportional, Table, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
 import type { SalaryChange } from '../../api/types'
-import { Money } from '../../components'
+import { Money, moneyColumn, type TableRow } from '../../components'
 import { formatDate } from '../../lib/format'
 
-type ChangeRow = SalaryChange & Record<string, unknown>
+type ChangeRow = TableRow<SalaryChange>
 
 const COLUMNS: TableColumn<ChangeRow>[] = [
   {
@@ -25,15 +25,7 @@ const COLUMNS: TableColumn<ChangeRow>[] = [
         <Money amountMinor={change.old_salary_minor} currency={change.currency} />
       ),
   },
-  {
-    key: 'new_salary_minor',
-    header: 'New salary',
-    width: proportional(1),
-    align: 'end',
-    renderCell: (change) => (
-      <Money amountMinor={change.new_salary_minor} currency={change.currency} />
-    ),
-  },
+  moneyColumn<SalaryChange>('new_salary_minor', 'New salary'),
   { key: 'reason', header: 'Reason', width: proportional(3) },
   {
     key: 'created_at',

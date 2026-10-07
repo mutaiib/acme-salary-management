@@ -1,3 +1,4 @@
+// FR-01, FR-02: the Pay overview screen.
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
@@ -65,7 +66,7 @@ test('shows the total payroll cost in the reporting currency', async () => {
 
   renderScreen(<OverviewPage />)
 
-  expect(await screen.findByTestId('payroll-cost')).toHaveTextContent('$358,000')
+  expect(await screen.findByTestId('payroll-cost')).toHaveTextContent(/^\$358,000$/)
 })
 
 test('shows the headcount', async () => {
@@ -73,7 +74,7 @@ test('shows the headcount', async () => {
 
   renderScreen(<OverviewPage />)
 
-  expect(await screen.findByTestId('headcount')).toHaveTextContent('6')
+  expect(await screen.findByTestId('headcount')).toHaveTextContent(/^6$/)
 })
 
 test('shows the date of the exchange rates', async () => {

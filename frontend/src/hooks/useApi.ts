@@ -41,8 +41,8 @@ export function useApi<T>(load: () => Promise<T>, deps: unknown[]): ApiState<T> 
     return () => {
       isCurrent = false
     }
-    // The caller gives the dependencies of `load`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // The caller gives the dependencies of `load`, so `load` itself is not a dependency.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, version])
 
   const reload = useCallback(() => setVersion((current) => current + 1), [])

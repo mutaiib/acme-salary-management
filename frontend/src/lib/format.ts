@@ -1,11 +1,16 @@
 const LOCALE = 'en-US'
 
-/** Formats an amount in minor units as whole currency units, for example `$65,000`. */
+/**
+ * Formats an amount in minor units, for example `$65,000`.
+ * It shows the minor units only when the amount has some, for example `$65,000.50`.
+ */
 export function formatMoney(amountMinor: number, currency: string): string {
+  const fractionDigits = amountMinor % 100 === 0 ? 0 : 2
   return new Intl.NumberFormat(LOCALE, {
     style: 'currency',
     currency,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
   }).format(amountMinor / 100)
 }
 
@@ -13,7 +18,7 @@ export function formatCount(count: number): string {
   return new Intl.NumberFormat(LOCALE).format(count)
 }
 
-/** Formats an ISO date (`2026-01-31`) as `31 Jan 2026`. */
+/** Formats an ISO date (`2026-01-31`) or an ISO date and time as `31 Jan 2026`. */
 export function formatDate(isoDate: string): string {
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',

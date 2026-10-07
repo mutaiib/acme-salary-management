@@ -2,7 +2,8 @@ import { Heading } from '@astryxdesign/core/Heading'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Text } from '@astryxdesign/core/Text'
 import type { EmployeeDetail } from '../../api/types'
-import { RangeBar, RangeStatusBadge } from '../../components'
+import { RangeBar } from './RangeBar'
+import { RangeStatusBadge } from './RangeStatusBadge'
 
 /** The salary of the employee against the salary band of the job level and the country. */
 export function PositionInRange({ employee }: { employee: EmployeeDetail }) {

@@ -1,7 +1,8 @@
+// FR-08: the range bar.
 import { screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { band } from '../test/data'
-import { renderScreen } from '../test/render'
+import { band } from '../../test/data'
+import { renderScreen } from '../../test/render'
 import { RangeBar } from './RangeBar'
 
 const BAND = band(1, { min_minor: 3_500_000, mid_minor: 5_000_000, max_minor: 6_500_000 })

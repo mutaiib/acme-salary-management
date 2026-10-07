@@ -45,6 +45,7 @@ export const META: Meta = {
   job_levels: [1, 2, 3, 4, 5],
   reporting_currency: 'USD',
   rates_as_of: '2026-01-01',
+  today: '2026-03-01',
 }
 
 export function band(number: number, overrides: Partial<Band> = {}): Band {

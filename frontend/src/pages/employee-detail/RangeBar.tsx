@@ -1,9 +1,9 @@
 import { ProgressBar } from '@astryxdesign/core/ProgressBar'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Text } from '@astryxdesign/core/Text'
-import type { Band } from '../api/types'
-import { formatMoney } from '../lib/format'
-import { positionOnBand } from '../lib/ranges'
+import type { Band } from '../../api/types'
+import { formatMoney } from '../../lib/format'
+import { positionOnBand } from '../../lib/ranges'
 
 interface Props {
   band: Band

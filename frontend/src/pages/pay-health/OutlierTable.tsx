@@ -1,9 +1,6 @@
-import { Link } from '@astryxdesign/core/Link'
 import { pixel, proportional, Table, type TableColumn } from '@astryxdesign/core/Table'
 import type { Outlier, OutlierStatus } from '../../api/types'
-import { Money } from '../../components'
-
-type OutlierRow = Outlier & Record<string, unknown>
+import { EmployeeLink, moneyColumn, type TableRow } from '../../components'
 
 const LIMIT_HEADER: Record<OutlierStatus, string> = {
   below: 'Band minimum',
@@ -21,31 +18,33 @@ interface Props {
 }
 
 export function OutlierTable({ status, outliers }: Props) {
-  const money = (key: 'salary_minor' | 'band_limit_minor' | 'difference_minor', header: string) =>
-    ({
-      key,
-      header,
-      width: proportional(1),
-      align: 'end',
-      renderCell: (outlier) => <Money amountMinor={outlier[key]} currency={outlier.currency} />,
-    }) satisfies TableColumn<OutlierRow>
-
-  const columns: TableColumn<OutlierRow>[] = [
+  const columns: TableColumn<TableRow<Outlier>>[] = [
     {
       key: 'full_name',
       header: 'Name',
       width: proportional(2),
-      renderCell: (outlier) => <Link href={`/employees/${outlier.id}`}>{outlier.full_name}</Link>,
+      renderCell: (outlier) => <EmployeeLink id={outlier.id} name={outlier.full_name} />,
     },
     { key: 'job_title', header: 'Job title', width: proportional(2) },
-    { key: 'job_level', header: 'Level', width: pixel(80) },
+    {
+      key: 'job_level',
+      header: 'Level',
+      width: pixel(100),
+      renderCell: (outlier) => `Level ${outlier.job_level}`,
+    },
     { key: 'country', header: 'Country', width: pixel(100) },
-    money('salary_minor', 'Salary'),
-    money('band_limit_minor', LIMIT_HEADER[status]),
-    money('difference_minor', DIFFERENCE_HEADER[status]),
+    moneyColumn<Outlier>('salary_minor', 'Salary'),
+    moneyColumn<Outlier>('band_limit_minor', LIMIT_HEADER[status]),
+    moneyColumn<Outlier>('difference_minor', DIFFERENCE_HEADER[status]),
   ]
 
   return (
-    <Table data={outliers as OutlierRow[]} columns={columns} idKey="id" density="compact" hasHover />
+    <Table
+      data={outliers as TableRow<Outlier>[]}
+      columns={columns}
+      idKey="id"
+      density="compact"
+      hasHover
+    />
   )
 }

@@ -11,6 +11,7 @@ import { getEmployee, listSalaryChanges } from '../../api/employees'
 import type { Employee } from '../../api/types'
 import { DataState, PageHeader, StatusBadge } from '../../components'
 import { useApi } from '../../hooks/useApi'
+import { useMeta } from '../../hooks/useMeta'
 import { formatDate, formatMoney } from '../../lib/format'
 import { DeactivateDialog } from './DeactivateDialog'
 import { PositionInRange } from './PositionInRange'
@@ -23,6 +24,7 @@ export function EmployeeDetailPage() {
   const id = Number(useParams().id)
   const employee = useApi(() => getEmployee(id), [id])
   const history = useApi(() => listSalaryChanges(id), [id])
+  const today = useMeta()?.today
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null)
 
   function reload() {
@@ -79,10 +81,11 @@ export function EmployeeDetailPage() {
               <MetadataListItem label="Gender">{capitalize(data.gender)}</MetadataListItem>
             </MetadataList>
             <PositionInRange employee={data} />
-            {/* The key resets the form each time the salary changes. */}
+            {/* The key resets the form when the salary changes or the server date arrives. */}
             <SalaryChangeDialog
-              key={data.salary_minor}
+              key={`${data.salary_minor}-${today}`}
               employee={data}
+              today={today}
               isOpen={openDialog === 'salary'}
               onClose={() => setOpenDialog(null)}
               onChanged={reload}
@@ -98,7 +101,12 @@ export function EmployeeDetailPage() {
       </DataState>
       <Stack gap={3}>
         <Heading level={2}>Salary history</Heading>
-        <DataState state={history}>
+        <DataState
+          state={history}
+          isEmpty={(changes) => changes.length === 0}
+          emptyTitle="No salary history"
+          emptyDescription="This employee has no recorded salary change."
+        >
           {(changes) => <SalaryHistoryTable changes={changes} />}
         </DataState>
       </Stack>

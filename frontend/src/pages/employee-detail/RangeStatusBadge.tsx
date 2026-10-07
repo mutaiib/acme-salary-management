@@ -1,6 +1,6 @@
 import { Badge } from '@astryxdesign/core/Badge'
 import { Text } from '@astryxdesign/core/Text'
-import type { RangeStatus } from '../api/types'
+import type { RangeStatus } from '../../api/types'
 
 /** The range status. Only a salary outside the band gets a badge, so the exceptions stand out. */
 export function RangeStatusBadge({ status }: { status: RangeStatus }) {

@@ -1,19 +1,20 @@
-import { Pagination } from '@astryxdesign/core/Pagination'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Tab, TabList } from '@astryxdesign/core/TabList'
-import { useSearchParams } from 'react-router-dom'
 import { getPayHealth, listOutliers } from '../../api/insights'
 import type { OutlierStatus } from '../../api/types'
 import {
+  CountryFilter,
   DataState,
   FilterBar,
-  FilterSelect,
+  JobLevelFilter,
+  ListPagination,
   PageHeader,
   StatCard,
   StatRow,
 } from '../../components'
 import { useApi } from '../../hooks/useApi'
 import { useMeta } from '../../hooks/useMeta'
+import { useUrlFilters } from '../../hooks/useUrlFilters'
 import { formatCount, formatMoney } from '../../lib/format'
 import { OutlierTable } from './OutlierTable'
 
@@ -24,36 +25,16 @@ const EMPTY_TITLE: Record<OutlierStatus, string> = {
 
 export function PayHealthPage() {
   const meta = useMeta()
-  const [params, setParams] = useSearchParams()
-  const status: OutlierStatus = params.get('status') === 'above' ? 'above' : 'below'
-  const country = params.get('country') ?? ''
-  const jobLevel = params.get('job_level') ?? ''
-  const page = Number(params.get('page')) || 1
+  const { filter, setFilter, page, setPage } = useUrlFilters()
+  const status: OutlierStatus = filter('status') === 'above' ? 'above' : 'below'
+  const country = filter('country')
+  const jobLevel = filter('job_level')
 
   const summary = useApi(getPayHealth, [])
   const outliers = useApi(
     () => listOutliers({ status, country, job_level: jobLevel, page }),
     [status, country, jobLevel, page],
   )
-
-  /** Sets one value in the address. A new filter starts at the first page. */
-  function setParam(name: string, value: string) {
-    setParams(
-      (current) => {
-        const next = new URLSearchParams(current)
-        if (value) {
-          next.set(name, value)
-        } else {
-          next.delete(name)
-        }
-        if (name !== 'page') {
-          next.delete('page')
-        }
-        return next
-      },
-      { replace: name !== 'page' },
-    )
-  }
 
   return (
     <Stack gap={5} padding={6}>
@@ -88,7 +69,7 @@ export function PayHealthPage() {
       <Stack gap={3}>
         <TabList
           value={status}
-          onChange={(value) => setParam('status', value)}
+          onChange={(value) => setFilter('status', value)}
           role="tablist"
           hasDivider
         >
@@ -96,38 +77,27 @@ export function PayHealthPage() {
           <Tab value="above" label="Above range" />
         </TabList>
         <FilterBar>
-          <FilterSelect
-            label="Country"
+          <CountryFilter
+            meta={meta}
             value={country}
-            onChange={(value) => setParam('country', value)}
-            options={(meta?.countries ?? []).map((c) => ({ value: c.code, label: c.name }))}
+            onChange={(value) => setFilter('country', value)}
           />
-          <FilterSelect
-            label="Job level"
+          <JobLevelFilter
+            meta={meta}
             value={jobLevel}
-            onChange={(value) => setParam('job_level', value)}
-            options={(meta?.job_levels ?? []).map((l) => ({ value: String(l), label: `Level ${l}` }))}
-            width={140}
+            onChange={(value) => setFilter('job_level', value)}
           />
         </FilterBar>
         <DataState
           state={outliers}
-          isEmpty={(data) => data.total === 0}
+          isEmpty={(data) => data.items.length === 0}
           emptyTitle={EMPTY_TITLE[status]}
           emptyDescription="Each salary in this selection is in the salary band."
         >
           {(data) => (
             <Stack gap={3}>
               <OutlierTable status={status} outliers={data.items} />
-              {data.total > data.page_size && (
-                <Pagination
-                  page={data.page}
-                  onChange={(next) => setParam('page', String(next))}
-                  totalItems={data.total}
-                  pageSize={data.page_size}
-                  label="Outlier pages"
-                />
-              )}
+              <ListPagination page={data} onChange={setPage} label="Outlier pages" />
             </Stack>
           )}
         </DataState>

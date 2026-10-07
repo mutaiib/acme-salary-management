@@ -1,3 +1,4 @@
+// FR-11, FR-12, NFR-07: the Pay equity screen.
 import { screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import type { Gap, PayEquity } from '../../api/types'
@@ -41,10 +42,10 @@ function show(equity: PayEquity) {
 }
 
 test('shows the mean gap and the median gap of the organization', async () => {
-  show(equityOf([]))
+  show(equityOf([gap('US', 'United States')]))
 
-  expect(await screen.findByTestId('organization-mean-gap')).toHaveTextContent('2.8%')
-  expect(screen.getByTestId('organization-median-gap')).toHaveTextContent('4.1%')
+  expect(await screen.findByTestId('organization-mean-gap')).toHaveTextContent(/^2\.8%$/)
+  expect(screen.getByTestId('organization-median-gap')).toHaveTextContent(/^4\.1%$/)
 })
 
 test('shows the mean gap, the median gap and the headcount of each country', async () => {
@@ -90,7 +91,7 @@ test('shows the number of flagged countries', async () => {
     ]),
   )
 
-  expect(await screen.findByTestId('flagged-countries')).toHaveTextContent('2 of 3')
+  expect(await screen.findByTestId('flagged-countries')).toHaveTextContent(/^2 of 3$/)
 })
 
 test('shows not enough data for a group that is too small', async () => {
@@ -111,15 +112,32 @@ test('shows not enough data for a group that is too small', async () => {
   expect(within(row).queryByText(/%/)).not.toBeInTheDocument()
 })
 
-test('shows a negative gap with a minus sign', async () => {
+test('a negative gap states that women have the higher pay', async () => {
   show(equityOf([gap('AU', 'Australia', { mean_gap_pct: -0.9, median_gap_pct: 0.7 })]))
 
   const row = (await screen.findByText('Australia')).closest('tr')!
   expect(within(row).getByText('-0.9%')).toBeInTheDocument()
+  expect(within(row).getAllByText('Women higher')).toHaveLength(1)
 })
 
-test('always states that the gap is unadjusted, and what that means', async () => {
-  show(equityOf([]))
+test('shows a whole gap with 1 decimal place', async () => {
+  show(equityOf([gap('FR', 'France', { mean_gap_pct: 2, median_gap_pct: 3 })]))
+
+  const row = (await screen.findByText('France')).closest('tr')!
+  expect(within(row).getByText('2.0%')).toBeInTheDocument()
+  expect(within(row).getByText('3.0%')).toBeInTheDocument()
+})
+
+test('explains the sign of the gap', async () => {
+  show(equityOf([gap('US', 'United States')]))
+
+  expect(
+    await screen.findByText(/A positive gap means that men have the higher pay/),
+  ).toBeInTheDocument()
+})
+
+test('states that the gap is unadjusted, and what that means', async () => {
+  show(equityOf([gap('US', 'United States')]))
 
   expect(await screen.findByText('These figures are unadjusted')).toBeInTheDocument()
   expect(screen.getByText(/does not correct for job level/)).toBeInTheDocument()
@@ -127,7 +145,7 @@ test('always states that the gap is unadjusted, and what that means', async () =
 
 test('shows no gap for the organization when there is not enough data', async () => {
   show(
-    equityOf([], { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null, has_enough_data: false }),
+    equityOf([gap('SG', 'Singapore', { has_enough_data: false, mean_gap_pct: null })], { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null, has_enough_data: false }),
   )
 
   expect(await screen.findByTestId('organization-mean-gap')).toHaveTextContent('Not enough data')
@@ -139,4 +157,11 @@ test('shows an error message when the API does not respond', async () => {
   renderScreen(<PayEquityPage />)
 
   expect(await screen.findByText('The data did not load')).toBeInTheDocument()
+  expect(screen.getByText('These figures are unadjusted')).toBeInTheDocument()
+})
+
+test('shows an empty state when there are no active employees', async () => {
+  show(equityOf([], { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null }))
+
+  expect(await screen.findByText('No active employees')).toBeInTheDocument()
 })

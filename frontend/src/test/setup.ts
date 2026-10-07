@@ -15,6 +15,10 @@ HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
   this.removeAttribute('open')
 }
 
+// jsdom does not implement scroll.
+window.scrollTo = () => {}
+Element.prototype.scrollTo ??= () => {}
+
 // jsdom does not implement media queries. The tests run as a wide screen with a mouse.
 window.matchMedia ??= (query: string) =>
   ({

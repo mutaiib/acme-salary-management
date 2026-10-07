@@ -1,3 +1,4 @@
+// FR-09, FR-10: the Pay health screen.
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
@@ -47,8 +48,8 @@ test('shows the number of employees below range and above range', async () => {
 
   renderScreen(<PayHealthPage />)
 
-  expect(await screen.findByTestId('below-count')).toHaveTextContent('290')
-  expect(screen.getByTestId('above-count')).toHaveTextContent('193')
+  expect(await screen.findByTestId('below-count')).toHaveTextContent(/^290$/)
+  expect(screen.getByTestId('above-count')).toHaveTextContent(/^193$/)
 })
 
 test('shows the correction cost in the reporting currency', async () => {
@@ -56,7 +57,7 @@ test('shows the correction cost in the reporting currency', async () => {
 
   renderScreen(<PayHealthPage />)
 
-  expect(await screen.findByTestId('correction-cost')).toHaveTextContent('$1,580,000')
+  expect(await screen.findByTestId('correction-cost')).toHaveTextContent(/^\$1,580,000$/)
 })
 
 test('lists a below-range employee with the salary, the band minimum and the difference', async () => {

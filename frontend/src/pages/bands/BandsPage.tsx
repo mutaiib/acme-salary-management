@@ -2,36 +2,32 @@ import { Button } from '@astryxdesign/core/Button'
 import { Stack } from '@astryxdesign/core/Stack'
 import { pixel, proportional, Table, type TableColumn } from '@astryxdesign/core/Table'
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { listBands } from '../../api/bands'
 import type { Band } from '../../api/types'
-import { DataState, FilterBar, FilterSelect, Money, PageHeader } from '../../components'
+import {
+  CountryFilter,
+  DataState,
+  FilterBar,
+  moneyColumn,
+  PageHeader,
+  type TableRow,
+} from '../../components'
 import { useApi } from '../../hooks/useApi'
 import { useMeta } from '../../hooks/useMeta'
+import { useUrlFilters } from '../../hooks/useUrlFilters'
 import { BandEditDialog } from './BandEditDialog'
-
-type BandRow = Band & Record<string, unknown>
 
 export function BandsPage() {
   const meta = useMeta()
-  const [params, setParams] = useSearchParams()
-  const country = params.get('country') ?? ''
+  const { filter, setFilter } = useUrlFilters()
+  const country = filter('country')
   const bands = useApi(() => listBands(country || undefined), [country])
   const [editing, setEditing] = useState<Band | null>(null)
 
   const countryName = (code: string) =>
     meta?.countries.find((item) => item.code === code)?.name ?? code
 
-  const money = (key: 'min_minor' | 'mid_minor' | 'max_minor', header: string) =>
-    ({
-      key,
-      header,
-      width: proportional(1),
-      align: 'end',
-      renderCell: (band) => <Money amountMinor={band[key]} currency={band.currency} />,
-    }) satisfies TableColumn<BandRow>
-
-  const columns: TableColumn<BandRow>[] = [
+  const columns: TableColumn<TableRow<Band>>[] = [
     {
       key: 'country',
       header: 'Country',
@@ -44,9 +40,9 @@ export function BandsPage() {
       width: pixel(120),
       renderCell: (band) => `Level ${band.job_level}`,
     },
-    money('min_minor', 'Minimum'),
-    money('mid_minor', 'Midpoint'),
-    money('max_minor', 'Maximum'),
+    moneyColumn<Band>('min_minor', 'Minimum'),
+    moneyColumn<Band>('mid_minor', 'Midpoint'),
+    moneyColumn<Band>('max_minor', 'Maximum'),
     {
       key: 'actions',
       header: '',
@@ -72,11 +68,10 @@ export function BandsPage() {
         description="The pay range for each job level in each country. A band is the reference point for a salary."
       />
       <FilterBar>
-        <FilterSelect
-          label="Country"
+        <CountryFilter
+          meta={meta}
           value={country}
-          onChange={(value) => setParams(value ? { country: value } : {}, { replace: true })}
-          options={(meta?.countries ?? []).map((c) => ({ value: c.code, label: c.name }))}
+          onChange={(value) => setFilter('country', value)}
         />
       </FilterBar>
       <DataState
@@ -86,7 +81,13 @@ export function BandsPage() {
         emptyDescription="Run the seed script to create the salary bands."
       >
         {(data) => (
-          <Table data={data as BandRow[]} columns={columns} idKey="id" density="compact" hasHover />
+          <Table
+            data={data as TableRow<Band>[]}
+            columns={columns}
+            idKey="id"
+            density="compact"
+            hasHover
+          />
         )}
       </DataState>
       {editing && (
