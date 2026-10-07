@@ -9,8 +9,9 @@ The system follows this sequence:
 3. **Change** a salary, with a reason and an effective date.
 4. **Prove** the salary change: each employee has a salary history.
 
-- Live application: _add the URL after the deployment_
-- Video demo: _add the link_
+- Live application: https://acme-salary-management-ds2v.onrender.com
+
+The live application runs on a free instance. The instance stops when no person uses it, so the first request can take up to 1 minute. A restart of the instance gives the seeded data again.
 
 ## Start
 
