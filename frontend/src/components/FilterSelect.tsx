@@ -1,7 +1,7 @@
 import { Selector } from '@astryxdesign/core/Selector'
 
-export interface Option {
-  value: string
+export interface Option<V extends string = string> {
+  value: V
   label: string
 }
 

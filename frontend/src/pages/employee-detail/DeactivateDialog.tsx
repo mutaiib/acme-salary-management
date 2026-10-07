@@ -20,16 +20,21 @@ export function DeactivateDialog({ employee, isOpen, onClose, onDeactivated }: P
     },
   )
 
+  function handleClose() {
+    form.reset()
+    onClose()
+  }
+
   return (
     <FormDialog
       title={`Deactivate ${employee.full_name}`}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onSubmit={() => void form.submit()}
       submitLabel="Deactivate"
       submitVariant="destructive"
       isSubmitting={form.isSubmitting}
-      error={form.formError ?? form.fieldErrors.employee}
+      error={form.formError}
     >
       <Text as="p">
         The employee will not count in the headcount, the payroll cost or the pay insights. The

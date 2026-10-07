@@ -31,7 +31,8 @@ export function stubApi(replies: Record<string, Reply>) {
     }
     const reply = replies[key]
     const sent = init?.body ? JSON.parse(String(init.body)) : undefined
-    const result = typeof reply === 'function' ? reply(url, sent) : reply
+    // A reply function can be async, so that a test controls when the reply arrives.
+    const result = await (typeof reply === 'function' ? reply(url, sent) : reply)
     const [status, body] = isRefusal(result) ? [result.status, result.body] : [200, result]
     return new Response(JSON.stringify(body), {
       status,

@@ -4,15 +4,13 @@ import { Heading } from '@astryxdesign/core/Heading'
 import { Link } from '@astryxdesign/core/Link'
 import { MetadataList, MetadataListItem } from '@astryxdesign/core/MetadataList'
 import { Stack } from '@astryxdesign/core/Stack'
-import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getEmployee, listSalaryChanges } from '../../api/employees'
-import type { Employee } from '../../api/types'
-import { DataState, PageHeader, StatusBadge } from '../../components'
+import { DataState, MetaBanner, PageHeader, Stat, StatusBadge } from '../../components'
 import { useApi } from '../../hooks/useApi'
 import { useMeta } from '../../hooks/useMeta'
-import { formatDate, formatMoney } from '../../lib/format'
+import { formatDate, formatJobLevel, formatMoney } from '../../lib/format'
 import { DeactivateDialog } from './DeactivateDialog'
 import { PositionInRange } from './PositionInRange'
 import { SalaryChangeDialog } from './SalaryChangeDialog'
@@ -22,9 +20,28 @@ type OpenDialog = 'salary' | 'deactivate' | null
 
 export function EmployeeDetailPage() {
   const id = Number(useParams().id)
+  // An id in the address that is not a whole number cannot be an employee.
+  return Number.isInteger(id) && id > 0 ? <EmployeeDetail id={id} /> : <EmployeeNotFound />
+}
+
+function EmployeeNotFound() {
+  return (
+    <Stack padding={6}>
+      <EmptyState
+        title="Employee not found"
+        description="The employee does not exist."
+        headingLevel={1}
+        actions={<Button label="Go to Employees" href="/employees" />}
+      />
+    </Stack>
+  )
+}
+
+function EmployeeDetail({ id }: { id: number }) {
   const employee = useApi(() => getEmployee(id), [id])
   const history = useApi(() => listSalaryChanges(id), [id])
-  const today = useMeta()?.today
+  const meta = useMeta()
+  const today = meta.data?.today
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null)
 
   function reload() {
@@ -33,16 +50,7 @@ export function EmployeeDetailPage() {
   }
 
   if (employee.error?.status === 404) {
-    return (
-      <Stack padding={6}>
-        <EmptyState
-          title="Employee not found"
-          description="The employee does not exist."
-          headingLevel={1}
-          actions={<Button label="Go to Employees" href="/employees" />}
-        />
-      </Stack>
-    )
+    return <EmployeeNotFound />
   }
 
   return (
@@ -50,6 +58,7 @@ export function EmployeeDetailPage() {
       <Link href="/employees" isStandalone>
         Back to Employees
       </Link>
+      <MetaBanner state={meta} />
       <DataState state={employee}>
         {(data) => (
           <>
@@ -71,11 +80,15 @@ export function EmployeeDetailPage() {
                 )
               }
             />
-            <CurrentSalary employee={data} />
+            <Stat
+              label="Current salary"
+              value={formatMoney(data.salary_minor, data.currency)}
+              testId="current-salary"
+            />
             <MetadataList columns={3}>
               <MetadataListItem label="Employee code">{data.employee_code}</MetadataListItem>
               <MetadataListItem label="Email">{data.email}</MetadataListItem>
-              <MetadataListItem label="Job level">{`Level ${data.job_level}`}</MetadataListItem>
+              <MetadataListItem label="Job level">{formatJobLevel(data.job_level)}</MetadataListItem>
               <MetadataListItem label="Country">{data.country}</MetadataListItem>
               <MetadataListItem label="Hire date">{formatDate(data.hire_date)}</MetadataListItem>
               <MetadataListItem label="Gender">{capitalize(data.gender)}</MetadataListItem>
@@ -110,19 +123,6 @@ export function EmployeeDetailPage() {
           {(changes) => <SalaryHistoryTable changes={changes} />}
         </DataState>
       </Stack>
-    </Stack>
-  )
-}
-
-function CurrentSalary({ employee }: { employee: Employee }) {
-  return (
-    <Stack gap={1}>
-      <Text type="label" color="secondary">
-        Current salary
-      </Text>
-      <Text type="display-3" hasTabularNumbers data-testid="current-salary">
-        {formatMoney(employee.salary_minor, employee.currency)}
-      </Text>
     </Stack>
   )
 }

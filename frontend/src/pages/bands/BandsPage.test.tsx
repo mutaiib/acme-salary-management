@@ -120,3 +120,25 @@ test('shows an empty state when there are no bands', async () => {
 
   expect(await screen.findByText('No salary bands')).toBeInTheDocument()
 })
+
+test('shows an error message when the API does not respond', async () => {
+  stubApi({})
+
+  renderScreen(<BandsPage />)
+
+  expect(await screen.findByText('The data did not load')).toBeInTheDocument()
+})
+
+test('shows an error for an input that the dialog does not have', async () => {
+  stubApi({
+    '/api/meta': META,
+    '/api/bands': [US_LEVEL_2],
+    'PUT /api/bands/1': refuse(422, [{ field: 'body', cause: 'The request is not valid.' }]),
+  })
+  renderScreen(<BandsPage />)
+
+  const dialog = await openEditDialog()
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+  expect(await within(dialog).findByText('The request is not valid.')).toBeInTheDocument()
+})

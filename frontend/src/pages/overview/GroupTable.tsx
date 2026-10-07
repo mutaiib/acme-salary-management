@@ -1,12 +1,10 @@
 import { ProgressBar } from '@astryxdesign/core/ProgressBar'
 import { Stack } from '@astryxdesign/core/Stack'
-import { pixel, proportional, Table, type TableColumn } from '@astryxdesign/core/Table'
+import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
 import type { GroupFigures } from '../../api/types'
-import { moneyColumn, type TableRow } from '../../components'
+import { DataTable, moneyColumn, type TableRow } from '../../components'
 import { formatCount, formatShare } from '../../lib/format'
-
-type GroupRow = TableRow<GroupFigures>
 
 interface Props {
   /** The heading of the first column, for example "Country". */
@@ -17,7 +15,7 @@ interface Props {
 }
 
 export function GroupTable({ groupHeader, groups, totalCostMinor, reportingCurrency }: Props) {
-  const columns: TableColumn<GroupRow>[] = [
+  const columns: TableColumn<TableRow<GroupFigures>>[] = [
     { key: 'label', header: groupHeader, width: proportional(2) },
     {
       key: 'headcount',
@@ -51,5 +49,5 @@ export function GroupTable({ groupHeader, groups, totalCostMinor, reportingCurre
     moneyColumn<GroupFigures>('max_minor', 'Maximum salary'),
   ]
 
-  return <Table data={groups as GroupRow[]} columns={columns} idKey="key" density="compact" />
+  return <DataTable rows={groups} columns={columns} idKey="key" />
 }

@@ -1,12 +1,10 @@
-import { pixel, proportional, Table, type TableColumn } from '@astryxdesign/core/Table'
+import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
 import type { SalaryChange } from '../../api/types'
-import { Money, moneyColumn, type TableRow } from '../../components'
+import { DataTable, Money, moneyColumn, type TableRow } from '../../components'
 import { formatDate } from '../../lib/format'
 
-type ChangeRow = TableRow<SalaryChange>
-
-const COLUMNS: TableColumn<ChangeRow>[] = [
+const COLUMNS: TableColumn<TableRow<SalaryChange>>[] = [
   {
     key: 'effective_date',
     header: 'Effective date',
@@ -36,5 +34,5 @@ const COLUMNS: TableColumn<ChangeRow>[] = [
 ]
 
 export function SalaryHistoryTable({ changes }: { changes: SalaryChange[] }) {
-  return <Table data={changes as ChangeRow[]} columns={COLUMNS} idKey="id" density="compact" />
+  return <DataTable rows={changes} columns={COLUMNS} idKey="id" />
 }

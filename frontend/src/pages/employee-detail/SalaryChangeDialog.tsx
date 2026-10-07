@@ -1,11 +1,10 @@
 import { DateInput } from '@astryxdesign/core/DateInput'
-import { NumberInput } from '@astryxdesign/core/NumberInput'
-import type { ISODateString } from '@astryxdesign/core/utils'
 import { TextArea } from '@astryxdesign/core/TextArea'
+import type { ISODateString } from '@astryxdesign/core/utils'
 import { useState } from 'react'
 import { changeSalary } from '../../api/employees'
 import type { Employee } from '../../api/types'
-import { FormDialog } from '../../components'
+import { FormDialog, MoneyInput } from '../../components'
 import { errorStatus, useSubmit } from '../../hooks/useSubmit'
 import { formatMoney } from '../../lib/format'
 
@@ -18,15 +17,18 @@ interface Props {
   onChanged: () => void
 }
 
+// The names of the inputs of this form, as the API names them.
+const SHOWN_FIELDS = ['new_salary_minor', 'reason', 'effective_date']
+
 export function SalaryChangeDialog({ employee, today, isOpen, onClose, onChanged }: Props) {
-  const [salary, setSalary] = useState<number | null>(employee.salary_minor / 100)
+  const [salaryMinor, setSalaryMinor] = useState<number | null>(employee.salary_minor)
   const [reason, setReason] = useState('')
   const [effectiveDate, setEffectiveDate] = useState(today ?? '')
 
   const form = useSubmit(
     () =>
       changeSalary(employee.id, {
-        new_salary_minor: Math.round((salary ?? 0) * 100),
+        new_salary_minor: salaryMinor ?? 0,
         reason,
         effective_date: effectiveDate,
       }),
@@ -35,10 +37,12 @@ export function SalaryChangeDialog({ employee, today, isOpen, onClose, onChanged
       onChanged()
       onClose()
     },
+    SHOWN_FIELDS,
   )
 
   function handleSubmit() {
-    // The API owns the pay rules. The form checks only that the required values are present.
+    // The API owns the pay rules. The form checks only that the required values are present,
+    // because the API cannot read a request without them.
     if (!reason.trim()) {
       form.setFieldErrors({ reason: 'Give a reason for the salary change.' })
       return
@@ -63,18 +67,15 @@ export function SalaryChangeDialog({ employee, today, isOpen, onClose, onChanged
       onClose={handleClose}
       onSubmit={handleSubmit}
       isSubmitting={form.isSubmitting}
-      error={form.formError ?? form.fieldErrors.employee}
+      error={form.formError}
     >
-      <NumberInput
+      <MoneyInput
         label="New salary"
         description="The base salary for one year, before tax."
-        value={salary}
-        onChange={setSalary}
-        units={employee.currency}
-        step={100}
-        isRequired
-        status={errorStatus(form.fieldErrors.new_salary_minor)}
-        statusVariant="detached"
+        amountMinor={salaryMinor}
+        onChange={setSalaryMinor}
+        currency={employee.currency}
+        error={form.fieldErrors.new_salary_minor}
       />
       <TextArea
         label="Reason"

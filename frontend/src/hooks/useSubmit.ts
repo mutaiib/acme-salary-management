@@ -1,31 +1,42 @@
 import { useState } from 'react'
-import { ApiError } from '../api/client'
+import { toApiError } from '../api/client'
 
 /**
- * Runs one write request for a form. It keeps the error of each field,
- * so that the form shows the cause next to the input that caused it.
+ * Runs one write request for a form.
+ *
+ * `shownFields` are the API field names that the form has an input for. An error for one
+ * of them shows next to that input. Each other error shows at the top of the form,
+ * so no error is lost.
  */
-export function useSubmit<T>(send: () => Promise<T>, onDone: (result: T) => void) {
+export function useSubmit<T>(
+  send: () => Promise<T>,
+  onDone: (result: T) => void,
+  shownFields: string[] = [],
+) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string>()
 
   async function submit() {
     setIsSubmitting(true)
-    setFieldErrors({})
-    setFormError(undefined)
+    reset()
+    let result: T
     try {
-      onDone(await send())
+      result = await send()
     } catch (cause) {
-      const error = cause instanceof ApiError ? cause : new ApiError(0, String(cause))
-      if (error.fieldErrors.length > 0) {
-        setFieldErrors(Object.fromEntries(error.fieldErrors.map((e) => [e.field, e.cause])))
-      } else {
-        setFormError(error.message)
+      const error = toApiError(cause)
+      const shown = error.fieldErrors.filter((item) => shownFields.includes(item.field))
+      const other = error.fieldErrors.filter((item) => !shownFields.includes(item.field))
+      setFieldErrors(Object.fromEntries(shown.map((item) => [item.field, item.cause])))
+      if (other.length > 0 || shown.length === 0) {
+        setFormError(other.map((item) => item.cause).join(' ') || error.message)
       }
+      return
     } finally {
       setIsSubmitting(false)
     }
+    // Outside the `try`: an error in the caller is not an error of the request.
+    onDone(result)
   }
 
   function reset() {

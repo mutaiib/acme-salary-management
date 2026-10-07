@@ -1,4 +1,5 @@
 import type { Meta } from '../api/types'
+import { formatJobLevel } from '../lib/format'
 import { FilterSelect } from './FilterSelect'
 
 interface Props {
@@ -26,7 +27,7 @@ export function JobLevelFilter({ meta, value, onChange }: Props) {
       label="Job level"
       value={value}
       onChange={onChange}
-      options={(meta?.job_levels ?? []).map((l) => ({ value: String(l), label: `Level ${l}` }))}
+      options={(meta?.job_levels ?? []).map((l) => ({ value: String(l), label: formatJobLevel(l) }))}
       width={140}
     />
   )

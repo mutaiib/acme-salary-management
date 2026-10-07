@@ -1,11 +1,16 @@
 // FR-03: the Employees screen.
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, test } from 'vitest'
-import { requestsTo, stubApi } from '../../test/api'
+import { Link } from 'react-router-dom'
+import { afterEach, expect, test, vi } from 'vitest'
+import { refuse, requestsTo, stubApi } from '../../test/api'
 import { employee, META, pageOf } from '../../test/data'
 import { renderScreen } from '../../test/render'
 import { EmployeesPage } from './EmployeesPage'
+
+afterEach(() => {
+  vi.useRealTimers()
+})
 
 function lastQuery(fetchStub: ReturnType<typeof stubApi>) {
   return requestsTo(fetchStub, '/api/employees').at(-1)!.searchParams
@@ -70,24 +75,40 @@ test('shows an error message when the API does not respond', async () => {
   expect(await screen.findByText('The data did not load')).toBeInTheDocument()
 })
 
-test('sends the search text to the API when the HR Manager types', async () => {
+/** Types with fake timers, so that a test controls the delay of the search. */
+function fakeClock() {
+  vi.useFakeTimers({ shouldAdvanceTime: true })
+  return userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+}
+
+function searchRequests(fetchStub: ReturnType<typeof stubApi>) {
+  return requestsTo(fetchStub, '/api/employees').filter((url) => url.searchParams.has('search'))
+}
+
+test('sends one search to the API after the HR Manager stops typing', async () => {
   const api = stubApi({ '/api/meta': META, '/api/employees': pageOf([employee(1)]) })
+  const user = fakeClock()
   renderScreen(<EmployeesPage />)
   await screen.findByText('Employee 1')
 
-  await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'asha')
+  await user.type(screen.getByRole('textbox', { name: 'Search' }), 'asha')
+  expect(searchRequests(api)).toHaveLength(0)
+  await act(() => vi.advanceTimersByTimeAsync(300))
 
-  await waitFor(() => expect(lastQuery(api).get('search')).toBe('asha'))
+  expect(searchRequests(api)).toHaveLength(1)
+  expect(lastQuery(api).get('search')).toBe('asha')
 })
 
 test('goes back to the first page when the search text changes', async () => {
   const api = stubApi({ '/api/meta': META, '/api/employees': pageOf([employee(1)], 3, 100) })
+  const user = fakeClock()
   renderScreen(<EmployeesPage />, { at: '/?page=3' })
   await screen.findByText('Employee 1')
 
-  await userEvent.type(screen.getByRole('textbox', { name: 'Search' }), 'asha')
+  await user.type(screen.getByRole('textbox', { name: 'Search' }), 'asha')
+  await act(() => vi.advanceTimersByTimeAsync(300))
 
-  await waitFor(() => expect(lastQuery(api).get('search')).toBe('asha'))
+  expect(lastQuery(api).get('search')).toBe('asha')
   expect(lastQuery(api).get('page')).toBe('1')
 })
 
@@ -174,4 +195,56 @@ test('sends the sort to the API when the HR Manager selects a sort', async () =>
   await userEvent.click(await screen.findByRole('option', { name: 'Name' }))
 
   await waitFor(() => expect(lastQuery(api).get('sort')).toBe('name'))
+})
+
+test('clears the search box when the address loses the search text', async () => {
+  const api = stubApi({ '/api/meta': META, '/api/employees': pageOf([employee(1)]) })
+  renderScreen(
+    <>
+      <Link to="/">Employees link</Link>
+      <EmployeesPage />
+    </>,
+    { at: '/?search=asha' },
+  )
+  await screen.findByText('Employee 1')
+  expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('asha')
+
+  await userEvent.click(screen.getByRole('link', { name: 'Employees link' }))
+
+  await waitFor(() => expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue(''))
+  await waitFor(() => expect(lastQuery(api).get('search')).toBeNull())
+})
+
+test('uses the first page for a page number in the address that is not valid', async () => {
+  const api = stubApi({ '/api/meta': META, '/api/employees': pageOf([employee(1)]) })
+
+  renderScreen(<EmployeesPage />, { at: '/?page=-3' })
+  await screen.findByText('Employee 1')
+
+  expect(lastQuery(api).get('page')).toBe('1')
+})
+
+test('tells the HR Manager when the filter values did not load', async () => {
+  stubApi({ '/api/employees': pageOf([employee(1)]) })
+
+  renderScreen(<EmployeesPage />)
+
+  expect(await screen.findByText('The filter values did not load')).toBeInTheDocument()
+  expect(screen.getByText('Employee 1')).toBeInTheDocument()
+})
+
+test('loads the data again when the HR Manager selects Try again', async () => {
+  let isUp = false
+  stubApi({
+    '/api/meta': META,
+    '/api/employees': () => (isUp ? pageOf([employee(1)]) : refuse(500, 'The server failed.')),
+  })
+  renderScreen(<EmployeesPage />)
+  await screen.findByText('The data did not load')
+
+  isUp = true
+  await userEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+  expect(await screen.findByText('Employee 1')).toBeInTheDocument()
+  expect(screen.queryByText('The data did not load')).not.toBeInTheDocument()
 })

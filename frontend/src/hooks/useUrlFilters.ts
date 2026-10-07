@@ -1,5 +1,11 @@
 import { useSearchParams } from 'react-router-dom'
 
+/** The page number in the address. A value that is not a whole number above 0 gives page 1. */
+function pageFrom(text: string | null): number {
+  const page = Number(text)
+  return Number.isInteger(page) && page >= 1 ? page : 1
+}
+
 /**
  * Keeps the filters and the page number of a list in the address.
  * The HR Manager can then open an employee and come back to the same list.
@@ -37,5 +43,5 @@ export function useUrlFilters() {
     })
   }
 
-  return { filter, setFilter, page: Number(params.get('page')) || 1, setPage }
+  return { filter, setFilter, page: pageFrom(params.get('page')), setPage }
 }

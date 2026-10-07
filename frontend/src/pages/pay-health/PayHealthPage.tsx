@@ -8,6 +8,7 @@ import {
   FilterBar,
   JobLevelFilter,
   ListPagination,
+  MetaBanner,
   PageHeader,
   StatCard,
   StatRow,
@@ -42,6 +43,7 @@ export function PayHealthPage() {
         title="Pay health"
         description="The employees who have a salary outside the salary band for their job."
       />
+      <MetaBanner state={meta} />
       <DataState state={summary}>
         {(data) => (
           <StatRow>
@@ -78,12 +80,12 @@ export function PayHealthPage() {
         </TabList>
         <FilterBar>
           <CountryFilter
-            meta={meta}
+            meta={meta.data}
             value={country}
             onChange={(value) => setFilter('country', value)}
           />
           <JobLevelFilter
-            meta={meta}
+            meta={meta.data}
             value={jobLevel}
             onChange={(value) => setFilter('job_level', value)}
           />

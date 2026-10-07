@@ -145,7 +145,10 @@ test('states that the gap is unadjusted, and what that means', async () => {
 
 test('shows no gap for the organization when there is not enough data', async () => {
   show(
-    equityOf([gap('SG', 'Singapore', { has_enough_data: false, mean_gap_pct: null })], { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null, has_enough_data: false }),
+    equityOf(
+      [gap('SG', 'Singapore', { has_enough_data: false, mean_gap_pct: null, median_gap_pct: null })],
+      { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null, has_enough_data: false },
+    ),
   )
 
   expect(await screen.findByTestId('organization-mean-gap')).toHaveTextContent('Not enough data')
@@ -161,7 +164,16 @@ test('shows an error message when the API does not respond', async () => {
 })
 
 test('shows an empty state when there are no active employees', async () => {
-  show(equityOf([], { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null }))
+  show(
+    equityOf([], { men: 0, women: 0, mean_gap_pct: null, median_gap_pct: null, has_enough_data: false }),
+  )
 
   expect(await screen.findByText('No active employees')).toBeInTheDocument()
+})
+
+test('states in words that women have the higher pay in the organization', async () => {
+  show(equityOf([gap('US', 'United States')], { mean_gap_pct: -1.2, median_gap_pct: 0.4 }))
+
+  const figure = await screen.findByRole('group', { name: 'Mean gap, organization' })
+  expect(within(figure).getByText(/Women have the higher pay/)).toBeInTheDocument()
 })

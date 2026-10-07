@@ -15,6 +15,11 @@ export class ApiError extends Error {
   }
 }
 
+/** Makes an `ApiError` from a failure of any kind, so that a screen handles one type. */
+export function toApiError(cause: unknown): ApiError {
+  return cause instanceof ApiError ? cause : new ApiError(0, String(cause))
+}
+
 type Params = Record<string, string | number | undefined>
 
 function withParams(path: string, params: Params = {}): string {

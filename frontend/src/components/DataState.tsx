@@ -18,33 +18,42 @@ interface Props<T> {
 /**
  * Shows the loading, error, empty or loaded state of one API call.
  * Each screen uses it, so the four states look the same everywhere.
+ * When a later load fails, the data that is on the screen stays, below the error.
  */
 export function DataState<T>({ state, isEmpty, emptyTitle, emptyDescription, children }: Props<T>) {
   const { data, error, isLoading, reload } = state
 
-  if (error) {
-    return (
-      <Banner
-        status="error"
-        title="The data did not load"
-        description={error.message}
-        endContent={<Button label="Try again" variant="secondary" onClick={reload} />}
-      />
-    )
-  }
   if (data === undefined) {
+    if (error) {
+      return <LoadError message={error.message} onRetry={reload} />
+    }
     return isLoading ? <LoadingRows /> : null
   }
-  if (isEmpty?.(data)) {
-    return (
-      <EmptyState
-        title={emptyTitle ?? 'Nothing to show'}
-        description={emptyDescription}
-        headingLevel={2}
-      />
-    )
-  }
-  return <>{children(data)}</>
+  return (
+    <Stack gap={4}>
+      {error && <LoadError message={error.message} onRetry={reload} />}
+      {isEmpty?.(data) ? (
+        <EmptyState
+          title={emptyTitle ?? 'Nothing to show'}
+          description={emptyDescription}
+          headingLevel={2}
+        />
+      ) : (
+        children(data)
+      )}
+    </Stack>
+  )
+}
+
+function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <Banner
+      status="error"
+      title="The data did not load"
+      description={message}
+      endContent={<Button label="Try again" variant="secondary" onClick={onRetry} />}
+    />
+  )
 }
 
 function LoadingRows() {

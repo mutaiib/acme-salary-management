@@ -1,6 +1,13 @@
 // FR-01, FR-02, FR-11: the formats of money, dates and percentages.
 import { expect, test } from 'vitest'
-import { formatCount, formatDate, formatGap, formatMoney, formatShare } from './format'
+import {
+  formatCount,
+  formatDate,
+  formatGap,
+  formatJobLevel,
+  formatMoney,
+  formatShare,
+} from './format'
 
 test('formats a whole amount without minor units', () => {
   expect(formatMoney(6_500_000, 'USD')).toBe('$65,000')
@@ -40,4 +47,8 @@ test('formats a whole gap with 1 decimal place', () => {
 
 test('formats a negative gap with a minus sign', () => {
   expect(formatGap(-0.9)).toBe('-0.9%')
+})
+
+test('formats a job level with the word Level', () => {
+  expect(formatJobLevel(3)).toBe('Level 3')
 })

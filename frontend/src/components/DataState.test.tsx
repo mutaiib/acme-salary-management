@@ -1,4 +1,4 @@
-// All screens: the loading, empty and error states.
+// FR-01, FR-03, FR-06, FR-07, FR-09, FR-11: the loading, empty and error states of each screen.
 import { screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { ApiError } from '../api/client'
@@ -43,6 +43,13 @@ test('shows the error and a button to try again', () => {
   expect(screen.getByText('The data did not load')).toBeInTheDocument()
   expect(screen.getByText('The server did not respond.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
+})
+
+test('keeps the data on the screen and adds the error when a later load fails', () => {
+  show(stateOf({ data: ['Asha'], error: new ApiError(0, 'The server did not respond.') }))
+
+  expect(screen.getByText('Asha')).toBeInTheDocument()
+  expect(screen.getByText('The data did not load')).toBeInTheDocument()
 })
 
 test('keeps the old data on the screen while new data loads', () => {

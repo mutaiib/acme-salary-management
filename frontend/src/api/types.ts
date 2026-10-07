@@ -1,4 +1,8 @@
+// The shapes of the API. `backend/app/schemas.py` has the same shapes.
+// Change the two files together.
+
 export type EmployeeStatus = 'active' | 'inactive'
+export type Gender = 'male' | 'female'
 
 export interface Employee {
   id: number
@@ -11,7 +15,7 @@ export interface Employee {
   country: string
   currency: string
   salary_minor: number
-  gender: string
+  gender: Gender
   hire_date: string
   status: EmployeeStatus
 }
@@ -76,7 +80,7 @@ export interface Overview {
   payroll_cost_minor: number
   headcount: number
   rates_as_of: string | null
-  group_by: string
+  group_by: GroupBy
   groups: GroupFigures[]
 }
 

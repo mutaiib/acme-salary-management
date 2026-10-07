@@ -1,3 +1,5 @@
+import { toUnits } from './money'
+
 const LOCALE = 'en-US'
 
 /**
@@ -11,7 +13,7 @@ export function formatMoney(amountMinor: number, currency: string): string {
     currency,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
-  }).format(amountMinor / 100)
+  }).format(toUnits(amountMinor))
 }
 
 export function formatCount(count: number): string {
@@ -36,4 +38,9 @@ export function formatShare(part: number, total: number): string {
 /** Formats a pay gap with 1 decimal place, for example `9.9%` or `-0.9%`. */
 export function formatGap(gapPct: number): string {
   return `${gapPct.toFixed(1)}%`
+}
+
+/** The name of a job level on the screen, for example `Level 3`. */
+export function formatJobLevel(jobLevel: number): string {
+  return `Level ${jobLevel}`
 }

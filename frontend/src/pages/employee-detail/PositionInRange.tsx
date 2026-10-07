@@ -1,7 +1,7 @@
 import { Heading } from '@astryxdesign/core/Heading'
 import { Stack } from '@astryxdesign/core/Stack'
-import { Text } from '@astryxdesign/core/Text'
 import type { EmployeeDetail } from '../../api/types'
+import { Stat } from '../../components'
 import { RangeBar } from './RangeBar'
 import { RangeStatusBadge } from './RangeStatusBadge'
 
@@ -18,14 +18,16 @@ export function PositionInRange({ employee }: { employee: EmployeeDetail }) {
       {band && compa_ratio !== null && range_penetration !== null && (
         <>
           <Stack direction="horizontal" gap={8}>
-            <Metric
-              name="Compa-ratio"
+            <Stat
+              size="md"
+              label="Compa-ratio"
               value={compa_ratio.toFixed(2)}
               note="Salary divided by the band midpoint"
               testId="compa-ratio"
             />
-            <Metric
-              name="Range penetration"
+            <Stat
+              size="md"
+              label="Range penetration"
               value={`${range_penetration.toFixed(1)}%`}
               note="0% is the band minimum, 100% is the band maximum"
               testId="range-penetration"
@@ -34,20 +36,6 @@ export function PositionInRange({ employee }: { employee: EmployeeDetail }) {
           <RangeBar band={band} salaryMinor={employee.salary_minor} />
         </>
       )}
-    </Stack>
-  )
-}
-
-function Metric(props: { name: string; value: string; note: string; testId: string }) {
-  return (
-    <Stack gap={0}>
-      <Text type="label" color="secondary">
-        {props.name}
-      </Text>
-      <Text type="large" weight="semibold" hasTabularNumbers data-testid={props.testId}>
-        {props.value}
-      </Text>
-      <Text type="supporting">{props.note}</Text>
     </Stack>
   )
 }

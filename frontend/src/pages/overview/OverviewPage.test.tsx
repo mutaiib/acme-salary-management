@@ -1,13 +1,13 @@
 // FR-01, FR-02: the Pay overview screen.
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
-import type { Overview } from '../../api/types'
+import type { GroupBy, Overview } from '../../api/types'
 import { requestsTo, stubApi } from '../../test/api'
 import { renderScreen } from '../../test/render'
 import { OverviewPage } from './OverviewPage'
 
-function overviewOf(group_by: string, groups: Overview['groups']): Overview {
+function overviewOf(group_by: GroupBy, groups: Overview['groups']): Overview {
   return {
     reporting_currency: 'USD',
     payroll_cost_minor: 35_800_000,
@@ -135,4 +135,49 @@ test('shows an error message when the API does not respond', async () => {
   renderScreen(<OverviewPage />)
 
   expect(await screen.findByText('The data did not load')).toBeInTheDocument()
+})
+
+test('keeps the note of the old grouping while the new grouping loads', async () => {
+  let release!: () => void
+  const slow = new Promise<void>((resolve) => (release = resolve))
+  stubApi({
+    '/api/insights/overview': async (url: URL) => {
+      if (url.searchParams.get('group_by') === 'department') {
+        await slow
+        return BY_DEPARTMENT
+      }
+      return BY_COUNTRY
+    },
+  })
+  renderScreen(<OverviewPage />)
+  await screen.findByText('Germany')
+
+  await userEvent.click(screen.getByRole('tab', { name: 'By department' }))
+
+  expect(screen.getByText(/The salaries of a country are in the local currency/)).toBeInTheDocument()
+  release()
+  expect(await screen.findByText(/A department has many currencies/)).toBeInTheDocument()
+})
+
+test('shows the figures by job level when the HR Manager selects the job level tab', async () => {
+  const api = stubOverview()
+  renderScreen(<OverviewPage />)
+  await screen.findByText('Germany')
+
+  await userEvent.click(screen.getByRole('tab', { name: 'By job level' }))
+
+  await waitFor(() =>
+    expect(requestsTo(api, '/api/insights/overview').at(-1)!.searchParams.get('group_by')).toBe(
+      'job_level',
+    ),
+  )
+})
+
+test('shows the payroll cost with its label', async () => {
+  stubOverview()
+
+  renderScreen(<OverviewPage />)
+
+  const figure = await screen.findByRole('group', { name: 'Payroll cost' })
+  expect(within(figure).getByText('$358,000')).toBeInTheDocument()
 })

@@ -1,13 +1,16 @@
 import { Button } from '@astryxdesign/core/Button'
 import { Stack } from '@astryxdesign/core/Stack'
-import { pixel, proportional, Table, type TableColumn } from '@astryxdesign/core/Table'
+import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { useState } from 'react'
 import { listBands } from '../../api/bands'
 import type { Band } from '../../api/types'
 import {
   CountryFilter,
   DataState,
+  DataTable,
   FilterBar,
+  jobLevelColumn,
+  MetaBanner,
   moneyColumn,
   PageHeader,
   type TableRow,
@@ -15,6 +18,7 @@ import {
 import { useApi } from '../../hooks/useApi'
 import { useMeta } from '../../hooks/useMeta'
 import { useUrlFilters } from '../../hooks/useUrlFilters'
+import { formatJobLevel } from '../../lib/format'
 import { BandEditDialog } from './BandEditDialog'
 
 export function BandsPage() {
@@ -25,7 +29,7 @@ export function BandsPage() {
   const [editing, setEditing] = useState<Band | null>(null)
 
   const countryName = (code: string) =>
-    meta?.countries.find((item) => item.code === code)?.name ?? code
+    meta.data?.countries.find((item) => item.code === code)?.name ?? code
 
   const columns: TableColumn<TableRow<Band>>[] = [
     {
@@ -34,12 +38,7 @@ export function BandsPage() {
       width: proportional(2),
       renderCell: (band) => countryName(band.country),
     },
-    {
-      key: 'job_level',
-      header: 'Job level',
-      width: pixel(120),
-      renderCell: (band) => `Level ${band.job_level}`,
-    },
+    jobLevelColumn<Band>('Job level'),
     moneyColumn<Band>('min_minor', 'Minimum'),
     moneyColumn<Band>('mid_minor', 'Midpoint'),
     moneyColumn<Band>('max_minor', 'Maximum'),
@@ -50,7 +49,7 @@ export function BandsPage() {
       align: 'end',
       renderCell: (band) => (
         <Button
-          label={`Edit the band of ${countryName(band.country)}, Level ${band.job_level}`}
+          label={`Edit the band of ${countryName(band.country)}, ${formatJobLevel(band.job_level)}`}
           variant="ghost"
           size="sm"
           onClick={() => setEditing(band)}
@@ -67,9 +66,10 @@ export function BandsPage() {
         title="Salary bands"
         description="The pay range for each job level in each country. A band is the reference point for a salary."
       />
+      <MetaBanner state={meta} />
       <FilterBar>
         <CountryFilter
-          meta={meta}
+          meta={meta.data}
           value={country}
           onChange={(value) => setFilter('country', value)}
         />
@@ -80,15 +80,7 @@ export function BandsPage() {
         emptyTitle="No salary bands"
         emptyDescription="Run the seed script to create the salary bands."
       >
-        {(data) => (
-          <Table
-            data={data as TableRow<Band>[]}
-            columns={columns}
-            idKey="id"
-            density="compact"
-            hasHover
-          />
-        )}
+        {(data) => <DataTable rows={data} columns={columns} idKey="id" hasHover />}
       </DataState>
       {editing && (
         <BandEditDialog

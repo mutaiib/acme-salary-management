@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ApiError } from '../api/client'
+import { type ApiError, toApiError } from '../api/client'
 
 export interface ApiState<T> {
   data: T | undefined
@@ -11,6 +11,7 @@ export interface ApiState<T> {
 /**
  * Loads data when the screen opens and when a dependency changes.
  * The old data stays on the screen while the new data loads.
+ * A reply for an old request is ignored, so two replies that cross cannot show old data.
  */
 export function useApi<T>(load: () => Promise<T>, deps: unknown[]): ApiState<T> {
   const [data, setData] = useState<T>()
@@ -21,16 +22,17 @@ export function useApi<T>(load: () => Promise<T>, deps: unknown[]): ApiState<T> 
   useEffect(() => {
     let isCurrent = true
     setIsLoading(true)
+    // A new attempt removes the old error, so the screen shows that it tries again.
+    setError(undefined)
     load()
       .then((result) => {
         if (isCurrent) {
           setData(result)
-          setError(undefined)
         }
       })
       .catch((cause: unknown) => {
         if (isCurrent) {
-          setError(cause instanceof ApiError ? cause : new ApiError(0, String(cause)))
+          setError(toApiError(cause))
         }
       })
       .finally(() => {

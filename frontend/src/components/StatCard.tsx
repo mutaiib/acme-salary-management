@@ -1,6 +1,5 @@
 import { Card } from '@astryxdesign/core/Card'
-import { Stack } from '@astryxdesign/core/Stack'
-import { Text } from '@astryxdesign/core/Text'
+import { Stat } from './Stat'
 
 interface Props {
   label: string
@@ -11,19 +10,11 @@ interface Props {
   testId?: string
 }
 
-/** One headline figure. The insight screens show a row of these at the top. */
+/** One headline figure in a card. The insight screens show a row of these at the top. */
 export function StatCard({ label, value, hint, testId }: Props) {
   return (
     <Card>
-      <Stack gap={1}>
-        <Text type="label" color="secondary">
-          {label}
-        </Text>
-        <Text type="display-3" hasTabularNumbers data-testid={testId}>
-          {value}
-        </Text>
-        {hint && <Text type="supporting">{hint}</Text>}
-      </Stack>
+      <Stat label={label} value={value} note={hint} testId={testId} />
     </Card>
   )
 }
