@@ -15,3 +15,7 @@ def test_returns_the_values_for_the_filters(client, make):
 
 def test_returns_no_rate_date_when_there_are_no_exchange_rates(client):
     assert client.get("/api/meta").json()["rates_as_of"] is None
+
+
+def test_returns_the_date_of_today_of_the_server(client):
+    assert client.get("/api/meta").json()["today"] == "2026-03-01"

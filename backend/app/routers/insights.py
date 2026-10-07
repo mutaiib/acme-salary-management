@@ -12,7 +12,7 @@ from app.schemas import (
 from app.services import overview as overview_service
 from app.services import pay_equity as pay_equity_service
 from app.services import pay_health as pay_health_service
-from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE
+from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE, MAX_PAGE_SIZE
 from app.services.overview import GroupBy
 from app.services.pay_health import Outlier, OutlierStatus
 
@@ -34,7 +34,7 @@ def list_outliers(
     status: OutlierStatus,
     country: str | None = None,
     job_level: int | None = None,
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     session: Session = Depends(get_session),
 ):

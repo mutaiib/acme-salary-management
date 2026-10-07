@@ -93,3 +93,15 @@ def test_returns_404_for_a_band_that_does_not_exist(client):
     )
 
     assert response.status_code == 404
+
+
+def test_refuses_a_band_value_above_the_largest_amount_that_the_system_keeps(client, make):
+    band = make.band()
+
+    response = client.put(
+        f"/api/bands/{band.id}",
+        json={"min_minor": 5_000_000, "mid_minor": 6_000_000, "max_minor": 10**12 + 1},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["field"] == "max_minor"

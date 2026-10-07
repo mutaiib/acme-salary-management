@@ -82,3 +82,21 @@ def test_a_band_change_shows_in_the_position_of_the_employee(client, make):
     )
 
     assert client.get(f"/api/employees/{employee.id}").json()["range_status"] == "below"
+
+
+def test_uses_the_band_of_the_same_country_when_two_countries_have_the_same_job_level(client, make):
+    make.band(country="US", job_level=2, mid_minor=6_500_000)
+    make.band(country="DE", job_level=2, currency="EUR", mid_minor=5_100_000, min_minor=4_000_000)
+    employee = make.employee(country="DE", currency="EUR", job_level=2)
+
+    assert client.get(f"/api/employees/{employee.id}").json()["band"]["mid_minor"] == 5_100_000
+
+
+def test_uses_the_band_of_the_same_job_level_when_one_country_has_two_job_levels(client, make):
+    make.band(country="US", job_level=2, mid_minor=6_500_000)
+    make.band(
+        country="US", job_level=3, min_minor=7_200_000, mid_minor=9_000_000, max_minor=10_800_000
+    )
+    employee = make.employee(country="US", job_level=3)
+
+    assert client.get(f"/api/employees/{employee.id}").json()["band"]["mid_minor"] == 9_000_000

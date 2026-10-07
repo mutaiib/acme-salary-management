@@ -3,6 +3,9 @@
 from collections.abc import Sequence
 
 MICRO = 1_000_000
+# The largest amount that the system keeps: 10,000,000,000.00 units. With this limit,
+# an amount multiplied by an exchange rate stays an exact 64-bit integer in SQLite.
+MAX_AMOUNT_MINOR = 10**12
 
 
 def convert_minor(amount_minor: int, rate_micro: int) -> int:

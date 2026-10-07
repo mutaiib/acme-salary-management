@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -14,6 +15,8 @@ from app.calculations.ranges import (
 )
 from app.errors import DomainError, NotFoundError
 from app.models import Employee, SalaryBand
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -45,6 +48,9 @@ def update_band(
         raise DomainError(error.field, error.cause) from error
     band.min_minor, band.mid_minor, band.max_minor = min_minor, mid_minor, max_minor
     session.commit()
+    logger.info(
+        "Band change: band=%s min=%s mid=%s max=%s", band.id, min_minor, mid_minor, max_minor
+    )
     return band
 
 

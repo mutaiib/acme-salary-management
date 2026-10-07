@@ -57,7 +57,7 @@ def test_the_mean_gap_and_the_median_gap_can_be_different(client, acme):
     assert germany["median_gap_pct"] == 0.0
 
 
-def test_a_country_with_a_gap_of_5_percent_or_less_has_no_flag(client, acme):
+def test_a_country_with_a_mean_gap_of_3_percent_has_no_flag(client, acme):
     assert country(equity(client), "DE")["is_flagged"] is False
 
 
@@ -130,3 +130,44 @@ def test_flags_exactly_the_countries_that_the_seed_script_planted(client, sessio
     flagged = {item["key"] for item in equity(client)["countries"] if item["is_flagged"]}
 
     assert flagged == set(dataset.planted.gap_countries)
+
+
+def test_flags_a_country_when_only_the_median_gap_is_more_than_5_percent(client, make):
+    make.rate("USD", 1_000_000)
+    staff(make, "US", "USD", "male", [10_000_000] * 5)
+    staff(make, "US", "USD", "female", [9_400_000, 9_400_000, 9_400_000, 11_000_000, 10_800_000])
+
+    united_states = country(equity(client), "US")
+
+    assert united_states["mean_gap_pct"] == 0.0
+    assert united_states["median_gap_pct"] == 6.0
+    assert united_states["is_flagged"] is True
+
+
+def test_flags_a_country_when_only_the_mean_gap_is_more_than_5_percent(client, make):
+    make.rate("USD", 1_000_000)
+    staff(make, "US", "USD", "male", [10_000_000] * 5)
+    staff(make, "US", "USD", "female", [10_000_000, 10_000_000, 10_000_000, 8_500_000, 8_500_000])
+
+    united_states = country(equity(client), "US")
+
+    assert united_states["mean_gap_pct"] == 6.0
+    assert united_states["median_gap_pct"] == 0.0
+    assert united_states["is_flagged"] is True
+
+
+def test_the_median_gap_of_a_group_with_an_even_headcount_uses_the_two_middle_salaries(
+    client, make
+):
+    make.rate("USD", 1_000_000)
+    staff(
+        make,
+        "US",
+        "USD",
+        "male",
+        [8_000_000, 9_000_000, 9_000_000, 11_000_000, 11_000_000, 12_000_000],
+    )
+    staff(make, "US", "USD", "female", [9_000_000] * 6)
+
+    # Median of men: (9,000,000 + 11,000,000) / 2 = 10,000,000. The gap is 10%.
+    assert country(equity(client), "US")["median_gap_pct"] == 10.0

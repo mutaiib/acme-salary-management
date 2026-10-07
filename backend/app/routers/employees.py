@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_session
 from app.models import Employee, SalaryChange
+from app.reference import STATUSES
 from app.routers.deps import get_now, get_today
 from app.schemas import (
     BandOut,
@@ -17,20 +18,26 @@ from app.schemas import (
 )
 from app.services import bands as band_service
 from app.services import employees as service
-from app.services.employees import DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, SORT_OPTIONS, EmployeeQuery
+from app.services.employees import (
+    DEFAULT_PAGE_SIZE,
+    MAX_PAGE,
+    MAX_PAGE_SIZE,
+    SORT_OPTIONS,
+    EmployeeQuery,
+)
 
 router = APIRouter(prefix="/api/employees", tags=["employees"])
 
 
 @router.get("", response_model=EmployeePage)
 def list_employees(
-    page: int = Query(1, ge=1),
+    page: int = Query(1, ge=1, le=MAX_PAGE),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     search: str | None = None,
     country: str | None = None,
     department: str | None = None,
     job_level: int | None = None,
-    status: str | None = None,
+    status: Literal[STATUSES] | None = None,  # type: ignore[valid-type]
     sort: Literal[SORT_OPTIONS] = "employee_code",  # type: ignore[valid-type]
     session: Session = Depends(get_session),
 ):

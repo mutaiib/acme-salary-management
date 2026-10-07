@@ -31,7 +31,8 @@ class Outlier:
 def summary(session: Session) -> PayHealthSummary:
     below = _is_outside("below")
     above = _is_outside("above")
-    gap_to_minimum = usd_minor(SalaryBand.min_minor - Employee.salary_minor)
+    _, difference_to_minimum = _limit_and_difference("below")
+    gap_to_minimum = usd_minor(difference_to_minimum)
     below_count, above_count, cost = session.execute(
         _active_employees_with_band(
             func.count().filter(below),
@@ -65,8 +66,9 @@ def list_outliers(
         matching = matching.where(Employee.job_level == job_level)
 
     total = session.scalar(select(func.count()).select_from(matching.subquery())) or 0
-    # The list has many currencies, so the order uses the difference as a part of the band limit.
-    farthest_first = (difference * 1.0 / limit).desc()
+    # The list has many currencies, so the order uses the difference as a part of the
+    # band limit, in units of 0.01%. Integer arithmetic keeps money away from floats.
+    farthest_first = (difference * 10_000 // limit).desc()
     rows = session.execute(
         matching.order_by(farthest_first, Employee.employee_code)
         .limit(page_size)

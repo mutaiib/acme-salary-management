@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 
@@ -8,8 +9,11 @@ from app.errors import DomainError, NotFoundError
 from app.models import Employee, SalaryChange
 from app.reference import ACTIVE, INACTIVE
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_PAGE_SIZE = 25
 MAX_PAGE_SIZE = 100
+MAX_PAGE = 1_000_000
 
 SORT_COLUMNS = {
     "employee_code": Employee.employee_code,
@@ -108,6 +112,14 @@ def change_salary(
         raise DomainError("reason", "Give a reason for the salary change.")
     if effective_date > today:
         raise DomainError("effective_date", "The effective date must not be in the future.")
+    if effective_date < employee.hire_date:
+        raise DomainError("effective_date", "The effective date must not be before the hire date.")
+    last_change_date = _last_change_date(session, employee.id)
+    if last_change_date is not None and effective_date < last_change_date:
+        # The newest row of the salary history must always give the current salary.
+        raise DomainError(
+            "effective_date", "The effective date must not be before the last salary change."
+        )
     if new_salary_minor == employee.salary_minor:
         raise DomainError("new_salary_minor", "The new salary is equal to the current salary.")
 
@@ -122,7 +134,20 @@ def change_salary(
     employee.salary_minor = new_salary_minor
     session.add(change)
     session.commit()
+    logger.info(
+        "Salary change: employee=%s old=%s new=%s effective=%s",
+        employee.id,
+        change.old_salary_minor,
+        change.new_salary_minor,
+        change.effective_date,
+    )
     return change
+
+
+def _last_change_date(session: Session, employee_id: int) -> date | None:
+    return session.scalar(
+        select(func.max(SalaryChange.effective_date)).where(SalaryChange.employee_id == employee_id)
+    )
 
 
 def list_salary_changes(session: Session, employee_id: int) -> list[SalaryChange]:
@@ -141,6 +166,7 @@ def deactivate(session: Session, employee_id: int) -> Employee:
     _require_active(employee)
     employee.status = INACTIVE
     session.commit()
+    logger.info("Deactivation: employee=%s", employee.id)
     return employee
 
 

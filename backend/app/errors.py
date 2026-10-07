@@ -18,6 +18,12 @@ class NotFoundError(Exception):
         self.cause = f"The {what} does not exist."
 
 
+def _field_name(location: tuple) -> str:
+    """The name of the input that is wrong. A position in the body text is not a name."""
+    names = [part for part in location if isinstance(part, str)]
+    return names[-1] if names else "body"
+
+
 def _unprocessable(details: list[dict[str, str]]) -> JSONResponse:
     return JSONResponse(status_code=422, content={"detail": details})
 
@@ -30,7 +36,7 @@ def add_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(RequestValidationError)
     def handle_validation_error(_: Request, error: RequestValidationError) -> JSONResponse:
         return _unprocessable(
-            [{"field": str(item["loc"][-1]), "cause": item["msg"]} for item in error.errors()]
+            [{"field": _field_name(item["loc"]), "cause": item["msg"]} for item in error.errors()]
         )
 
     @app.exception_handler(NotFoundError)

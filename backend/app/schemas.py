@@ -1,6 +1,13 @@
 from datetime import date, datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.calculations.money import MAX_AMOUNT_MINOR
+
+MAX_REASON_LENGTH = 500
+# The lower limits are business rules, so the services check them and give the cause.
+AmountMinor = Annotated[int, Field(le=MAX_AMOUNT_MINOR)]
 
 
 class EmployeeOut(BaseModel):
@@ -29,8 +36,8 @@ class EmployeePage(BaseModel):
 
 
 class SalaryChangeIn(BaseModel):
-    new_salary_minor: int
-    reason: str
+    new_salary_minor: AmountMinor
+    reason: Annotated[str, Field(max_length=MAX_REASON_LENGTH)]
     effective_date: date
 
 
@@ -56,6 +63,8 @@ class MetaOut(BaseModel):
     job_levels: list[int]
     reporting_currency: str
     rates_as_of: date | None
+    # The UI uses the date of the server, so that the two agree on "today".
+    today: date
 
 
 class GroupFiguresOut(BaseModel):
@@ -83,9 +92,9 @@ class OverviewOut(BaseModel):
 
 
 class BandIn(BaseModel):
-    min_minor: int
-    mid_minor: int
-    max_minor: int
+    min_minor: AmountMinor
+    mid_minor: AmountMinor
+    max_minor: AmountMinor
 
 
 class BandOut(BaseModel):

@@ -122,3 +122,75 @@ def test_returns_404_for_a_salary_change_of_an_employee_that_does_not_exist(clie
 
 def test_returns_404_for_the_salary_history_of_an_employee_that_does_not_exist(client):
     assert client.get("/api/employees/999/salary-changes").status_code == 404
+
+
+def test_refuses_an_effective_date_before_the_hire_date(client, make):
+    from datetime import date
+
+    employee = make.employee(hire_date=date(2024, 5, 1))
+
+    error = error_of(change(client, employee, effective_date="2024-04-30"))
+
+    assert error == {
+        "field": "effective_date",
+        "cause": "The effective date must not be before the hire date.",
+    }
+
+
+def test_refuses_an_effective_date_before_the_last_salary_change(client, make):
+    employee = make.employee(salary_minor=6_000_000)
+    change(client, employee, new_salary_minor=6_500_000, effective_date="2026-02-01")
+
+    error = error_of(
+        change(client, employee, new_salary_minor=7_000_000, effective_date="2026-01-31")
+    )
+
+    assert error == {
+        "field": "effective_date",
+        "cause": "The effective date must not be before the last salary change.",
+    }
+
+
+def test_stores_the_reason_without_the_spaces_around_it(client, make):
+    body = change(client, make.employee(), reason="  Annual review  ").json()
+
+    assert body["reason"] == "Annual review"
+
+
+def test_records_the_time_of_the_salary_change(client, make):
+    body = change(client, make.employee()).json()
+
+    assert body["created_at"] == "2026-03-01T09:00:00"
+
+
+def test_refuses_a_salary_above_the_largest_amount_that_the_system_keeps(client, make):
+    error = error_of(change(client, make.employee(), new_salary_minor=10**12 + 1))
+
+    assert error["field"] == "new_salary_minor"
+
+
+def test_refuses_a_reason_of_more_than_500_characters(client, make):
+    error = error_of(change(client, make.employee(), reason="x" * 501))
+
+    assert error["field"] == "reason"
+
+
+def test_an_employee_without_salary_changes_has_an_empty_salary_history(client, make):
+    employee = make.employee()
+
+    assert client.get(f"/api/employees/{employee.id}/salary-changes").json() == []
+
+
+def test_names_the_field_when_the_request_body_has_a_wrong_type(client, make):
+    employee = make.employee()
+
+    response = client.post(
+        f"/api/employees/{employee.id}/salary-changes",
+        json={
+            "new_salary_minor": "a lot",
+            "reason": "Annual review",
+            "effective_date": "2026-02-01",
+        },
+    )
+
+    assert error_of(response)["field"] == "new_salary_minor"

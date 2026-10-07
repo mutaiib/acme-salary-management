@@ -159,3 +159,38 @@ def test_finds_exactly_the_outliers_that_the_seed_script_planted(client, session
 
     assert body["below_count"] == dataset.planted.below_range
     assert body["above_count"] == dataset.planted.above_range
+
+
+def test_compares_a_salary_only_to_the_band_of_the_same_country(client, make):
+    make.rate("USD", 1_000_000)
+    make.rate("EUR", 1_080_000)
+    make.band(country="US", job_level=2, **BAND)
+    make.band(
+        country="DE",
+        job_level=2,
+        currency="EUR",
+        min_minor=8_000_000,
+        mid_minor=9_000_000,
+        max_minor=10_000_000,
+    )
+    make.employee(country="US", currency="USD", job_level=2, salary_minor=6_000_000)
+
+    assert summary(client)["below_count"] == 0
+
+
+def test_compares_a_salary_only_to_the_band_of_the_same_job_level(client, make):
+    make.rate("USD", 1_000_000)
+    make.band(country="US", job_level=2, **BAND)
+    make.band(
+        country="US", job_level=3, min_minor=8_000_000, mid_minor=9_000_000, max_minor=10_000_000
+    )
+    make.employee(country="US", currency="USD", job_level=2, salary_minor=6_000_000)
+
+    assert summary(client)["below_count"] == 0
+
+
+def test_an_employee_without_an_exchange_rate_is_not_in_the_summary(client, make):
+    make.band(**BAND)
+    make.employee(salary_minor=4_000_000)
+
+    assert summary(client)["below_count"] == 0

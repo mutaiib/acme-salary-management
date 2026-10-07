@@ -119,3 +119,12 @@ def test_returns_no_employees_when_nothing_matches(client, make):
 
     assert body["items"] == []
     assert body["total"] == 0
+
+
+def test_finds_an_employee_whose_name_contains_a_percent_sign(client, make):
+    make.employee(full_name="Asha 100% Rao")
+    make.employee(full_name="Asha 1000 Rao")
+
+    response = client.get("/api/employees", params={"search": "100%"})
+
+    assert [item["full_name"] for item in response.json()["items"]] == ["Asha 100% Rao"]

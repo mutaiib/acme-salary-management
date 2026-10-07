@@ -54,3 +54,11 @@ def test_a_median_gap_of_more_than_5_percent_has_a_flag():
 
 def test_a_gap_in_favor_of_women_of_more_than_5_percent_has_a_flag():
     assert is_flagged(Decimal("-5.1"), Decimal("0.0"))
+
+
+def test_a_median_gap_in_favor_of_women_of_more_than_5_percent_has_a_flag():
+    assert is_flagged(Decimal("0.0"), Decimal("-5.1"))
+
+
+def test_a_median_gap_of_exactly_5_percent_has_no_flag():
+    assert not is_flagged(Decimal("0.0"), Decimal("5.0"))

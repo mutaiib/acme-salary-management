@@ -68,3 +68,50 @@ def test_refuses_a_page_number_below_1(client):
 
     assert response.status_code == 422
     assert response.json()["detail"][0]["field"] == "page"
+
+
+def test_orders_by_employee_code_and_not_by_the_order_of_creation(client, make):
+    for code in ("E00003", "E00001", "E00002"):
+        make.employee(employee_code=code)
+
+    body = client.get("/api/employees").json()
+
+    assert [item["employee_code"] for item in body["items"]] == ["E00001", "E00002", "E00003"]
+
+
+def test_orders_employees_with_the_same_name_by_employee_code(client, make):
+    for code in ("E00003", "E00001", "E00002"):
+        make.employee(employee_code=code, full_name="Asha Rao")
+
+    body = client.get("/api/employees", params={"sort": "name"}).json()
+
+    assert [item["employee_code"] for item in body["items"]] == ["E00001", "E00002", "E00003"]
+
+
+def test_accepts_a_page_size_of_100(client, make):
+    make.employee()
+
+    assert client.get("/api/employees", params={"page_size": 100}).json()["page_size"] == 100
+
+
+def test_returns_no_employees_for_a_page_after_the_last_page(client, make):
+    make.employee()
+
+    body = client.get("/api/employees", params={"page": 5}).json()
+
+    assert body["items"] == []
+    assert body["total"] == 1
+
+
+def test_refuses_a_page_number_that_is_too_large(client):
+    response = client.get("/api/employees", params={"page": 10**20})
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["field"] == "page"
+
+
+def test_refuses_a_status_that_is_not_active_or_inactive(client):
+    response = client.get("/api/employees", params={"status": "retired"})
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0]["field"] == "status"
