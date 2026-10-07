@@ -1,4 +1,4 @@
-// All screens: how a screen loads data, and what it shows when two replies cross.
+// FR-01, FR-03, FR-06, FR-07, FR-09, all screens: how a screen loads data, and what it shows when two replies cross.
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { ApiError } from '../api/client'

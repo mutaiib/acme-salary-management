@@ -28,6 +28,24 @@ test('sends the new salary in minor units, the reason, and the server date as th
   )
 })
 
+test('sends the effective date that the HR Manager types', async () => {
+  let sent: unknown
+  openEmployeeDetail({
+    'POST /api/employees/7/salary-changes': (_url: URL, body: unknown) => {
+      sent = body
+      return salaryChange(2)
+    },
+  })
+
+  const dialog = await fillSalaryChange('70000', 'Annual review')
+  const dateInput = within(dialog).getByLabelText(/Effective date/)
+  await userEvent.clear(dateInput)
+  await userEvent.type(dateInput, '2026-02-01')
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
+
+  await waitFor(() => expect(sent).toMatchObject({ effective_date: '2026-02-01' }))
+})
+
 test('shows the new salary and the new history row after a salary change', async () => {
   let current: EmployeeDetail = ASHA
   let history: SalaryChange[] = [salaryChange(1)]
@@ -78,6 +96,18 @@ test('does not send a salary change without a reason', async () => {
   await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }))
 
   expect(await within(dialog).findByText('Give a reason for the salary change.')).toBeInTheDocument()
+  expect(api.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
+})
+
+test('sends nothing when the HR Manager cancels the deactivation', async () => {
+  const api = openEmployeeDetail()
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Deactivate' }))
+  const dialog = await screen.findByRole('dialog')
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(screen.getByText('Active')).toBeInTheDocument()
   expect(api.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
 })
 
