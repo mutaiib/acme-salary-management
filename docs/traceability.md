@@ -2,23 +2,25 @@
 
 Each requirement points to the slice that delivers it and to the tests that check it. Backend tests are in `backend/tests/`. UI tests are in `frontend/src/`.
 
+Each test file starts with the IDs of the requirements that it checks. The service of each feature starts with the IDs that it serves. Other production code traces to a requirement through its test file.
+
 ## Functional requirements
 
 | ID | Requirement (short) | Slice | Backend tests | UI tests |
 |---|---|---|---|---|
 | FR-01 | Total payroll cost in the reporting currency, with the rate date | S2 | `unit/test_money.py`, `api/test_overview.py`, `api/test_meta.py` | `pages/overview/OverviewPage.test.tsx`, `lib/format.test.ts` |
-| FR-02 | Headcount, minimum, median and maximum salary by country, department and job level | S2 | `unit/test_money.py`, `api/test_overview.py` | `pages/overview/OverviewPage.test.tsx` |
-| FR-03 | Find an employee; filter the list | S0, S1 | `api/test_employees_list.py`, `api/test_employee_search.py` | `pages/employees/EmployeesPage.test.tsx` |
-| FR-04 | Change a salary with a reason and an effective date | S1 | `api/test_salary_changes.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
-| FR-05 | Refuse a salary that is zero or negative, and show the cause | S1 | `api/test_salary_changes.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
-| FR-06 | Keep each salary change; show the salary history | S1 | `api/test_salary_changes.py`, `api/test_seed_write.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-02 | Headcount, payroll cost and its share, and minimum, median and maximum salary, by country, department and job level | S2 | `unit/test_money.py`, `api/test_overview.py` | `pages/overview/OverviewPage.test.tsx`, `lib/format.test.ts` |
+| FR-03 | Find an employee; filter and sort the list | S0, S1 | `api/test_employees_list.py`, `api/test_employee_search.py`, `api/test_employee_detail.py`, `api/test_meta.py` | `pages/employees/EmployeesPage.test.tsx` |
+| FR-04 | Change a salary with a reason and an effective date | S1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py` | `pages/employee-detail/SalaryChange.test.tsx` |
+| FR-05 | Refuse a salary that is zero or negative, and show the cause | S1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py` | `pages/employee-detail/SalaryChange.test.tsx` |
+| FR-06 | Keep each salary change; show the salary history | S1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py`, `api/test_seed_write.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx`, `pages/employee-detail/SalaryChange.test.tsx` |
 | FR-07 | Set a salary band for each job level in a country | S3 | `unit/test_ranges.py`, `api/test_bands.py` | `pages/bands/BandsPage.test.tsx` |
 | FR-08 | Compa-ratio and range penetration of each employee | S3 | `unit/test_ranges.py`, `api/test_employee_detail.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx`, `pages/employee-detail/RangeBar.test.tsx`, `lib/ranges.test.ts` |
-| FR-09 | Employees below range and above range | S4 | `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
+| FR-09 | Employees below range and above range | S4 | `unit/test_ranges.py`, `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
 | FR-10 | Cost to move all below-range salaries to the band minimum | S4 | `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
-| FR-11 | Mean and median gender pay gap for the organization and each country | S5 | `unit/test_pay_gap.py`, `api/test_pay_equity.py` | `pages/pay-equity/PayEquityPage.test.tsx` |
+| FR-11 | Mean gap and median gap for the organization and each country | S5 | `unit/test_pay_gap.py`, `api/test_pay_equity.py` | `pages/pay-equity/PayEquityPage.test.tsx`, `lib/format.test.ts` |
 | FR-12 | Flag each country with a gap of more than 5% | S5 | `unit/test_pay_gap.py`, `api/test_pay_equity.py` | `pages/pay-equity/PayEquityPage.test.tsx` |
-| FR-13 | Deactivate an employee; insights count active employees only | S1, S2, S4, S5 | `api/test_deactivate.py`, `api/test_overview.py`, `api/test_pay_health.py`, `api/test_pay_equity.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-13 | Deactivate an employee; insights count active employees only | S1, S2, S4, S5 | `api/test_deactivate.py`, `api/test_overview.py`, `api/test_pay_health.py`, `api/test_pay_equity.py` | `pages/employee-detail/SalaryChange.test.tsx`, `pages/employee-detail/EmployeeDetailPage.test.tsx` |
 
 ## Quality requirements
 
@@ -26,13 +28,19 @@ Each requirement points to the slice that delivers it and to the tests that chec
 |---|---|---|
 | NFR-01 | A list page responds in less than 300 ms | `docs/performance.md`: the slowest list request has a 95th percentile of 26 ms. No automated test checks the time. |
 | NFR-02 | A pay insight responds in less than 500 ms | `docs/performance.md`: the slowest insight has a 95th percentile of 102 ms. No automated test checks the time. |
-| NFR-03 | The seed script creates exactly 10,000 employees in less than 30 seconds; two runs give the same data | `unit/test_seed.py::test_the_seed_script_creates_exactly_10000_employees`, `api/test_seed_write.py`; `docs/performance.md`: 0.5 seconds |
-| NFR-04 | Money is an integer in minor units | `unit/test_money.py`, `unit/test_ranges.py`; the tests for the largest amount in `api/test_salary_changes.py` and `api/test_bands.py` |
+| NFR-03 | The seed script creates exactly 10,000 employees in less than 30 seconds; two runs give the same data | `unit/test_seed.py`, `api/test_seed_write.py`; `docs/performance.md`: 0.5 seconds |
+| NFR-04 | Money is an integer in minor units | `unit/test_money.py`, `lib/money.test.ts`; the tests for the largest amount in `api/test_salary_changes.py` and `api/test_bands.py` |
 | NFR-05 | The unit tests complete in less than 10 seconds, with no network, clock or shared database state | `docs/performance.md`; `api/conftest.py` gives each test a new in-memory database, a fixed date, and a new session for each request |
-| NFR-06 | One command installs, seeds and starts the system | `make start` in the `Makefile` |
+| NFR-06 | One command installs, seeds and starts the system | `make start` in the `Makefile`; `api/test_static_ui.py` checks that the API serves the built UI |
 | NFR-07 | No gender pay gap for a group with fewer than 5 employees of each gender | `unit/test_pay_gap.py`, `api/test_pay_equity.py`, `pages/pay-equity/PayEquityPage.test.tsx` |
+| NFR-08 | A log line for each salary change, band change and deactivation | `api/test_write_log.py` |
 
-Each test file starts with the IDs of the requirements that it checks. All screens share the loading, empty and error states; `components/DataState.test.tsx` checks them.
+## Tests for all screens
+
+| Test file | Check |
+|---|---|
+| `components/DataState.test.tsx` | The loading, empty and error states that all screens share |
+| `hooks/useApi.test.tsx` | A reply for an old request does not replace newer data; a new attempt removes the old error |
 
 ## Tests against the seeded data
 

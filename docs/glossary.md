@@ -6,6 +6,7 @@ This document gives one meaning to each term. All project documents and the code
 
 | Term | Meaning |
 |---|---|
+| System | The salary management software: the API and the UI together. |
 | HR Manager | The person who uses the system. There is one user role. |
 | Employee | A person that ACME pays. An employee has one salary. |
 | Active employee | An employee with the status `active`. Only active employees count in the insights. |
@@ -18,7 +19,7 @@ This document gives one meaning to each term. All project documents and the code
 | Minor unit | The smallest unit of a currency (for example, the cent). The system keeps all money as an integer in minor units. |
 | Local currency | The currency of the country of the employee. Each country has one currency. |
 | Reporting currency | The currency for totals across countries. The reporting currency is USD. |
-| Exchange rate | The value of one unit of a local currency in the reporting currency, on a given date. |
+| Exchange rate | The value of one unit of a local currency in the reporting currency, on a given date. An employee who has a currency without an exchange rate is not in the insights. |
 | Payroll cost | The sum of the salaries of the active employees, in the reporting currency. |
 | Headcount | The number of active employees. |
 | Salary change | A record of one change to a salary. It has the old salary, the new salary, a reason and an effective date. |

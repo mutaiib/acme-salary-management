@@ -25,7 +25,7 @@ A salary in an Excel file has no reference point and no history. The HR Manager 
 ## Hypotheses
 
 - H1: A salary is only useful with a reference point. The salary band is that reference point. This puts salary bands IN scope.
-- H2: The HR Manager acts on a short list of exceptions, not on 10,000 rows. This puts the pay health list IN scope.
+- H2: The HR Manager acts on a short list of outliers, not on 10,000 rows. This puts the pay health list IN scope.
 - H3: One headline figure for the gender pay gap is sufficient for a first version. This puts analysis by job category OUT of scope.
 - H4: The HR Manager corrects salaries one at a time in a first version. This puts the compensation cycle OUT of scope.
 - H5: The data of the first version comes from a seed script. This puts Excel import OUT of scope.
@@ -60,6 +60,8 @@ The reason for each item is in `docs/requirements.md`.
 - Pay equity: the gender pay gap for the organization and for each country.
 
 ## Module Structure
+
+The plan replaced these module names with `routers/` and `services/`. The ownership is the same.
 
 - `calculations/` owns: compa-ratio, range penetration, range status, gender pay gap, currency conversion. Depends on: (none)
 - `employees/` owns: Employee, Salary change. Depends on: (none)

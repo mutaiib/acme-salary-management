@@ -26,10 +26,11 @@
 | Task | Time | Requirement |
 |---|---|---|
 | Seed script, 10,000 employees | 0.5 seconds | NFR-03: less than 30 seconds |
-| Backend tests, 183 tests | 6 seconds | NFR-05: less than 10 seconds |
-| UI tests, 90 tests | 7 seconds | NFR-05 |
+| Backend tests, 209 tests | 7 seconds | NFR-05: less than 10 seconds |
+| Backend unit tests only, 65 tests | less than 1 second | NFR-05 |
+| UI tests, 113 tests | 9 to 10 seconds | See the note below |
 
-The system satisfies all requirements.
+The system satisfies the requirements, with one limit. The UI tests are component tests: each test renders a screen in a simulated browser. They take 9 to 10 seconds on a machine that does other work. This is at the limit of NFR-05. The pure unit tests of the UI (`src/lib`) and of the backend complete in less than 1 second.
 
 ## Why it is fast
 

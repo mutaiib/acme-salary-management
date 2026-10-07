@@ -23,22 +23,45 @@ The product is salary management software for the HR Manager of ACME. Read `docs
 
 ```
 backend/app/
+  main.py         creates the application; serves the built UI
   routers/        HTTP only: parse the request, call a service, shape the response
+    deps.py           the clock as an input: get_today, get_now
+    error_handlers.py turns the errors of the services into HTTP responses
   services/       use cases and database queries
+    sql.py            shared SQL: active employees, currency conversion, median
+    pagination.py     one page of a list
+  calculations/   pure pay calculations: money, salary bands, pay gap, salary change rules
   models.py       database tables
-  calculations/   pure pay calculations
+  schemas.py      request and response shapes
+  reference.py    countries, currencies, jobs, and the allowed values of a status or a gender
+  errors.py       DomainError, NotFoundError
+  seed.py         creates the 10,000 employees
+backend/tests/
+  unit/           pure functions; no database
+  api/            the API on a new in-memory database for each test
 frontend/src/
   components/     shared component library, built from Astryx components
-  pages/          one directory for each screen
-  api/            typed API client
+  pages/          one directory for each screen; a test file is next to its source file
+  api/            typed API client; types.ts has the same shapes as backend/app/schemas.py
   hooks/          shared React hooks
   lib/            formats and small pure functions
-  test/           test helpers
+  test/           test helpers: stubApi, renderScreen, data builders
 ```
 
 - A router must not query the database.
 - A service must not import from a router.
 - The `calculations` package must not import from other application packages.
+
+Patterns to follow. Read `docs/architecture.md` for the reasons.
+
+- **Money.** An amount is an integer in minor units, and its name ends with `_minor`. An exchange rate ends with `_micro`. A percentage ends with `_pct`. A half rounds up.
+- **Clock.** A service gets `today` and `now` as arguments. A router gets them from `routers/deps.py`. Do not call `date.today()` or `datetime.now()` in a service.
+- **Errors.** A service raises `DomainError(field, cause)` or `NotFoundError`. The API returns `422 {"detail": [{"field", "cause"}]}` or `404`. A business rule goes into a pure function in `calculations/`, as `validate_band` does.
+- **Insights.** Use `active_employees_with_rate` from `services/sql.py`, so that all insights count the same employees.
+- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`.
+- **A screen test.** Replace the API with `stubApi`, and render with `renderScreen`.
+- **API shapes.** Change `backend/app/schemas.py` and `frontend/src/api/types.ts` together.
+- **Traceability.** Start a new test file with the requirement IDs. Add the file to `docs/traceability.md`.
 
 ## Article 3: Writing standard
 
@@ -63,11 +86,32 @@ Code comments and commit messages follow the same rules where practical.
 
 1. Use Astryx components (`@astryxdesign/core`) for all UI elements.
 2. Use Astryx theme tokens for color, space and type. Do not write a color value by hand.
-3. Read the component documentation before you use a component: `npm run astryx -- component <Name>`.
+3. Read the component documentation before you use a component. Article 5 gives the command.
 4. Put a UI element that 2 or more screens use in the shared component library (`frontend/src/components/`). A screen must not copy it.
 5. Each screen must have a loading state, an empty state and an error state.
 6. Each screen must be usable with a keyboard.
 
 ## Article 5: Commands
 
-The commands for install, seed, test and start go in the README when the walking skeleton is complete.
+Run these commands from the root of the repository.
+
+| Command | Result |
+|---|---|
+| `make start` | Install, seed, build and start the system at http://localhost:8000 |
+| `make seed` | Create the database again with the same 10,000 employees |
+| `make test` | Run the backend tests and the UI tests |
+| `make lint` | Check the code style |
+| `make dev-api`, `make dev-ui` | Start the API and the UI with reload |
+
+To run one test file:
+
+```
+cd backend && uv run pytest tests/unit/test_money.py -q
+cd frontend && npx vitest run src/lib/format.test.ts
+```
+
+To read the documentation of an Astryx component:
+
+```
+cd frontend && npm run astryx -- component Table
+```

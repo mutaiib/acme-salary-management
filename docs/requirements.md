@@ -6,11 +6,11 @@ Status: written before the build. Terms: see `glossary.md`.
 
 The HR team of ACME keeps the salary data of 10,000 employees in Excel files. This work is slow, and the files cannot answer pay questions quickly.
 
-The HR Manager gets one web application that does two things:
+The HR Manager gets one system that does two things:
 1. It manages salary data, with a record of each change.
 2. It answers questions about how the organization pays people.
 
-The application follows this sequence:
+The system follows this sequence:
 1. See the pay.
 2. Find the problems.
 3. Change a salary.
@@ -21,7 +21,7 @@ The application follows this sequence:
 | ID | Requirement |
 |---|---|
 | FR-01 | The system must show the total payroll cost in one reporting currency. The system must show the date of the exchange rates. |
-| FR-02 | The system must show the headcount, the payroll cost, and the minimum, median and maximum salary for each country, department and job level. |
+| FR-02 | The system must show these figures for each country, department and job level: the headcount, the payroll cost and its share of the total, and the minimum, median and maximum salary. |
 | FR-03 | The system must let the HR Manager find an employee by name, email or employee code. The system must let the HR Manager filter the list by country, department, job level and status, and sort the list. |
 | FR-04 | The system must let the HR Manager change a salary. Each salary change must have a reason and an effective date. |
 | FR-05 | The system must refuse a salary that is zero or negative. The system must show the cause. |
@@ -30,8 +30,8 @@ The application follows this sequence:
 | FR-08 | The system must show the compa-ratio and the range penetration of each employee. |
 | FR-09 | The system must show the employees who are below range and the employees who are above range. |
 | FR-10 | The system must show the cost to move all below-range salaries to the band minimum. |
-| FR-11 | The system must show the mean and the median gender pay gap for the organization and for each country. |
-| FR-12 | The system must flag each country that has a mean gap or a median gap of more than 5%, in favor of men or of women. |
+| FR-11 | The system must show the mean gap and the median gap for the organization and for each country. |
+| FR-12 | The system must flag each country that has a mean gap or a median gap of more than 5%. A gap in favor of women also gets the flag. |
 | FR-13 | The system must let the HR Manager deactivate an employee. The insights must count active employees only. |
 
 | ID | Quality requirement |
@@ -43,6 +43,7 @@ The application follows this sequence:
 | NFR-05 | The unit tests must complete in less than 10 seconds, with no network, clock or shared database state. |
 | NFR-06 | One command must install, seed and start the system. |
 | NFR-07 | The system must not show a gender pay gap for a group that has fewer than 5 employees of each gender. |
+| NFR-08 | The system must write a log line for each salary change, band change and deactivation. |
 
 ## What is left out, and why
 

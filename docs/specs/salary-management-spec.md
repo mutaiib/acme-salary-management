@@ -15,7 +15,7 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 - [x] The Employees screen shows the first 25 employees, ordered by employee code.
 - [x] Each row shows the employee code, name, job title, job level, department, country and salary with its currency.
 - [x] The screen shows the total number of employees.
-- [x] The HR Manager can go to the next page and to the previous page.
+- [x] The system must let the HR Manager go to the next page and to the previous page.
 - [x] The seed script creates exactly 10,000 employees.
 - [x] Two runs of the seed script create the same data.
 - [x] The seed script creates one salary band for each job level in each country.
@@ -25,32 +25,40 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 
 ## Slice 1: Employee pay record (FR-03, FR-04, FR-05, FR-06, FR-13)
 
-- [x] The HR Manager can find an employee by a part of the name, the email or the employee code.
-- [x] The HR Manager can filter the list by country, department, job level and status.
-- [x] The HR Manager can sort the list by employee code, name or hire date.
+- [x] The system must let the HR Manager find an employee by a part of the name, the email or the employee code.
+- [x] The system must let the HR Manager filter the list by country, department, job level and status.
+- [x] The system must let the HR Manager sort the list by employee code, name or hire date.
 - [x] The system shows an empty state when no employee matches.
 - [x] The Employee detail screen shows the data of the employee and the current salary.
-- [x] The HR Manager can change the salary with a new salary, a reason and an effective date.
+- [x] The system must let the HR Manager change the salary with a new salary, a reason and an effective date.
 - [x] After a salary change, the Employee detail screen shows the new salary.
 - [x] After a salary change, the salary history shows the old salary, the new salary, the reason and the effective date.
 - [x] The salary history shows the newest salary change first.
 - [x] The system shows an error when the new salary is zero or negative.
-- [x] The system shows an error when the reason is empty.
+- [x] The system shows an error when the reason is empty or has more than 500 characters.
+- [x] The system shows an error when an amount is more than 10,000,000,000.00 units.
 - [x] The system shows an error when the effective date is in the future.
 - [x] The system shows an error when the new salary is equal to the current salary.
 - [x] The system shows an error when the effective date is before the hire date.
 - [x] The system shows an error when the effective date is before the last salary change.
 - [x] The newest row of the salary history always gives the current salary.
-- [x] The HR Manager can deactivate an active employee.
+- [x] The system must let the HR Manager deactivate an active employee.
 - [x] The system shows an error when the HR Manager changes the salary of an inactive employee.
 - [x] The system shows a "not found" state for an employee that does not exist.
+- [x] The search box always shows the search text that the list uses.
+- [x] The system tells the HR Manager when the filter values did not load.
+- [x] An error that belongs to no input of a form shows at the top of the form.
 
 ## Slice 2: Pay overview (FR-01, FR-02, FR-13)
 
 - [x] The Pay overview screen shows the total payroll cost in USD.
 - [x] The Pay overview screen shows the headcount.
 - [x] The Pay overview screen shows the date of the exchange rates.
-- [x] The Pay overview screen shows, for each country, the headcount, the payroll cost in USD, and the minimum, median and maximum salary in the local currency.
+- [x] For each country, the Pay overview screen shows the headcount and the payroll cost in USD.
+- [x] For each country, the Pay overview screen shows the minimum, median and maximum salary in the local currency.
+- [x] Each group shows its share of the total payroll cost.
+- [x] The countries and the departments show in the order of payroll cost, highest first. The job levels show in the order of job level.
+- [x] An employee who has a currency without an exchange rate is not in an insight.
 - [x] The Pay overview screen shows the headcount and the payroll cost of each department and each job level, in USD.
 - [x] The Pay overview screen shows the minimum, median and maximum salary of each department and each job level, in USD.
 - [x] An inactive employee does not count in the headcount or in the payroll cost.
@@ -59,14 +67,15 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 ## Slice 3: Salary bands (FR-07, FR-08)
 
 - [x] The Salary bands screen shows the minimum, midpoint and maximum for each job level in each country.
-- [x] The HR Manager can filter the bands by country.
-- [x] The HR Manager can change the minimum, midpoint and maximum of a band.
+- [x] The system must let the HR Manager filter the bands by country.
+- [x] The system must let the HR Manager change the minimum, midpoint and maximum of a band.
 - [x] The system shows an error when the minimum is not less than the midpoint.
 - [x] The system shows an error when the midpoint is not less than the maximum.
+- [x] The system shows an error when the minimum is not more than zero.
 - [x] The Employee detail screen shows the salary band of the employee.
 - [x] The Employee detail screen shows the compa-ratio with 2 decimal places.
 - [x] The Employee detail screen shows the range penetration with 1 decimal place.
-- [x] The Employee detail screen shows the range status: below range, in range or above range.
+- [x] The Employee detail screen shows the range status: below range, in range, above range or no salary band.
 - [x] The Employee detail screen shows the position of the salary on a range bar.
 - [x] A salary of 45,000 in a band of 35,000 / 50,000 / 65,000 shows a compa-ratio of 0.90 and a range penetration of 33.3%.
 - [x] A salary equal to the band minimum or the band maximum is in range.
@@ -77,10 +86,11 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 - [x] The Pay health screen shows the correction cost in USD.
 - [x] The Pay health screen lists the below-range employees with the salary, the band minimum and the difference.
 - [x] The Pay health screen lists the above-range employees with the salary, the band maximum and the difference.
-- [x] The HR Manager can filter the lists by country and by job level.
+- [x] The system must let the HR Manager filter the lists by country and by job level.
 - [x] Each row opens the Employee detail screen.
 - [x] After the HR Manager moves a below-range salary to the band minimum, the number of below-range employees decreases by 1.
 - [x] An inactive employee does not show in the lists.
+- [x] Each list shows the employee who is farthest from the salary band first.
 - [x] The system shows an empty state when no employee is outside the salary band.
 
 ## Slice 5: Pay equity (FR-11, FR-12, NFR-07)
@@ -90,6 +100,8 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 - [x] Each group shows the number of men and the number of women.
 - [x] A group with a mean gap or a median gap of more than 5%, in favor of men or of women, has a flag.
 - [x] A group with fewer than 5 men or fewer than 5 women shows "not enough data" and no gap.
+- [x] The Pay equity screen shows the number of countries that have a flag.
+- [x] The countries that have a flag show first, with the largest gap at the top.
 - [x] The screen shows the label "unadjusted" and a description of its meaning.
 - [x] A negative gap states in words that women have the higher pay.
 - [x] The system shows an empty state when there are no active employees.
@@ -125,7 +137,11 @@ GET  /api/insights/pay-health/employees?status=below|above&country=&job_level=&p
 GET  /api/insights/pay-equity
      -> 200 { organization: Gap, countries: [Gap], flag_threshold_pct, min_group_size }
 
-Each 422 reply: { detail: [{ field, cause }] }
+Each 422 response: { detail: [{ field, cause }] }
+Each 404 response: { detail: cause }
+
+These fields can be null: SalaryChange.old_salary_minor, rates_as_of, band, compa_ratio,
+range_penetration, mean_gap_pct, median_gap_pct.
 
 Employee:     { id, employee_code, full_name, email, job_title, job_level, department,
                 country, currency, salary_minor, gender, hire_date, status }

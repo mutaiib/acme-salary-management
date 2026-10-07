@@ -78,8 +78,8 @@ frontend/
    - `routers/employees.py`: `GET /api/employees`.
    - `frontend`: `App` with `Theme`, `AppShell`, `SideNav`; `EmployeesPage`; `api/client.ts` `getJson<T>(path, params)`.
 4. **Collaborators**: router -> service -> session. `seed.main` -> `generate_dataset` -> `write_dataset`.
-5. **Control flow**: the generator makes bands and rates first, then employees. For each employee it picks country, department, level and gender, then a salary from the band. It then plants the anomalies.
-6. **Test strategy**: new `tests/unit/test_seed.py` (count, determinism, one band for each level and country, one first salary change for each employee, planted anomaly counts). New `tests/api/test_employees_list.py` (page size, order, total, page 2). New `EmployeesPage.test.tsx` (rows, total, next page, error state).
+5. **Control flow**: the generator makes bands and rates first, then employees. For each employee, the generator selects the country, the department, the job level and the gender. Then it selects a salary from the salary band. Then it plants the outliers and the pay gaps.
+6. **Test strategy**: new `tests/unit/test_seed.py` (count, determinism, one band for each job level and country, one first salary change for each employee, the counts of the planted outliers). New `tests/api/test_employees_list.py` (page size, order, total, page 2). New `EmployeesPage.test.tsx` (rows, total, next page, error state).
 7. **Standards**: `tdd-practices: test isolation` (no clock), `clean-code: SRP` (generate and write are separate).
 8. **Tier**: `excellent`.
 9. **Quality checks**
@@ -91,14 +91,20 @@ frontend/
 ## Slice 1: Employee pay record
 
 1. **ACs**: spec Slice 1.
-2. **Design intent**: a salary change is one transaction that adds a history row and updates the current salary. History rows are never edited.
+2. **Design intent**: a salary change is one transaction that adds a history row and updates the current salary. No code edits a history row.
 3. **Structure**
    - `services/employees.py`: `get_employee(session, id) -> Employee`; `change_salary(session, id, new_salary_minor, reason, effective_date, today) -> SalaryChange`; `list_salary_changes(session, id) -> list[SalaryChange]`; `deactivate(session, id) -> Employee`. `EmployeeQuery` gains `search`, `country`, `department`, `job_level`, `status`, `sort`.
    - `errors.py`: `DomainError`, `NotFoundError`.
    - `routers/employees.py`: the 4 new endpoints. `routers/meta.py`: `GET /api/meta`.
    - UI: `EmployeesPage` (search, filters, sort), `EmployeeDetailPage`, `SalaryChangeDialog`, `SalaryHistoryTable`, `DeactivateDialog`. Shared: `PageHeader`, `DataState`, `Money`, `FilterBar`.
 4. **Collaborators**: `change_salary` reads the employee, validates, writes both rows, commits once.
-5. **Control flow**: guards in order: employee exists; employee is active; salary > 0; reason not blank; effective date not after `today`; salary differs from the current salary. The first guard that fails raises.
+5. **Control flow**: the guards run in this order. The first guard that fails raises an error.
+   1. The employee exists.
+   2. The employee is active.
+   3. The salary is more than zero.
+   4. The reason is not blank.
+   5. The effective date is not after `today`.
+   6. The salary is different from the current salary.
 6. **Test strategy**: new `tests/api/test_employee_detail.py`, `test_salary_changes.py`, `test_deactivate.py`; extend `test_employees_list.py` (search, each filter, sort, empty). UI: `EmployeeDetailPage.test.tsx`, `SalaryChangeDialog.test.tsx`; extend `EmployeesPage.test.tsx`.
 7. **Standards**: `clean-code: guard clauses`, `tdd-practices: one reason to fail`.
 8. **Tier**: `excellent`.
@@ -119,7 +125,13 @@ frontend/
    - `routers/insights.py`: `GET /api/insights/overview`.
    - UI: `OverviewPage`, shared `StatCard`, `GroupTable`.
 4. **Collaborators**: `overview` joins `employees` to `exchange_rates` on currency and filters to active employees.
-5. **Control flow**: totals query; grouped aggregate query; grouped median query; merge by group key. For `country` the salary figures are in the local currency. For the other groupings they are in USD.
+5. **Control flow**:
+   1. One query calculates the aggregates of each group.
+   2. One query calculates the median of each group.
+   3. The service merges the results by group key.
+   4. The service adds the group figures to get the totals.
+
+   For `country` the salary figures are in the local currency. For the other groupings they are in USD.
 6. **Test strategy**: new `tests/unit/test_money.py` (rounding half up, median of odd and even counts). New `tests/api/test_overview.py` with a hand-built set of 6 employees and hand-calculated figures; one test compares the SQL result to `convert_minor` and `median_minor` on the same rows. UI: `OverviewPage.test.tsx`.
 7. **Standards**: `clean-code: DRY` (one conversion expression), `tdd-practices: hand-calculated expectations`.
 8. **Tier**: `best`.
@@ -150,7 +162,7 @@ frontend/
 ## Slice 4: Pay health
 
 1. **ACs**: spec Slice 4.
-2. **Design intent**: one SQL join finds the exceptions. The counts and the lists use the same filter, so they cannot disagree.
+2. **Design intent**: one SQL join finds the outliers. The counts and the lists use the same filter, so they cannot disagree.
 3. **Structure**
    - `services/pay_health.py`: `summary(session) -> PayHealthSummary`; `list_outliers(session, status, country, job_level, page, page_size) -> Page[Outlier]`. Private `_outside_band(status)` returns the shared SQL condition.
    - `routers/insights.py`: the 2 pay-health endpoints.
@@ -191,7 +203,7 @@ frontend/
 - `reviewer` (always), tier `excellent`.
 - `review-tests`, tier `excellent`: the brief grades test quality.
 - `review-org-standards`, tier `excellent`: checks the code against `CLAUDE.md`.
-- `review-coupling`: not selected. No slice is floored, and the dependency rule is checked in each slice.
+- `review-coupling`: the plan did not select it. No slice has a hard floor, and each slice checks the dependency rule.
 
 ## Differences between the plan and the build
 
@@ -212,6 +224,18 @@ The build follows the plan. These points are different:
 | The guards of a salary change | 2 more guards: the effective date is not before the hire date, and not before the last salary change | The end-of-spec review found that an old date made the salary history disagree with the current salary. |
 | The UI reads "today" from the browser | The UI reads "today" from `GET /api/meta` | The browser and the server can be in different time zones. |
 | No limit on an amount | An amount has a maximum of 10,000,000,000.00 units | A larger amount made the SQL arithmetic inexact. |
+| No limit on the reason or the page number | The reason has a maximum of 500 characters. The page number has a maximum of 1,000,000. | A very large value gave a server error. |
+| A "totals query" in the overview | The service adds the group figures to get the totals | A total then always equals the sum of its parts. There are 8 groups at most. |
+| `tests/api/` has one file for each router | One file for each behavior: 14 files | A short file is easier to read. `test_static_ui.py` and `test_seed_write.py` have no router. |
+| `median_by(session, group_col, value_expr, filters)` | `median_by_group(session, rows)`, and `active_employees_with_rate(*columns)` | The caller gives one query with a group column and a value column. All insights share the query on active employees. |
+| `band_for(...) -> SalaryBand` | `position_of(...) -> RangePosition` | The function returns the band and the 3 range figures together. |
+| The band rule: minimum < midpoint < maximum | 0 < minimum < midpoint < maximum | A band minimum of zero has no meaning. |
+| The guards of a salary change are in the service | They are a pure function, `calculations/salary_changes.validate_salary_change` | A unit test checks each rule without a database, as for the band rule. |
+| Pagination is in the employees service | `services/pagination.py` | Pay health also has a list with pages. |
+| `errors.py` has the error handlers | `routers/error_handlers.py` has them | A service must not load the web framework. |
+| The layout lists 2 API files, 1 hook and 1 `lib` file | The build has 6 API files, 5 hooks and 3 `lib` files | Each screen added an API file. The review moved shared logic into hooks and `lib`. |
+| No rule for an employee without an exchange rate | The employee is not in an insight | The pay health summary and its list did not agree. Now all insights use one query. |
+| `enough_data` | `has_enough_data`, and `is_flagged` | A boolean name that reads as a question. |
 
 ## Escalation Log
 

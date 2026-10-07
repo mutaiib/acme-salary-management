@@ -53,7 +53,7 @@ The API documentation is at http://localhost:8000/docs.
 
 - Backend: Python, FastAPI, SQLAlchemy, SQLite.
 - UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system.
-- Tests: pytest (183 tests), Vitest with React Testing Library (90 tests).
+- Tests: pytest (209 tests), Vitest with React Testing Library (113 tests).
 
 ## Structure
 
