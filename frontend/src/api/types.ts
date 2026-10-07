@@ -103,3 +103,28 @@ export interface EmployeeDetail extends Employee {
   range_penetration: number | null
   range_status: RangeStatus
 }
+
+export interface PayHealthSummary {
+  below_count: number
+  above_count: number
+  /** The cost to move all below-range salaries to the band minimum, in the reporting currency. */
+  correction_cost_minor: number
+  reporting_currency: string
+}
+
+export type OutlierStatus = 'below' | 'above'
+
+export interface Outlier {
+  id: number
+  employee_code: string
+  full_name: string
+  job_title: string
+  job_level: number
+  department: string
+  country: string
+  currency: string
+  salary_minor: number
+  /** The band minimum for a below-range employee, the band maximum for an above-range one. */
+  band_limit_minor: number
+  difference_minor: number
+}

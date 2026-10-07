@@ -9,11 +9,13 @@ import { BandsPage } from './pages/bands/BandsPage'
 import { EmployeeDetailPage } from './pages/employee-detail/EmployeeDetailPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
 import { OverviewPage } from './pages/overview/OverviewPage'
+import { PayHealthPage } from './pages/pay-health/PayHealthPage'
 
 const SCREENS = [
   { path: '/overview', label: 'Overview' },
   { path: '/employees', label: 'Employees' },
   { path: '/bands', label: 'Salary bands' },
+  { path: '/pay-health', label: 'Pay health' },
 ]
 
 export function App() {
@@ -47,6 +49,7 @@ export function App() {
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/employees/:id" element={<EmployeeDetailPage />} />
             <Route path="/bands" element={<BandsPage />} />
+            <Route path="/pay-health" element={<PayHealthPage />} />
             <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>
         </AppShell>
