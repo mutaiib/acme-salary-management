@@ -1,5 +1,25 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import { type ApiError, toApiError } from '../api/client'
+
+// The number of loads that run now, for all screens. The bar at the top of the
+// application reads it, so each load shows in one place.
+let activeLoads = 0
+const listeners = new Set<() => void>()
+
+function changeActiveLoads(change: 1 | -1) {
+  activeLoads += change
+  listeners.forEach((listener) => listener())
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+/** True while one or more loads of `useApi` run. */
+export function useIsLoading(): boolean {
+  return useSyncExternalStore(subscribe, () => activeLoads > 0)
+}
 
 export interface ApiState<T> {
   data: T | undefined
@@ -24,6 +44,7 @@ export function useApi<T>(load: () => Promise<T>, deps: unknown[]): ApiState<T> 
     setIsLoading(true)
     // A new attempt removes the old error, so the screen shows that it tries again.
     setError(undefined)
+    changeActiveLoads(1)
     load()
       .then((result) => {
         if (isCurrent) {
@@ -36,6 +57,7 @@ export function useApi<T>(load: () => Promise<T>, deps: unknown[]): ApiState<T> 
         }
       })
       .finally(() => {
+        changeActiveLoads(-1)
         if (isCurrent) {
           setIsLoading(false)
         }

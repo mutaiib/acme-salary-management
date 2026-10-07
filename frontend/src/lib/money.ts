@@ -13,3 +13,13 @@ export function toMinor(units: number | null): number {
 export function toUnits(amountMinor: number): number {
   return amountMinor / MINOR_PER_UNIT
 }
+
+/** A salary after an increase of `pct` percent, as a whole number of currency units. */
+export function raisedBy(amountMinor: number, pct: number): number {
+  return Math.round((amountMinor * (1 + pct / 100)) / MINOR_PER_UNIT) * MINOR_PER_UNIT
+}
+
+/** The change from an old salary to a new salary in percent, with 1 decimal place. */
+export function changePct(oldMinor: number, newMinor: number): number {
+  return Math.round(((newMinor - oldMinor) / oldMinor) * 1000) / 10
+}

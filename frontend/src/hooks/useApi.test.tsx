@@ -2,7 +2,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { ApiError } from '../api/client'
-import { useApi } from './useApi'
+import { useApi, useIsLoading } from './useApi'
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -42,4 +42,17 @@ test('removes the error while it tries again', async () => {
   expect(result.current.isLoading).toBe(true)
   await act(async () => attempt.resolve('data'))
   await waitFor(() => expect(result.current.data).toBe('data'))
+})
+
+test('tells the application that a load runs, until the reply arrives', async () => {
+  const reply = deferred<string>()
+  const { result } = renderHook(() => {
+    useApi(() => reply.promise, [])
+    return useIsLoading()
+  })
+  expect(result.current).toBe(true)
+
+  await act(async () => reply.resolve('data'))
+
+  await waitFor(() => expect(result.current).toBe(false))
 })

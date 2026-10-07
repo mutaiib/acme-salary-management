@@ -9,3 +9,8 @@ import { type ApiState, useApi } from './useApi'
 export function useMeta(): ApiState<Meta> {
   return useApi(getMeta, [])
 }
+
+/** The name of a country for its code. The code shows while the fixed values load. */
+export function countryNameOf(meta: Meta | undefined, code: string): string {
+  return meta?.countries.find((country) => country.code === code)?.name ?? code
+}

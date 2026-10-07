@@ -6,3 +6,11 @@ export function positionOnBand(amountMinor: number, band: Band): number {
   const position = ((amountMinor - band.min_minor) / width) * 100
   return Math.min(100, Math.max(0, Math.round(position)))
 }
+
+/**
+ * The amount between a salary and the band maximum. It is negative when the salary
+ * is above the band maximum.
+ */
+export function roomToMaximum(amountMinor: number, band: Band): number {
+  return band.max_minor - amountMinor
+}

@@ -19,6 +19,7 @@ interface Props<T> {
  * Shows the loading, error, empty or loaded state of one API call.
  * Each screen uses it, so the four states look the same everywhere.
  * When a later load fails, the data that is on the screen stays, below the error.
+ * While a later load runs, the old data stays. `LoadingBar` shows the load.
  */
 export function DataState<T>({ state, isEmpty, emptyTitle, emptyDescription, children }: Props<T>) {
   const { data, error, isLoading, reload } = state
@@ -29,18 +30,24 @@ export function DataState<T>({ state, isEmpty, emptyTitle, emptyDescription, chi
     }
     return isLoading ? <LoadingRows /> : null
   }
+  const content = isEmpty?.(data) ? (
+    <EmptyState
+      title={emptyTitle ?? 'Nothing to show'}
+      description={emptyDescription}
+      headingLevel={2}
+    />
+  ) : (
+    children(data)
+  )
+  // Without an error, the content has no wrapper. A table in a card then keeps the
+  // space above it, because Astryx moves the first element of a wrapper to the card edge.
+  if (!error) {
+    return <>{content}</>
+  }
   return (
     <Stack gap={4}>
-      {error && <LoadError message={error.message} onRetry={reload} />}
-      {isEmpty?.(data) ? (
-        <EmptyState
-          title={emptyTitle ?? 'Nothing to show'}
-          description={emptyDescription}
-          headingLevel={2}
-        />
-      ) : (
-        children(data)
-      )}
+      <LoadError message={error.message} onRetry={reload} />
+      {content}
     </Stack>
   )
 }

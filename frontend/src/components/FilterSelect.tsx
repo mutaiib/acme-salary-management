@@ -14,7 +14,10 @@ interface Props {
   width?: number
 }
 
-/** One filter. The HR Manager clears it to see all values again. */
+/**
+ * One filter. The closed field shows the name of the filter, so a row of filters
+ * has one line. The HR Manager clears it to see all values again.
+ */
 export function FilterSelect({ label, options, value, onChange, width = 180 }: Props) {
   return (
     <Selector
@@ -22,7 +25,8 @@ export function FilterSelect({ label, options, value, onChange, width = 180 }: P
       options={options}
       value={value || null}
       onChange={(next: string | null) => onChange(next ?? '')}
-      placeholder="All"
+      isLabelHidden
+      placeholder={label}
       hasClear
       size="sm"
       width={width}

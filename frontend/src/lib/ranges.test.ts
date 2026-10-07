@@ -1,7 +1,7 @@
 // FR-08: the position of an amount on a salary band.
 import { expect, test } from 'vitest'
 import { band } from '../test/data'
-import { positionOnBand } from './ranges'
+import { positionOnBand, roomToMaximum } from './ranges'
 
 const BAND = band(1, { min_minor: 3_500_000, mid_minor: 5_000_000, max_minor: 6_500_000 })
 
@@ -20,4 +20,12 @@ test('an amount below the band stays at 0', () => {
 
 test('an amount above the band stays at 100', () => {
   expect(positionOnBand(9_000_000, BAND)).toBe(100)
+})
+
+test('the room to the band maximum is the maximum minus the salary', () => {
+  expect(roomToMaximum(6_000_000, BAND)).toBe(500_000)
+})
+
+test('the room to the band maximum is negative for a salary above the band', () => {
+  expect(roomToMaximum(7_000_000, BAND)).toBe(-500_000)
 })

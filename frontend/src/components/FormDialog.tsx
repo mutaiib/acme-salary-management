@@ -38,10 +38,17 @@ export function FormDialog({
   }
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={(open) => !open && onClose()} purpose="form" width={480}>
+    // The default height limit of a dialog cut the buttons of a long form on a low window.
+    <Dialog
+      isOpen={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      purpose="form"
+      width={520}
+      maxHeight="96dvh"
+    >
       <DialogHeader title={title} subtitle={subtitle} onOpenChange={onClose} />
       <form onSubmit={handleSubmit} noValidate>
-        <Stack gap={4} padding={4}>
+        <Stack gap={3} padding={4}>
           {error && <Banner status="error" title={error} />}
           {children}
           <Stack direction="horizontal" gap={2} hAlign="end">

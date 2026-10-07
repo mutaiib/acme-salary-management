@@ -1,4 +1,4 @@
-// FR-01, FR-03, FR-06, FR-07, FR-09, FR-11: the loading, empty and error states of each screen.
+// FR-01, FR-03, FR-06, FR-07, FR-09: the loading, empty and error states of each screen.
 import { screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { ApiError } from '../api/client'
