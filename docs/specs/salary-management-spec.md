@@ -80,7 +80,7 @@ Terms: `docs/glossary.md`. Requirements: `docs/requirements.md`. Each criterion 
 - [ ] The Pay equity screen shows the mean gap and the median gap for the organization, in USD.
 - [ ] The Pay equity screen shows the mean gap and the median gap for each country, in the local currency.
 - [ ] Each group shows the number of men and the number of women.
-- [ ] A group with a mean gap or a median gap of more than 5% has a flag.
+- [ ] A group with a mean gap or a median gap of more than 5%, in favor of men or of women, has a flag.
 - [ ] A group with fewer than 5 men or fewer than 5 women shows "not enough data" and no gap.
 - [ ] The screen shows the label "unadjusted" and a description of its meaning.
 - [ ] A negative gap shows that women have the higher pay.
