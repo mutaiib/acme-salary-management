@@ -1,4 +1,4 @@
-import type { Employee, Meta, Page, SalaryChange } from '../api/types'
+import type { Band, Employee, EmployeeDetail, Meta, Page, SalaryChange } from '../api/types'
 
 export function employee(number: number, overrides: Partial<Employee> = {}): Employee {
   return {
@@ -45,4 +45,32 @@ export const META: Meta = {
   job_levels: [1, 2, 3, 4, 5],
   reporting_currency: 'USD',
   rates_as_of: '2026-01-01',
+}
+
+export function band(number: number, overrides: Partial<Band> = {}): Band {
+  return {
+    id: number,
+    job_level: 2,
+    country: 'US',
+    currency: 'USD',
+    min_minor: 5_200_000,
+    mid_minor: 6_500_000,
+    max_minor: 7_800_000,
+    ...overrides,
+  }
+}
+
+/** An employee at the midpoint of the default band. */
+export function employeeDetail(
+  number: number,
+  overrides: Partial<EmployeeDetail> = {},
+): EmployeeDetail {
+  return {
+    ...employee(number),
+    band: band(1),
+    compa_ratio: 1.0,
+    range_penetration: 50.0,
+    range_status: 'in_range',
+    ...overrides,
+  }
 }

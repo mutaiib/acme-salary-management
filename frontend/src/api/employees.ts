@@ -1,5 +1,11 @@
 import { getJson, sendJson } from './client'
-import type { Employee, Page, SalaryChange, SalaryChangeRequest } from './types'
+import type {
+  Employee,
+  EmployeeDetail,
+  Page,
+  SalaryChange,
+  SalaryChangeRequest,
+} from './types'
 
 export interface EmployeeListQuery {
   page: number
@@ -15,7 +21,7 @@ export function listEmployees(query: EmployeeListQuery): Promise<Page<Employee>>
   return getJson('/api/employees', { ...query })
 }
 
-export function getEmployee(id: number): Promise<Employee> {
+export function getEmployee(id: number): Promise<EmployeeDetail> {
   return getJson(`/api/employees/${id}`)
 }
 

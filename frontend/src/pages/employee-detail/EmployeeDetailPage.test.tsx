@@ -1,15 +1,15 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
-import type { Employee, SalaryChange } from '../../api/types'
+import type { EmployeeDetail, SalaryChange } from '../../api/types'
 import { refuse, stubApi } from '../../test/api'
-import { employee, salaryChange } from '../../test/data'
+import { band, employeeDetail, salaryChange } from '../../test/data'
 import { renderScreen } from '../../test/render'
 import { EmployeeDetailPage } from './EmployeeDetailPage'
 
-const ASHA = employee(7, { full_name: 'Asha Rao', salary_minor: 6_500_000 })
+const ASHA = employeeDetail(7, { full_name: 'Asha Rao', salary_minor: 6_500_000 })
 
-function open(replies: Record<string, unknown> = {}, who: Employee = ASHA) {
+function open(replies: Record<string, unknown> = {}, who: EmployeeDetail = ASHA) {
   const api = stubApi({
     '/api/employees/7': who,
     '/api/employees/7/salary-changes': [salaryChange(1)],
@@ -89,7 +89,7 @@ test('sends the new salary in minor units with the reason and the date', async (
 })
 
 test('shows the new salary and the new history row after a salary change', async () => {
-  let current: Employee = ASHA
+  let current: EmployeeDetail = ASHA
   let history: SalaryChange[] = [salaryChange(1)]
   open({
     '/api/employees/7': () => current,
@@ -142,7 +142,7 @@ test('does not send a salary change without a reason', async () => {
 })
 
 test('deactivates the employee after the HR Manager confirms', async () => {
-  let current: Employee = ASHA
+  let current: EmployeeDetail = ASHA
   open({
     '/api/employees/7': () => current,
     'POST /api/employees/7/deactivate': () => {
@@ -173,4 +173,47 @@ test('shows a not found state for an employee that does not exist', async () => 
   renderScreen(<EmployeeDetailPage />, { at: '/employees/7', path: '/employees/:id' })
 
   expect(await screen.findByText('Employee not found')).toBeInTheDocument()
+})
+
+test('shows the compa-ratio, the range penetration and the band of the employee', async () => {
+  open(
+    {},
+    {
+      ...ASHA,
+      salary_minor: 4_500_000,
+      band: band(1, { min_minor: 3_500_000, mid_minor: 5_000_000, max_minor: 6_500_000 }),
+      compa_ratio: 0.9,
+      range_penetration: 33.3,
+      range_status: 'in_range',
+    },
+  )
+
+  expect(await screen.findByTestId('compa-ratio')).toHaveTextContent('0.90')
+  expect(screen.getByTestId('range-penetration')).toHaveTextContent('33.3%')
+  const section = within(screen.getByTestId('position-in-range'))
+  expect(section.getByText('In range')).toBeInTheDocument()
+  expect(section.getByText('$35,000')).toBeInTheDocument()
+  expect(section.getByText('$65,000')).toBeInTheDocument()
+})
+
+test('marks an employee who is below range', async () => {
+  open({}, { ...ASHA, compa_ratio: 0.75, range_penetration: -12.5, range_status: 'below' })
+
+  expect(await screen.findByText('Below range')).toBeInTheDocument()
+})
+
+test('marks an employee who is above range', async () => {
+  open({}, { ...ASHA, compa_ratio: 1.3, range_penetration: 125.0, range_status: 'above' })
+
+  expect(await screen.findByText('Above range')).toBeInTheDocument()
+})
+
+test('shows that an employee has no salary band', async () => {
+  open(
+    {},
+    { ...ASHA, band: null, compa_ratio: null, range_penetration: null, range_status: 'no_band' },
+  )
+
+  expect(await screen.findByText('No salary band')).toBeInTheDocument()
+  expect(screen.queryByTestId('compa-ratio')).not.toBeInTheDocument()
 })

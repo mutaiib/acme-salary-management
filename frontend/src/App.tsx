@@ -5,6 +5,7 @@ import { Theme } from '@astryxdesign/core/theme'
 import { neutralTheme } from '@astryxdesign/theme-neutral/built'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { RouterLink } from './components/RouterLink'
+import { BandsPage } from './pages/bands/BandsPage'
 import { EmployeeDetailPage } from './pages/employee-detail/EmployeeDetailPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
 import { OverviewPage } from './pages/overview/OverviewPage'
@@ -12,6 +13,7 @@ import { OverviewPage } from './pages/overview/OverviewPage'
 const SCREENS = [
   { path: '/overview', label: 'Overview' },
   { path: '/employees', label: 'Employees' },
+  { path: '/bands', label: 'Salary bands' },
 ]
 
 export function App() {
@@ -44,6 +46,7 @@ export function App() {
             <Route path="/overview" element={<OverviewPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+            <Route path="/bands" element={<BandsPage />} />
             <Route path="*" element={<Navigate to="/overview" replace />} />
           </Routes>
         </AppShell>

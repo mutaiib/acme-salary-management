@@ -77,3 +77,29 @@ export interface Overview {
   group_by: string
   groups: GroupFigures[]
 }
+
+export interface Band {
+  id: number
+  job_level: number
+  country: string
+  currency: string
+  min_minor: number
+  mid_minor: number
+  max_minor: number
+}
+
+export interface BandRequest {
+  min_minor: number
+  mid_minor: number
+  max_minor: number
+}
+
+export type RangeStatus = 'below' | 'in_range' | 'above' | 'no_band'
+
+/** An employee with the position of the salary in the salary band. */
+export interface EmployeeDetail extends Employee {
+  band: Band | null
+  compa_ratio: number | null
+  range_penetration: number | null
+  range_status: RangeStatus
+}

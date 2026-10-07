@@ -13,6 +13,7 @@ import { DataState, PageHeader, StatusBadge } from '../../components'
 import { useApi } from '../../hooks/useApi'
 import { formatDate, formatMoney } from '../../lib/format'
 import { DeactivateDialog } from './DeactivateDialog'
+import { PositionInRange } from './PositionInRange'
 import { SalaryChangeDialog } from './SalaryChangeDialog'
 import { SalaryHistoryTable } from './SalaryHistoryTable'
 
@@ -77,6 +78,7 @@ export function EmployeeDetailPage() {
               <MetadataListItem label="Hire date">{formatDate(data.hire_date)}</MetadataListItem>
               <MetadataListItem label="Gender">{capitalize(data.gender)}</MetadataListItem>
             </MetadataList>
+            <PositionInRange employee={data} />
             {/* The key resets the form each time the salary changes. */}
             <SalaryChangeDialog
               key={data.salary_minor}
