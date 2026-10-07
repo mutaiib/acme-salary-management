@@ -2,14 +2,21 @@
 
 from collections import Counter
 
+import pytest
+
 from app.reference import COUNTRIES, JOB_LEVELS
 from app.seed import EMPLOYEE_COUNT, SEED, generate_dataset
 
 SMALL = 2_000
 
 
-def test_creates_the_requested_number_of_employees():
-    dataset = generate_dataset(count=SMALL, seed=42)
+@pytest.fixture(scope="module")
+def dataset():
+    """One dataset for the tests that only read it. The generator is slow to run 10 times."""
+    return generate_dataset(count=SMALL, seed=42)
+
+
+def test_creates_the_requested_number_of_employees(dataset):
 
     assert len(dataset.employees) == SMALL
 
@@ -22,29 +29,25 @@ def test_a_different_seed_gives_different_data():
     assert generate_dataset(count=SMALL, seed=42) != generate_dataset(count=SMALL, seed=7)
 
 
-def test_each_employee_code_and_email_is_unique():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_each_employee_code_and_email_is_unique(dataset):
 
     assert len({e["employee_code"] for e in dataset.employees}) == SMALL
     assert len({e["email"] for e in dataset.employees}) == SMALL
 
 
-def test_creates_one_band_for_each_job_level_in_each_country():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_creates_one_band_for_each_job_level_in_each_country(dataset):
 
     keys = [(b["job_level"], b["country"]) for b in dataset.bands]
 
     assert sorted(keys) == sorted((level, code) for level in JOB_LEVELS for code in COUNTRIES)
 
 
-def test_each_band_has_a_minimum_below_the_midpoint_below_the_maximum():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_each_band_has_a_minimum_below_the_midpoint_below_the_maximum(dataset):
 
     assert all(b["min_minor"] < b["mid_minor"] < b["max_minor"] for b in dataset.bands)
 
 
-def test_creates_one_exchange_rate_for_each_currency():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_creates_one_exchange_rate_for_each_currency(dataset):
 
     currencies = {country.currency for country in COUNTRIES.values()}
 
@@ -52,14 +55,12 @@ def test_creates_one_exchange_rate_for_each_currency():
     assert len(dataset.rates) == len(currencies)
 
 
-def test_each_employee_uses_the_currency_of_the_country():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_each_employee_uses_the_currency_of_the_country(dataset):
 
     assert all(e["currency"] == COUNTRIES[e["country"]].currency for e in dataset.employees)
 
 
-def test_the_first_salary_of_each_employee_is_the_first_salary_change():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_the_first_salary_of_each_employee_is_the_first_salary_change(dataset):
 
     changes = {c["employee_id"]: c for c in dataset.salary_changes}
 
@@ -71,8 +72,7 @@ def test_the_first_salary_of_each_employee_is_the_first_salary_change():
         assert change["effective_date"] == employee["hire_date"]
 
 
-def test_plants_the_recorded_number_of_salaries_outside_the_band():
-    dataset = generate_dataset(count=SMALL, seed=42)
+def test_plants_the_recorded_number_of_salaries_outside_the_band(dataset):
     bands = {(b["job_level"], b["country"]): b for b in dataset.bands}
     active = [e for e in dataset.employees if e["status"] == "active"]
 

@@ -11,8 +11,8 @@ def test_lists_the_band_of_each_job_level_in_each_country(client, make):
     bands = client.get("/api/bands").json()
 
     assert [(b["country"], b["job_level"]) for b in bands] == [("DE", 1), ("US", 1), ("US", 2)]
-    assert bands[1] == {
-        "id": bands[1]["id"],
+    assert bands[1] | {"id": 0} == {
+        "id": 0,
         "job_level": 1,
         "country": "US",
         "currency": "USD",
@@ -108,3 +108,18 @@ def test_refuses_a_band_value_above_the_largest_amount_that_the_system_keeps(cli
 
     assert response.status_code == 422
     assert response.json()["detail"][0]["field"] == "max_minor"
+
+
+def test_refuses_a_minimum_that_is_not_more_than_zero(client, make):
+    band = make.band()
+
+    response = client.put(
+        f"/api/bands/{band.id}",
+        json={"min_minor": 0, "mid_minor": 6_000_000, "max_minor": 7_000_000},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["detail"][0] == {
+        "field": "min_minor",
+        "cause": "The minimum must be more than zero.",
+    }

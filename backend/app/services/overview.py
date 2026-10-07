@@ -1,16 +1,24 @@
+"""FR-01, FR-02: the payroll cost and the salary figures, by group.
+
+Tests: tests/api/test_overview.py, tests/unit/test_money.py.
+"""
+
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models import Employee
-from app.reference import COUNTRIES, REPORTING_CURRENCY
+from app.reference import COUNTRIES, REPORTING_CURRENCY, GroupBy
 from app.services.meta import rates_as_of
-from app.services.sql import active_employees_with_rate, median_by_group, usd_minor
-
-GroupBy = Literal["country", "department", "job_level"]
+from app.services.sql import (
+    GROUP,
+    VALUE,
+    active_employees_with_rate,
+    median_by_group,
+    reporting_minor,
+)
 
 GROUP_COLUMNS = {
     "country": Employee.country,
@@ -38,7 +46,7 @@ class Overview:
     payroll_cost_minor: int
     headcount: int
     rates_as_of: date | None
-    group_by: str
+    group_by: GroupBy
     groups: list[GroupFigures]
 
 
@@ -50,7 +58,7 @@ def overview(session: Session, group_by: GroupBy) -> Overview:
     or a job level has many currencies, so it shows them in the reporting currency.
     """
     group = GROUP_COLUMNS[group_by]
-    cost = usd_minor(Employee.salary_minor)
+    cost = reporting_minor(Employee.salary_minor)
     salary = Employee.salary_minor if group_by == "country" else cost
 
     aggregates = session.execute(
@@ -59,7 +67,7 @@ def overview(session: Session, group_by: GroupBy) -> Overview:
         ).group_by(group)
     ).all()
     medians = median_by_group(
-        session, active_employees_with_rate(group.label("grp"), salary.label("val"))
+        session, active_employees_with_rate(group.label(GROUP), salary.label(VALUE))
     )
 
     groups = [

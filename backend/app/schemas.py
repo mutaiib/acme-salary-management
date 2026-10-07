@@ -1,9 +1,14 @@
+"""The request and response shapes of the API. `frontend/src/api/types.ts` has the same
+shapes for the UI. Change the two files together."""
+
 from datetime import date, datetime
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.calculations.money import MAX_AMOUNT_MINOR
+from app.calculations.ranges import RangeStatus
+from app.reference import Gender, GroupBy, Status
 
 MAX_REASON_LENGTH = 500
 # The lower limits are business rules, so the services check them and give the cause.
@@ -23,13 +28,15 @@ class EmployeeOut(BaseModel):
     country: str
     currency: str
     salary_minor: int
-    gender: str
+    gender: Gender
     hire_date: date
-    status: str
+    status: Status
 
 
-class EmployeePage(BaseModel):
-    items: list[EmployeeOut]
+class PageOut[T](BaseModel):
+    """One page of a list."""
+
+    items: list[T]
     page: int
     page_size: int
     total: int
@@ -42,6 +49,8 @@ class SalaryChangeIn(BaseModel):
 
 
 class SalaryChangeOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     old_salary_minor: int | None
     new_salary_minor: int
@@ -87,7 +96,7 @@ class OverviewOut(BaseModel):
     payroll_cost_minor: int
     headcount: int
     rates_as_of: date | None
-    group_by: str
+    group_by: GroupBy
     groups: list[GroupFiguresOut]
 
 
@@ -116,7 +125,7 @@ class EmployeeDetailOut(EmployeeOut):
     # A ratio and a percentage are not money, so they are plain numbers in JSON.
     compa_ratio: float | None
     range_penetration: float | None
-    range_status: str
+    range_status: RangeStatus
 
 
 class PayHealthSummaryOut(BaseModel):
@@ -129,6 +138,8 @@ class PayHealthSummaryOut(BaseModel):
 
 
 class OutlierOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     employee_code: str
     full_name: str
@@ -140,13 +151,6 @@ class OutlierOut(BaseModel):
     salary_minor: int
     band_limit_minor: int
     difference_minor: int
-
-
-class OutlierPage(BaseModel):
-    items: list[OutlierOut]
-    page: int
-    page_size: int
-    total: int
 
 
 class GapOut(BaseModel):

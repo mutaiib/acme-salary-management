@@ -27,7 +27,9 @@ def acme(make):
 
 
 def summary(client):
-    return client.get("/api/insights/pay-health").json()
+    response = client.get("/api/insights/pay-health")
+    assert response.status_code == 200
+    return response.json()
 
 
 def outliers(client, status, **params):
@@ -191,8 +193,29 @@ def test_compares_a_salary_only_to_the_band_of_the_same_job_level(client, make):
     assert summary(client)["below_count"] == 0
 
 
-def test_an_employee_without_an_exchange_rate_is_not_in_the_summary(client, make):
+def test_an_employee_without_an_exchange_rate_is_not_in_the_summary_or_the_list(client, make):
     make.band(**BAND)
     make.employee(salary_minor=4_000_000)
 
     assert summary(client)["below_count"] == 0
+    assert outliers(client, "below")["total"] == 0
+
+
+def test_orders_by_the_difference_as_a_part_of_the_band_and_not_by_the_amount(client, make):
+    make.rate("USD", 1_000_000)
+    make.rate("INR", 12_000)
+    make.band(country="US", job_level=2, **BAND)
+    make.band(
+        country="IN",
+        job_level=2,
+        currency="INR",
+        min_minor=100_000_000,
+        mid_minor=125_000_000,
+        max_minor=150_000_000,
+    )
+    # 20% below the minimum, a small amount.
+    make.employee(country="US", currency="USD", full_name="Far Below", salary_minor=4_000_000)
+    # 1% below the minimum, a large amount.
+    make.employee(country="IN", currency="INR", full_name="Near Minimum", salary_minor=99_000_000)
+
+    assert names(outliers(client, "below")) == ["Far Below", "Near Minimum"]

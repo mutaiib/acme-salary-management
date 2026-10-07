@@ -13,7 +13,16 @@ from sqlalchemy import insert
 from sqlalchemy.orm import Session
 
 from app.models import Employee, ExchangeRate, SalaryBand, SalaryChange
-from app.reference import ACTIVE, COUNTRIES, INACTIVE, JOB_LEVELS, job_title
+from app.reference import (
+    ACTIVE,
+    COUNTRIES,
+    DEPARTMENTS,
+    FEMALE,
+    INACTIVE,
+    JOB_LEVELS,
+    MALE,
+    job_title,
+)
 
 EMPLOYEE_COUNT = 10_000
 SEED = 42
@@ -59,7 +68,7 @@ ABOVE_RANGE_PCT = 2
 GAP_COUNTRIES = ("DE", "GB", "IN")
 
 FIRST_NAMES = {
-    "male": [
+    MALE: [
         "Aarav",
         "Adam",
         "Ahmed",
@@ -93,7 +102,7 @@ FIRST_NAMES = {
         "Wei",
         "William",
     ],
-    "female": [
+    FEMALE: [
         "Aisha",
         "Amelia",
         "Ananya",
@@ -181,6 +190,13 @@ LAST_NAMES = [
     "Wright",
     "Young",
 ]
+
+# The tables above must have one entry for each country, currency, job level and
+# department of ACME. A missing entry stops the seed script here, with a clear cause.
+assert set(COUNTRY_SHARE) == set(COUNTRY_PAY_PCT) == set(COUNTRIES), "country tables"
+assert {country.currency for country in COUNTRIES.values()} == set(RATES_MICRO), "exchange rates"
+assert set(LEVEL_SHARE) == set(LEVEL_MIDPOINT_USD) == set(JOB_LEVELS), "job level tables"
+assert set(DEPARTMENT_SHARE) == set(DEPARTMENTS), "department table"
 
 Row = dict[str, object]
 
@@ -290,8 +306,8 @@ def _profiles(rng: random.Random, count: int) -> list[tuple[str, int, str]]:
     for country, country_count in countries.items():
         for level, level_count in _allocate(country_count, LEVEL_SHARE).items():
             women = level_count * WOMEN_PCT // 100
-            profiles += [(country, level, "female")] * women
-            profiles += [(country, level, "male")] * (level_count - women)
+            profiles += [(country, level, FEMALE)] * women
+            profiles += [(country, level, MALE)] * (level_count - women)
     rng.shuffle(profiles)
     return profiles
 
@@ -309,9 +325,9 @@ def _pick(rng: random.Random, shares: dict[str, int]) -> str:
 
 
 def _salary_in_band(rng: random.Random, band: Row, country: str, gender: str) -> int:
-    if gender == "female" and country in GAP_COUNTRIES:
+    if gender == FEMALE and country in GAP_COUNTRIES:
         position = rng.triangular(0.0, 0.75, 0.15)
-    elif gender == "female":
+    elif gender == FEMALE:
         position = rng.triangular(0.0, 1.0, 0.45)
     else:
         position = rng.triangular(0.0, 1.0, 0.5)

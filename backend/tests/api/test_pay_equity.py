@@ -173,3 +173,27 @@ def test_the_median_gap_of_a_group_with_an_even_headcount_uses_the_two_middle_sa
 
     # Median of men: (9,000,000 + 11,000,000) / 2 = 10,000,000. The gap is 10%.
     assert country(equity(client), "US")["median_gap_pct"] == 10.0
+
+
+def test_lists_the_country_with_the_largest_gap_first_when_two_countries_have_a_flag(client, make):
+    make.rate("USD", 1_000_000)
+    make.rate("EUR", 1_080_000)
+    staff(make, "US", "USD", "male", [10_000_000] * 5)
+    staff(make, "US", "USD", "female", [9_000_000] * 5)
+    staff(make, "DE", "EUR", "male", [10_000_000] * 5)
+    staff(make, "DE", "EUR", "female", [8_000_000] * 5)
+
+    assert [item["key"] for item in equity(client)["countries"]] == ["DE", "US"]
+
+
+def test_an_employee_without_an_exchange_rate_is_not_in_a_gap(client, make):
+    make.rate("USD", 1_000_000)
+    staff(make, "US", "USD", "male", [10_000_000] * 5)
+    staff(make, "US", "USD", "female", [9_000_000] * 5)
+    staff(make, "DE", "EUR", "male", [10_000_000] * 5)
+    staff(make, "DE", "EUR", "female", [5_000_000] * 5)
+
+    body = equity(client)
+
+    assert [item["key"] for item in body["countries"]] == ["US"]
+    assert body["organization"]["men"] == 5

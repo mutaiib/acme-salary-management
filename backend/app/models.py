@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 from sqlalchemy import ForeignKey, Index, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
 
@@ -53,7 +53,15 @@ class SalaryChange(Base):
     new_salary_minor: Mapped[int]
     reason: Mapped[str]
     effective_date: Mapped[date]
+    # The time of the record, in UTC.
     created_at: Mapped[datetime]
+
+    employee: Mapped[Employee] = relationship()
+
+    @property
+    def currency(self) -> str:
+        """A salary change has the currency of the employee."""
+        return self.employee.currency
 
 
 class ExchangeRate(Base):

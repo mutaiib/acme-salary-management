@@ -133,8 +133,23 @@ def test_lists_the_countries_with_the_highest_payroll_cost_first(client, acme):
     assert [item["key"] for item in overview(client, "country")["groups"]] == ["US", "DE", "IN"]
 
 
-def test_lists_the_job_levels_in_level_order(client, acme):
-    assert [item["key"] for item in overview(client, "job_level")["groups"]] == ["2", "3"]
+def test_lists_the_job_levels_in_level_order_and_not_in_cost_order(client, make):
+    make.rate("USD", 1_000_000)
+    make.employee(job_level=4, salary_minor=20_000_000)
+    make.employee(job_level=1, salary_minor=1_000_000)
+
+    assert [item["key"] for item in overview(client, "job_level")["groups"]] == ["1", "4"]
+
+
+def test_an_employee_without_an_exchange_rate_is_not_in_the_overview(client, make):
+    make.rate("USD", 1_000_000)
+    make.employee(currency="USD", salary_minor=6_000_000)
+    make.employee(country="BR", currency="BRL", salary_minor=9_000_000)
+
+    body = overview(client, "department")
+
+    assert body["headcount"] == 1
+    assert body["payroll_cost_minor"] == 6_000_000
 
 
 def test_the_sql_figures_agree_with_the_pure_calculations(client, acme, session):

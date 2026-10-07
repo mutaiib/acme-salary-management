@@ -131,3 +131,9 @@ def test_finds_an_employee_whose_name_contains_a_percent_sign(client, make):
     response = client.get("/api/employees", params={"search": "100%"})
 
     assert [item["full_name"] for item in response.json()["items"]] == ["Asha 100% Rao"]
+
+
+def test_a_search_treats_an_underscore_as_text(client, make):
+    make.employee(full_name="Asha Rao")
+
+    assert codes(client.get("/api/employees", params={"search": "_"})) == []

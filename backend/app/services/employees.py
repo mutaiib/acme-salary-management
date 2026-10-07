@@ -1,25 +1,31 @@
+"""FR-03, FR-04, FR-05, FR-06, FR-13: the employee list, salary changes and deactivation.
+
+Tests: tests/api/test_employees_list.py, test_employee_search.py, test_salary_changes.py,
+test_deactivate.py.
+"""
+
 import logging
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from sqlalchemy import Select, func, or_, select
+from sqlalchemy import ColumnElement, Select, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.errors import DomainError, NotFoundError
+from app.calculations.salary_changes import SalaryChangeError, validate_salary_change
+from app.errors import EMPLOYEE_FIELD, DomainError, NotFoundError
 from app.models import Employee, SalaryChange
 from app.reference import ACTIVE, INACTIVE
+from app.services.pagination import DEFAULT_PAGE_SIZE, Page, paginate
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_PAGE_SIZE = 25
-MAX_PAGE_SIZE = 100
-MAX_PAGE = 1_000_000
-
+DEFAULT_SORT = "employee_code"
 SORT_COLUMNS = {
-    "employee_code": Employee.employee_code,
+    DEFAULT_SORT: Employee.employee_code,
     "name": Employee.full_name,
     "hire_date": Employee.hire_date,
 }
+# A minus sign before the name gives the reverse order.
 SORT_OPTIONS = tuple(SORT_COLUMNS) + tuple(f"-{name}" for name in SORT_COLUMNS)
 
 
@@ -32,26 +38,18 @@ class EmployeeQuery:
     department: str | None = None
     job_level: int | None = None
     status: str | None = None
-    sort: str = "employee_code"
-
-
-@dataclass(frozen=True)
-class Page[T]:
-    items: list[T]
-    page: int
-    page_size: int
-    total: int
+    sort: str = DEFAULT_SORT
 
 
 def list_employees(session: Session, query: EmployeeQuery) -> Page[Employee]:
-    matching = _matching(select(Employee), query)
-    total = session.scalar(select(func.count()).select_from(matching.subquery())) or 0
-    rows = session.scalars(
-        matching.order_by(*_order(query.sort))
-        .limit(query.page_size)
-        .offset((query.page - 1) * query.page_size)
-    ).all()
-    return Page(items=list(rows), page=query.page, page_size=query.page_size, total=total)
+    return paginate(
+        session,
+        _matching(select(Employee), query),
+        _order(query.sort),
+        query.page,
+        query.page_size,
+        as_entities=True,
+    )
 
 
 def _matching(statement: Select, query: EmployeeQuery) -> Select:
@@ -71,7 +69,8 @@ def _matching(statement: Select, query: EmployeeQuery) -> Select:
         Employee.status: query.status,
     }
     for column, value in filters.items():
-        if value is not None:
+        # An empty value means "no filter", the same as in the other lists.
+        if value:
             statement = statement.where(column == value)
     return statement
 
@@ -80,7 +79,7 @@ def _escape_like(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
-def _order(sort: str) -> tuple:
+def _order(sort: str) -> tuple[ColumnElement, ...]:
     column = SORT_COLUMNS[sort.lstrip("-")]
     primary = column.desc() if sort.startswith("-") else column.asc()
     # The employee code makes the order stable when two rows have the same value.
@@ -106,25 +105,21 @@ def change_salary(
     """Sets a new salary and records the change. The two writes are one transaction."""
     employee = get_employee(session, employee_id)
     _require_active(employee)
-    if new_salary_minor <= 0:
-        raise DomainError("new_salary_minor", "The salary must be more than zero.")
-    if not reason.strip():
-        raise DomainError("reason", "Give a reason for the salary change.")
-    if effective_date > today:
-        raise DomainError("effective_date", "The effective date must not be in the future.")
-    if effective_date < employee.hire_date:
-        raise DomainError("effective_date", "The effective date must not be before the hire date.")
-    last_change_date = _last_change_date(session, employee.id)
-    if last_change_date is not None and effective_date < last_change_date:
-        # The newest row of the salary history must always give the current salary.
-        raise DomainError(
-            "effective_date", "The effective date must not be before the last salary change."
+    try:
+        validate_salary_change(
+            current_salary_minor=employee.salary_minor,
+            new_salary_minor=new_salary_minor,
+            reason=reason,
+            effective_date=effective_date,
+            hire_date=employee.hire_date,
+            last_change_date=_last_change_date(session, employee.id),
+            today=today,
         )
-    if new_salary_minor == employee.salary_minor:
-        raise DomainError("new_salary_minor", "The new salary is equal to the current salary.")
+    except SalaryChangeError as error:
+        raise DomainError(error.field, error.cause) from error
 
     change = SalaryChange(
-        employee_id=employee.id,
+        employee=employee,
         old_salary_minor=employee.salary_minor,
         new_salary_minor=new_salary_minor,
         reason=reason.strip(),
@@ -151,6 +146,7 @@ def _last_change_date(session: Session, employee_id: int) -> date | None:
 
 
 def list_salary_changes(session: Session, employee_id: int) -> list[SalaryChange]:
+    """The salary history of one employee, newest first."""
     get_employee(session, employee_id)
     return list(
         session.scalars(
@@ -172,4 +168,4 @@ def deactivate(session: Session, employee_id: int) -> Employee:
 
 def _require_active(employee: Employee) -> None:
     if employee.status != ACTIVE:
-        raise DomainError("employee", "The employee is not active.")
+        raise DomainError(EMPLOYEE_FIELD, "The employee is not active.")

@@ -1,3 +1,8 @@
+"""FR-11, FR-12, NFR-07: the unadjusted gender pay gap.
+
+Tests: tests/api/test_pay_equity.py, tests/unit/test_pay_gap.py.
+"""
+
 from dataclasses import dataclass
 from decimal import Decimal
 from fractions import Fraction
@@ -13,10 +18,15 @@ from app.calculations.pay_gap import (
     is_flagged,
 )
 from app.models import Employee
-from app.reference import COUNTRIES, REPORTING_CURRENCY
-from app.services.sql import active_employees_with_rate, median_by_group, usd_minor
+from app.reference import COUNTRIES, FEMALE, MALE, REPORTING_CURRENCY
+from app.services.sql import (
+    GROUP,
+    VALUE,
+    active_employees_with_rate,
+    median_by_group,
+    reporting_minor,
+)
 
-MEN, WOMEN = "male", "female"
 ORGANIZATION = "organization"
 
 
@@ -43,57 +53,73 @@ class PayEquity:
     min_group_size: int
 
 
+@dataclass(frozen=True)
+class _Pay:
+    """The pay of the men or of the women of one group."""
+
+    count: int = 0
+    total_minor: int = 0
+    median_minor: int = 0
+
+
 def pay_equity(session: Session) -> PayEquity:
     """The gap for the organization (in the reporting currency) and for each country
-    (in the local currency). A gap in one country needs no exchange rate."""
-    organization = _gaps(session, literal(ORGANIZATION), usd_minor(Employee.salary_minor))
-    countries = _gaps(session, Employee.country, Employee.salary_minor)
+    (in the local currency)."""
+    whole = _pay_by_group(
+        session, literal(ORGANIZATION), reporting_minor(Employee.salary_minor)
+    ).get(ORGANIZATION, {})
+    organization = _gap(ORGANIZATION, "Organization", REPORTING_CURRENCY, whole)
+    countries = [
+        _gap(code, COUNTRIES[code].name, COUNTRIES[code].currency, pay)
+        for code, pay in _pay_by_group(session, Employee.country, Employee.salary_minor).items()
+    ]
     return PayEquity(
-        organization=organization.get(ORGANIZATION) or _gap(ORGANIZATION, {}, {}, {}),
-        countries=sorted(countries.values(), key=_flagged_first),
+        organization=organization,
+        countries=sorted(countries, key=_flagged_first),
         flag_threshold_pct=FLAG_THRESHOLD_PCT,
         min_group_size=MIN_GROUP_SIZE,
     )
 
 
-def _gaps(session: Session, group: ColumnElement, pay: ColumnElement[int]) -> dict[str, Gap]:
-    counts: dict[tuple, int] = {}
-    totals: dict[tuple, int] = {}
-    rows = session.execute(
+def _pay_by_group(
+    session: Session, group: ColumnElement, pay: ColumnElement[int]
+) -> dict[str, dict[str, _Pay]]:
+    """For each group, the pay of each gender: `{group: {gender: _Pay}}`."""
+    medians = {
+        gender: median_by_group(
+            session,
+            active_employees_with_rate(group.label(GROUP), pay.label(VALUE)).where(
+                Employee.gender == gender
+            ),
+        )
+        for gender in (MALE, FEMALE)
+    }
+    aggregates = session.execute(
         active_employees_with_rate(group, Employee.gender, func.count(), func.sum(pay)).group_by(
             group, Employee.gender
         )
     )
-    for key, gender, count, total in rows:
-        counts[(key, gender)] = count
-        totals[(key, gender)] = int(total)
-
-    group_and_gender = (group + ":" + Employee.gender).label("grp")
-    medians = {
-        tuple(key.split(":")): median
-        for key, median in median_by_group(
-            session, active_employees_with_rate(group_and_gender, pay.label("val"))
-        ).items()
-    }
-    return {key: _gap(key, counts, totals, medians) for key in {key for key, _ in counts}}
+    result: dict[str, dict[str, _Pay]] = {}
+    for key, gender, count, total in aggregates:
+        result.setdefault(key, {})[gender] = _Pay(count, int(total), medians[gender][key])
+    return result
 
 
-def _gap(key: str, counts: dict, totals: dict, medians: dict) -> Gap:
-    men, women = counts.get((key, MEN), 0), counts.get((key, WOMEN), 0)
-    is_organization = key == ORGANIZATION
-    label = "Organization" if is_organization else COUNTRIES[key].name
-    currency = REPORTING_CURRENCY if is_organization else COUNTRIES[key].currency
-    if not has_enough_data(men, women):
-        return Gap(key, label, currency, men, women, None, None, False, False)
+def _gap(key: str, label: str, currency: str, pay: dict[str, _Pay]) -> Gap:
+    men, women = pay.get(MALE, _Pay()), pay.get(FEMALE, _Pay())
+    if not has_enough_data(men.count, women.count):
+        return Gap(key, label, currency, men.count, women.count, None, None, False, False)
 
-    mean_gap = gap_pct(Fraction(totals[(key, MEN)], men), Fraction(totals[(key, WOMEN)], women))
-    median_gap = gap_pct(medians[(key, MEN)], medians[(key, WOMEN)])
+    mean_gap = gap_pct(
+        Fraction(men.total_minor, men.count), Fraction(women.total_minor, women.count)
+    )
+    median_gap = gap_pct(men.median_minor, women.median_minor)
     return Gap(
         key=key,
         label=label,
         currency=currency,
-        men=men,
-        women=women,
+        men=men.count,
+        women=women.count,
         mean_gap_pct=mean_gap,
         median_gap_pct=median_gap,
         is_flagged=is_flagged(mean_gap, median_gap),

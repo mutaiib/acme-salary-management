@@ -5,8 +5,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.errors import add_error_handlers
 from app.routers import bands, employees, insights, meta
+from app.routers.error_handlers import add_error_handlers
 
 DEFAULT_STATIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 

@@ -44,3 +44,16 @@ def test_starts_without_a_built_ui(tmp_path):
     client = TestClient(create_app(static_dir=tmp_path / "missing"))
 
     assert client.get("/").status_code == 404
+
+
+def test_does_not_serve_a_file_outside_the_ui_directory(tmp_path):
+    (tmp_path / "secret.txt").write_text("secret")
+    ui_dir = tmp_path / "ui"
+    ui_dir.mkdir()
+    (ui_dir / "assets").mkdir()
+    (ui_dir / "index.html").write_text("<html>ACME UI</html>")
+    client = TestClient(create_app(static_dir=ui_dir))
+
+    response = client.get("/%2e%2e/secret.txt")
+
+    assert "secret" not in response.text.replace("ACME UI", "")

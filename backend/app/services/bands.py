@@ -1,3 +1,8 @@
+"""FR-07, FR-08: salary bands and the position of a salary in its band.
+
+Tests: tests/api/test_bands.py, test_employee_detail.py, tests/unit/test_ranges.py.
+"""
+
 import logging
 from dataclasses import dataclass
 from decimal import Decimal

@@ -1,11 +1,23 @@
-"""Fixed reference data: the countries, currencies and jobs of ACME."""
+"""Fixed reference data: the countries, currencies and jobs of ACME, and the allowed
+values of the status, the gender and the overview grouping."""
 
 from dataclasses import dataclass
+from typing import Literal
 
 REPORTING_CURRENCY = "USD"
+
 ACTIVE = "active"
 INACTIVE = "inactive"
 STATUSES = (ACTIVE, INACTIVE)
+Status = Literal["active", "inactive"]
+
+MALE = "male"
+FEMALE = "female"
+GENDERS = (MALE, FEMALE)
+Gender = Literal["male", "female"]
+
+# The groupings of the pay overview.
+GroupBy = Literal["country", "department", "job_level"]
 
 
 @dataclass(frozen=True)

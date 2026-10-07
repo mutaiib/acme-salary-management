@@ -196,3 +196,20 @@ def test_names_the_field_when_the_request_body_has_a_wrong_type(client, make):
     )
 
     assert error_of(response)["field"] == "new_salary_minor"
+
+
+def test_the_second_salary_change_records_the_first_new_salary_as_its_old_salary(client, make):
+    employee = make.employee(salary_minor=6_000_000)
+    change(client, employee, new_salary_minor=6_500_000)
+
+    body = change(client, employee, new_salary_minor=7_000_000).json()
+
+    assert body["old_salary_minor"] == 6_500_000
+
+
+def test_accepts_the_largest_amount_that_the_system_keeps(client, make):
+    assert change(client, make.employee(), new_salary_minor=10**12).status_code == 201
+
+
+def test_accepts_a_reason_of_500_characters(client, make):
+    assert change(client, make.employee(), reason="x" * 500).status_code == 201
