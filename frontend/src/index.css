@@ -1,3 +1,15 @@
 @import '@astryxdesign/core/reset.css';
 @import '@astryxdesign/core/astryx.css';
 @import '@astryxdesign/theme-neutral/theme.css';
+
+/*
+ * The mark of a required input. Astryx shows the text "Required" after a dot and has
+ * no option for a star. The text comes from `TEXT_OVERRIDES` in `App.tsx`; these rules
+ * remove the dot and use the error color of the theme.
+ */
+label > span:has(> span[aria-hidden='true']:first-child) {
+  color: var(--color-error);
+}
+label > span > span[aria-hidden='true']:first-child {
+  display: none;
+}
