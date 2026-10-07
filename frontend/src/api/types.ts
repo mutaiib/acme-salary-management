@@ -79,6 +79,8 @@ export interface Overview {
   reporting_currency: string
   payroll_cost_minor: number
   headcount: number
+  /** The median salary of all active employees, in the reporting currency. */
+  median_salary_minor: number
   rates_as_of: string | null
   group_by: GroupBy
   groups: GroupFigures[]
@@ -115,6 +117,8 @@ export interface PayHealthSummary {
   above_count: number
   /** The cost to move all below-range salaries to the band minimum, in the reporting currency. */
   correction_cost_minor: number
+  /** The payroll cost of all active employees, in the reporting currency. */
+  payroll_cost_minor: number
   reporting_currency: string
 }
 
@@ -130,27 +134,28 @@ export interface Outlier {
   country: string
   currency: string
   salary_minor: number
+  range_status: OutlierStatus
   /** The band minimum for a below-range employee, the band maximum for an above-range one. */
   band_limit_minor: number
   difference_minor: number
 }
 
-/** The unadjusted gender pay gap of one group. The gaps are null when the group is too small. */
-export interface Gap {
-  key: string
-  label: string
+/** The lowest, the middle and the highest salary of a group of employees. */
+export interface SalaryFigures {
   currency: string
-  men: number
-  women: number
-  mean_gap_pct: number | null
-  median_gap_pct: number | null
-  is_flagged: boolean
-  has_enough_data: boolean
+  min_minor: number
+  median_minor: number
+  max_minor: number
 }
 
-export interface PayEquity {
-  organization: Gap
-  countries: Gap[]
-  flag_threshold_pct: number
-  min_group_size: number
+/** The pay figures of the active employees that a list shows. */
+export interface EmployeeSummary {
+  headcount: number
+  /** In the reporting currency. */
+  payroll_cost_minor: number
+  reporting_currency: string
+  /** True when all these employees have the same currency. */
+  has_one_currency: boolean
+  /** Null when no active employee matches. */
+  salary: SalaryFigures | null
 }

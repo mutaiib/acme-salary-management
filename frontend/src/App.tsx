@@ -9,7 +9,6 @@ import { BandsPage } from './pages/bands/BandsPage'
 import { EmployeeDetailPage } from './pages/employee-detail/EmployeeDetailPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
 import { OverviewPage } from './pages/overview/OverviewPage'
-import { PayEquityPage } from './pages/pay-equity/PayEquityPage'
 import { PayHealthPage } from './pages/pay-health/PayHealthPage'
 import { acmeTheme } from './theme'
 
@@ -27,7 +26,6 @@ const SECTIONS: { title: string; screens: Screen[] }[] = [
     screens: [
       { path: '/overview', label: 'Pay overview', element: <OverviewPage /> },
       { path: '/pay-health', label: 'Pay health', element: <PayHealthPage /> },
-      { path: '/pay-equity', label: 'Pay equity', element: <PayEquityPage /> },
     ],
   },
   {

@@ -5,7 +5,6 @@ import type {
   OutlierStatus,
   Overview,
   Page,
-  PayEquity,
   PayHealthSummary,
 } from './types'
 
@@ -18,16 +17,15 @@ export function getPayHealth(): Promise<PayHealthSummary> {
 }
 
 export interface OutlierQuery {
-  status: OutlierStatus
+  /** Without a status, the list has all outliers. */
+  status?: OutlierStatus
   country?: string
   job_level?: string
+  search?: string
   page: number
+  page_size: number
 }
 
 export function listOutliers(query: OutlierQuery): Promise<Page<Outlier>> {
   return getJson('/api/insights/pay-health/employees', { ...query })
-}
-
-export function getPayEquity(): Promise<PayEquity> {
-  return getJson('/api/insights/pay-equity')
 }

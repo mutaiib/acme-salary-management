@@ -12,6 +12,7 @@ function overviewOf(group_by: GroupBy, groups: Overview['groups']): Overview {
     reporting_currency: 'USD',
     payroll_cost_minor: 35_800_000,
     headcount: 6,
+    median_salary_minor: 6_300_000,
     rates_as_of: '2026-01-01',
     group_by,
     groups,
@@ -66,7 +67,7 @@ test('shows the total payroll cost in the reporting currency', async () => {
 
   renderScreen(<OverviewPage />)
 
-  expect(await screen.findByTestId('payroll-cost')).toHaveTextContent(/^\$358,000$/)
+  expect(await screen.findByTestId('payroll-cost')).toHaveTextContent(/^\$358K$/)
 })
 
 test('shows the headcount', async () => {
@@ -92,7 +93,7 @@ test('shows the figures of each country, with the salaries in the local currency
 
   const row = (await screen.findByText('Germany')).closest('tr')!
   expect(within(row).getByText('2')).toBeInTheDocument()
-  expect(within(row).getByText('$120,000')).toBeInTheDocument()
+  expect(within(row).getByText('$120K')).toBeInTheDocument()
   expect(within(row).getByText('€50,000')).toBeInTheDocument()
   expect(within(row).getByText('€55,556')).toBeInTheDocument()
   expect(within(row).getByText('€61,111')).toBeInTheDocument()
@@ -107,12 +108,12 @@ test('shows the share of the payroll cost of each group', async () => {
   expect(within(row).getByText('61.5%')).toBeInTheDocument()
 })
 
-test('shows the figures by department when the HR Manager selects the department tab', async () => {
+test('shows the figures by department when the HR Manager groups by department', async () => {
   const api = stubOverview()
   renderScreen(<OverviewPage />)
   await screen.findByText('Germany')
 
-  await userEvent.click(screen.getByRole('tab', { name: 'By department' }))
+  await userEvent.click(screen.getByRole('radio', { name: 'Department' }))
 
   const row = (await screen.findByText('Engineering')).closest('tr')!
   expect(within(row).getByText('$57,000')).toBeInTheDocument()
@@ -152,19 +153,19 @@ test('keeps the note of the old grouping while the new grouping loads', async ()
   renderScreen(<OverviewPage />)
   await screen.findByText('Germany')
 
-  await userEvent.click(screen.getByRole('tab', { name: 'By department' }))
+  await userEvent.click(screen.getByRole('radio', { name: 'Department' }))
 
   expect(screen.getByText(/The salaries of a country are in the local currency/)).toBeInTheDocument()
   release()
   expect(await screen.findByText(/A department has many currencies/)).toBeInTheDocument()
 })
 
-test('shows the figures by job level when the HR Manager selects the job level tab', async () => {
+test('shows the figures by job level when the HR Manager groups by job level', async () => {
   const api = stubOverview()
   renderScreen(<OverviewPage />)
   await screen.findByText('Germany')
 
-  await userEvent.click(screen.getByRole('tab', { name: 'By job level' }))
+  await userEvent.click(screen.getByRole('radio', { name: 'Job level' }))
 
   await waitFor(() =>
     expect(requestsTo(api, '/api/insights/overview').at(-1)!.searchParams.get('group_by')).toBe(
@@ -179,5 +180,15 @@ test('shows the payroll cost with its label', async () => {
   renderScreen(<OverviewPage />)
 
   const figure = await screen.findByRole('group', { name: 'Payroll cost' })
-  expect(within(figure).getByText('$358,000')).toBeInTheDocument()
+  expect(within(figure).getByText('$358K')).toBeInTheDocument()
+})
+
+test('shows the median salary of the organization with its period and currency', async () => {
+  stubOverview()
+
+  renderScreen(<OverviewPage />)
+
+  const figure = await screen.findByRole('group', { name: 'Median salary' })
+  expect(within(figure).getByText('$63,000')).toBeInTheDocument()
+  expect(within(figure).getByText(/For one year, in USD/)).toBeInTheDocument()
 })

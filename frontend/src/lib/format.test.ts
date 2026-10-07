@@ -1,11 +1,11 @@
-// FR-01, FR-02, FR-11: the formats of money, dates and percentages.
+// FR-01, FR-02: the formats of money, dates and percentages.
 import { expect, test } from 'vitest'
 import {
   formatCount,
   formatDate,
-  formatGap,
   formatJobLevel,
   formatMoney,
+  formatMoneyShort,
   formatShare,
 } from './format'
 
@@ -41,14 +41,18 @@ test('formats a share of a total of zero as zero', () => {
   expect(formatShare(0, 0)).toBe('0.0%')
 })
 
-test('formats a whole gap with 1 decimal place', () => {
-  expect(formatGap(2)).toBe('2.0%')
-})
-
-test('formats a negative gap with a minus sign', () => {
-  expect(formatGap(-0.9)).toBe('-0.9%')
-})
-
 test('formats a job level with the word Level', () => {
   expect(formatJobLevel(3)).toBe('Level 3')
+})
+
+test('formats a total of millions in a short form', () => {
+  expect(formatMoneyShort(56_768_345_500, 'USD')).toBe('$567.68M')
+})
+
+test('formats a total of thousands in a short form', () => {
+  expect(formatMoneyShort(35_800_000, 'USD')).toBe('$358K')
+})
+
+test('keeps all digits of a total below 100,000', () => {
+  expect(formatMoneyShort(6_500_000, 'USD')).toBe('$65,000')
 })

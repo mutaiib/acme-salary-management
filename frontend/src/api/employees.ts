@@ -1,6 +1,7 @@
 import { getJson, sendJson } from './client'
 import type {
   Employee,
+  EmployeeSummary,
   EmployeeDetail,
   Page,
   SalaryChange,
@@ -9,6 +10,7 @@ import type {
 
 export interface EmployeeListQuery {
   page: number
+  page_size: number
   search?: string
   country?: string
   department?: string
@@ -19,6 +21,13 @@ export interface EmployeeListQuery {
 
 export function listEmployees(query: EmployeeListQuery): Promise<Page<Employee>> {
   return getJson('/api/employees', { ...query })
+}
+
+/** The pay figures for the same search and filters as the list. */
+export function getEmployeeSummary(
+  query: Omit<EmployeeListQuery, 'page' | 'page_size' | 'sort'>,
+): Promise<EmployeeSummary> {
+  return getJson('/api/employees/summary', { ...query })
 }
 
 export function getEmployee(id: number): Promise<EmployeeDetail> {
