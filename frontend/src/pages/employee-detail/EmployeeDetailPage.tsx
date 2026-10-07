@@ -100,21 +100,21 @@ function EmployeeDetail({ id }: { id: number }) {
               }
             />
             <Grid columns={{ minWidth: 360, max: 2 }} gap={4}>
-                  <Card padding={5}>
-                    <Stack gap={5} data-testid="position-in-range">
-                      <Stack direction="horizontal" hAlign="between" vAlign="start" gap={3}>
-                        <Stat
-                          label="Current salary"
-                          value={formatMoney(data.salary_minor, data.currency)}
-                          note={`For one year, in ${data.currency}`}
-                          testId="current-salary"
-                        />
-                        <RangeStatusBadge status={data.range_status} />
-                      </Stack>
-                      {data.band && <Divider />}
-                      <PositionInRange employee={data} countryName={countryName(data.country)} />
-                    </Stack>
-                  </Card>
+              <Card padding={5}>
+                <Stack gap={5} data-testid="position-in-range">
+                  <Stack direction="horizontal" hAlign="between" vAlign="start" gap={3}>
+                    <Stat
+                      label="Current salary"
+                      value={formatMoney(data.salary_minor, data.currency)}
+                      note={`For one year, in ${data.currency}`}
+                      testId="current-salary"
+                    />
+                    <RangeStatusBadge status={data.range_status} />
+                  </Stack>
+                  {data.band && <Divider />}
+                  <PositionInRange employee={data} countryName={countryName(data.country)} />
+                </Stack>
+              </Card>
               <Panel title="Details">
                 <MetadataList>
                   <MetadataListItem label="Employee code">{data.employee_code}</MetadataListItem>
@@ -124,31 +124,33 @@ function EmployeeDetail({ id }: { id: number }) {
                     {formatJobLevel(data.job_level)}
                   </MetadataListItem>
                   <MetadataListItem label="Country">{countryName(data.country)}</MetadataListItem>
-                  <MetadataListItem label="Hire date">{formatDate(data.hire_date)}</MetadataListItem>
+                  <MetadataListItem label="Hire date">
+                    {formatDate(data.hire_date)}
+                  </MetadataListItem>
                   <MetadataListItem label="Gender">{capitalize(data.gender)}</MetadataListItem>
                 </MetadataList>
               </Panel>
             </Grid>
-                  <Panel
-                    title="Salary history"
-                    end={
-                      history.data && (
-                        <Text type="supporting">
-                          {formatCount(history.data.length)}{' '}
-                          {history.data.length === 1 ? 'entry' : 'entries'}
-                        </Text>
-                      )
-                    }
-                  >
-                    <DataState
-                      state={history}
-                      isEmpty={(changes) => changes.length === 0}
-                      emptyTitle="No salary history"
-                      emptyDescription="This employee has no recorded salary change."
-                    >
-                      {(changes) => <SalaryHistoryTable changes={changes} />}
-                    </DataState>
-                  </Panel>
+            <Panel
+              title="Salary history"
+              end={
+                history.data && (
+                  <Text type="supporting">
+                    {formatCount(history.data.length)}{' '}
+                    {history.data.length === 1 ? 'entry' : 'entries'}
+                  </Text>
+                )
+              }
+            >
+              <DataState
+                state={history}
+                isEmpty={(changes) => changes.length === 0}
+                emptyTitle="No salary history"
+                emptyDescription="This employee has no recorded salary change."
+              >
+                {(changes) => <SalaryHistoryTable changes={changes} />}
+              </DataState>
+            </Panel>
             {/* The key resets the form when the salary changes or the server date arrives. */}
             <SalaryChangeDialog
               key={`${data.salary_minor}-${today}`}
