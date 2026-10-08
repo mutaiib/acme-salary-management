@@ -43,7 +43,7 @@
 | Seed script, 10,000 employees | 0.5 seconds | NFR-03: less than 30 seconds |
 | Backend tests, 269 tests | 6 seconds | NFR-05: less than 10 seconds |
 | Backend unit tests only, 61 tests | less than 1 second | NFR-05 |
-| UI tests, 275 tests | 11 to 15 seconds | See the note below |
+| UI tests, 280 tests | 11 to 15 seconds | See the note below |
 
 The system satisfies the requirements, with one limit. The UI tests are component tests: each test renders a screen in a simulated browser. They take 11 to 15 seconds. A query that waits for the screen has a limit of 3 seconds. A test has a limit of 15 seconds. A busy machine then does not fail a correct test. This is at the limit of NFR-05. The pure unit tests of the UI (`src/lib`) and of the backend complete in less than 1 second.
 

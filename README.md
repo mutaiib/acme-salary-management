@@ -59,7 +59,7 @@ The API documentation is at http://localhost:8000/docs.
 
 - Backend: Python, FastAPI, SQLAlchemy, SQLite.
 - UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system. Recharts draws the 2 charts, with the colors of the Astryx theme.
-- Tests: pytest (269 tests), Vitest with React Testing Library (275 tests).
+- Tests: pytest (269 tests), Vitest with React Testing Library (280 tests).
 
 ## Structure
 
