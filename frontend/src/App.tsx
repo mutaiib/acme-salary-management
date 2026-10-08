@@ -10,7 +10,7 @@ import {
   SideNavSection,
 } from '@astryxdesign/core/SideNav'
 import { Theme } from '@astryxdesign/core/theme'
-import { HeartPulse, LayoutDashboard, Rows3, Users } from 'lucide-react'
+import { ChartColumn, HeartPulse, LayoutDashboard, Rows3, Users } from 'lucide-react'
 import { type ReactElement, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { LoadingBar } from './components/LoadingBar'
@@ -19,6 +19,7 @@ import { BandsPage } from './pages/bands/BandsPage'
 import { EmployeeDetailPage } from './pages/employee-detail/EmployeeDetailPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
 import { ExchangeRatesPage } from './pages/exchange-rates/ExchangeRatesPage'
+import { PayAnalysisPage } from './pages/analysis/PayAnalysisPage'
 import { OverviewPage } from './pages/overview/OverviewPage'
 import { PayHealthPage } from './pages/pay-health/PayHealthPage'
 import { WelcomePage } from './pages/welcome/WelcomePage'
@@ -40,6 +41,7 @@ const SECTIONS: { title: string; screens: Screen[] }[] = [
     screens: [
       { path: '/overview', label: 'Pay overview', icon: LayoutDashboard, element: <OverviewPage /> },
       { path: '/pay-health', label: 'Pay health', icon: HeartPulse, element: <PayHealthPage /> },
+      { path: '/analysis', label: 'Pay analysis', icon: ChartColumn, element: <PayAnalysisPage /> },
     ],
   },
   {

@@ -5,16 +5,16 @@ import { Card } from '@astryxdesign/core/Card'
 import { Divider } from '@astryxdesign/core/Divider'
 import { EmptyState } from '@astryxdesign/core/EmptyState'
 import { Grid } from '@astryxdesign/core/Grid'
-import { Link } from '@astryxdesign/core/Link'
 import { MetadataList, MetadataListItem } from '@astryxdesign/core/MetadataList'
 import { Stack } from '@astryxdesign/core/Stack'
 import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { getEmployee, listSalaryChanges } from '../../api/employees'
-import { DataState, MetaBanner, PageHeader, Panel, Stat } from '../../components'
+import { BackLink, DataState, MetaBanner, PageHeader, Panel, Stat } from '../../components'
 import { useApi } from '../../hooks/useApi'
 import { countryNameOf, useMeta } from '../../hooks/useMeta'
+import { recordBack } from '../../lib/backLinks'
 import { formatCount, formatDate, formatJobLevel, formatMoney } from '../../lib/format'
 import { DeactivateDialog } from './DeactivateDialog'
 import { PositionInRange } from './PositionInRange'
@@ -49,12 +49,9 @@ function EmployeeDetail({ id }: { id: number }) {
   const meta = useMeta()
   const today = meta.data?.today
   const [openDialog, setOpenDialog] = useState<OpenDialog>(null)
-  // The list that the HR Manager came from. `EmployeeLink` puts it in the address.
+  // The list that the HR Manager came from, with its filters. `EmployeeLink` puts it in the address.
   const [params] = useSearchParams()
-  const back =
-    params.get('from') === 'pay-health'
-      ? { href: '/pay-health', label: 'Back to Pay health' }
-      : { href: '/employees', label: 'Back to Employees' }
+  const back = recordBack(params)
 
   const countryName = (code: string) => countryNameOf(meta.data, code)
 
@@ -69,9 +66,7 @@ function EmployeeDetail({ id }: { id: number }) {
 
   return (
     <Stack gap={5} padding={6}>
-      <Link href={back.href} isStandalone>
-        {back.label}
-      </Link>
+      <BackLink href={back.href} label={back.label} />
       <MetaBanner state={meta} />
       <DataState state={employee}>
         {(data) => (

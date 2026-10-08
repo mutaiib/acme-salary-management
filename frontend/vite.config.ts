@@ -12,5 +12,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // A screen test types in a dialog and takes 1 to 2 seconds. The default limit of
+    // 5 seconds was too short when the computer was busy.
+    testTimeout: 15_000,
   },
 })

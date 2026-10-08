@@ -3,6 +3,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
 import type { GroupBy, Overview } from '../../api/types'
+import { META } from '../../test/data'
 import { requestsTo, stubApi } from '../../test/api'
 import { renderScreen } from '../../test/render'
 import { OverviewPage } from './OverviewPage'
@@ -55,8 +56,14 @@ const BY_DEPARTMENT = overviewOf('department', [
   },
 ])
 
+const META_WITH_GERMANY = {
+  ...META,
+  countries: [...META.countries, { code: 'DE', name: 'Germany', currency: 'EUR' }],
+}
+
 function stubOverview() {
   return stubApi({
+    '/api/meta': META_WITH_GERMANY,
     '/api/insights/overview': (url: URL) =>
       url.searchParams.get('group_by') === 'department' ? BY_DEPARTMENT : BY_COUNTRY,
   })
@@ -71,7 +78,11 @@ const PAY_HEALTH = {
 }
 
 test('tells how many salaries are outside the salary band, with a link to Pay health', async () => {
-  stubApi({ '/api/insights/overview': BY_COUNTRY, '/api/insights/pay-health': PAY_HEALTH })
+  stubApi({
+    '/api/insights/overview': BY_COUNTRY,
+    '/api/insights/pay-health': PAY_HEALTH,
+    '/api/meta': META_WITH_GERMANY,
+  })
 
   renderScreen(<OverviewPage />)
 
@@ -90,6 +101,7 @@ test('shows no notice when all salaries are in the salary band', async () => {
   stubApi({
     '/api/insights/overview': BY_COUNTRY,
     '/api/insights/pay-health': { ...PAY_HEALTH, below_count: 0, above_count: 0 },
+    '/api/meta': META_WITH_GERMANY,
   })
 
   renderScreen(<OverviewPage />)
@@ -228,4 +240,14 @@ test('shows the median salary of the organization with its period and currency',
   const figure = await screen.findByRole('group', { name: 'Median salary' })
   expect(within(figure).getByText('$63,000')).toBeInTheDocument()
   expect(within(figure).getByText(/For one year, in USD/)).toBeInTheDocument()
+})
+
+test('does not request the salary distribution or the highest salaries', async () => {
+  const api = stubOverview()
+
+  renderScreen(<OverviewPage />)
+
+  await screen.findByTestId('payroll-cost')
+  expect(requestsTo(api, '/api/insights/salary-distribution')).toHaveLength(0)
+  expect(requestsTo(api, '/api/insights/highest-salaries')).toHaveLength(0)
 })

@@ -40,7 +40,7 @@ export function OutlierTable({ status, outliers, meta }: Props) {
       width: proportional(2),
       renderCell: (outlier) => (
         <Stack gap={0}>
-          <EmployeeLink id={outlier.id} name={outlier.full_name} from="pay-health" />
+          <EmployeeLink id={outlier.id} name={outlier.full_name} />
           <Text type="supporting">{outlier.job_title}</Text>
         </Stack>
       ),
@@ -62,7 +62,7 @@ export function OutlierTable({ status, outliers, meta }: Props) {
       // A below-range salary is red with a minus, an above-range salary green with a plus.
       // The share of the band limit compares rows of different currencies, and names the status.
       renderCell: (outlier) => (
-        <Stack gap={1} hAlign="end">
+        <Stack gap={1} hAlign="end" paddingBlock={1}>
           <DifferenceBadge outlier={outlier} />
           <Text type="supporting" textWrap="nowrap">
             {formatShare(outlier.difference_minor, outlier.band_limit_minor)}{' '}

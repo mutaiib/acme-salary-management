@@ -93,6 +93,20 @@ export interface Overview {
   groups: GroupFigures[]
 }
 
+/** A range of salaries of one width, in the reporting currency. */
+export interface SalaryBracket {
+  from_minor: number
+  to_minor: number
+  headcount: number
+}
+
+export interface SalaryDistribution {
+  reporting_currency: string
+  bracket_width_minor: number
+  /** From zero, with no gap. An empty list when no active employee has a salary. */
+  brackets: SalaryBracket[]
+}
+
 export interface Band {
   id: number
   job_level: number
@@ -103,10 +117,32 @@ export interface Band {
   max_minor: number
 }
 
+/** A salary band with the headcount and the counts below range and above range. */
+export interface BandFigures extends Band {
+  headcount: number
+  below_count: number
+  above_count: number
+}
+
 export interface BandRequest {
   min_minor: number
   mid_minor: number
   max_minor: number
+}
+
+/** The figures of the employees of one salary band. */
+export interface BandEffect {
+  headcount: number
+  below_count: number
+  above_count: number
+  correction_cost_minor: number
+}
+
+/** The figures of a band with its current limits and with the proposed limits. */
+export interface BandChangePreview {
+  current: BandEffect
+  proposed: BandEffect
+  reporting_currency: string
 }
 
 export type RangeStatus = 'below' | 'in_range' | 'above' | 'no_band'
@@ -131,6 +167,16 @@ export interface PayHealthSummary {
 
 export type OutlierStatus = 'below' | 'above'
 
+/** The outliers of one country, department or job level. */
+export interface OutlierGroup {
+  key: string
+  label: string
+  /** The active employees with a salary band. */
+  headcount: number
+  below_count: number
+  above_count: number
+}
+
 export interface Outlier {
   id: number
   employee_code: string
@@ -145,6 +191,22 @@ export interface Outlier {
   /** The band minimum for a below-range employee, the band maximum for an above-range one. */
   band_limit_minor: number
   difference_minor: number
+}
+
+/** One of the active employees with the highest salary in the reporting currency. */
+export interface HighSalary {
+  id: number
+  employee_code: string
+  full_name: string
+  job_title: string
+  job_level: number
+  department: string
+  country: string
+  currency: string
+  salary_minor: number
+  salary_reporting_minor: number
+  /** The salary divided by the band midpoint. Null when the employee has no salary band. */
+  compa_ratio: number | null
 }
 
 /** The lowest, the middle and the highest salary of a group of employees. */

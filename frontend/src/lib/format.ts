@@ -16,6 +16,15 @@ export function formatMoney(amountMinor: number, currency: string): string {
   }).format(toUnits(amountMinor))
 }
 
+/**
+ * Formats a change of an amount with its sign, for example `+$5,000` or `-$5,000`.
+ * An amount of zero has no sign.
+ */
+export function formatSignedMoney(amountMinor: number, currency: string): string {
+  const sign = amountMinor > 0 ? '+' : amountMinor < 0 ? '-' : ''
+  return `${sign}${formatMoney(Math.abs(amountMinor), currency)}`
+}
+
 /** A total below this number of currency units shows all its digits. */
 const SHORT_FROM_UNITS = 100_000
 
@@ -27,6 +36,14 @@ export function formatMoneyShort(amountMinor: number, currency: string): string 
   if (Math.abs(toUnits(amountMinor)) < SHORT_FROM_UNITS) {
     return formatMoney(amountMinor, currency)
   }
+  return formatMoneyCompact(amountMinor, currency)
+}
+
+/**
+ * An amount in the short form at each size, for example `$20K`. The labels of a chart
+ * axis use it, so that all labels of the axis have one form.
+ */
+export function formatMoneyCompact(amountMinor: number, currency: string): string {
   return new Intl.NumberFormat(LOCALE, {
     style: 'currency',
     currency,

@@ -16,6 +16,9 @@ export interface EmployeeListQuery {
   department?: string
   job_level?: string
   status?: string
+  /** A salary bracket in the reporting currency: from (included) to (not included). */
+  salary_from_minor?: string
+  salary_to_minor?: string
   sort?: string
 }
 

@@ -1,6 +1,10 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
+
+// A query that waits for the screen has 3 seconds. The default of 1 second was too short
+// when the computer was busy, and a test then failed with no error in the code.
+configure({ asyncUtilTimeout: 3000 })
 
 afterEach(() => {
   cleanup()
@@ -31,3 +35,11 @@ window.matchMedia ??= (query: string) =>
     removeListener: () => {},
     dispatchEvent: () => false,
   }) as MediaQueryList
+
+// jsdom does not implement ResizeObserver. A Recharts chart needs it.
+// A chart in a `ChartFigure` has no size in a test, so a chart test draws the bars at a fixed size.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}

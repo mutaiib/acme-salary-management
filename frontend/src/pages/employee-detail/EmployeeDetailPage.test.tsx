@@ -1,4 +1,4 @@
-// FR-06, FR-08, FR-13: the Employee detail screen.
+// FR-06, FR-08, FR-13, FR-20: the Employee detail screen.
 import { screen, within } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import { refuse, stubApi } from '../../test/api'
@@ -134,15 +134,28 @@ test('goes back to the Employees list by default', async () => {
   expect(back).toHaveAttribute('href', '/employees')
 })
 
-test('goes back to Pay health when the HR Manager came from Pay health', async () => {
+test('goes back to the Pay health list with its filters when the HR Manager came from it', async () => {
   stubApi({
     '/api/meta': META,
     '/api/employees/7': ASHA,
     '/api/employees/7/salary-changes': [salaryChange(1)],
   })
 
-  renderScreen(<EmployeeDetailPage />, { at: '/employees/7?from=pay-health', path: '/employees/:id' })
+  renderScreen(<EmployeeDetailPage />, { at: '/employees/7?back=%2Fpay-health%3Fstatus%3Dbelow%26country%3DUS', path: '/employees/:id' })
 
   const back = await screen.findByRole('link', { name: 'Back to Pay health' })
-  expect(back).toHaveAttribute('href', '/pay-health')
+  expect(back).toHaveAttribute('href', '/pay-health?status=below&country=US')
+})
+
+test('goes back to the same tab and country of Pay analysis when the HR Manager came from it', async () => {
+  stubApi({
+    '/api/meta': META,
+    '/api/employees/7': ASHA,
+    '/api/employees/7/salary-changes': [salaryChange(1)],
+  })
+
+  renderScreen(<EmployeeDetailPage />, { at: '/employees/7?back=%2Fanalysis%3Ftab%3Dhighest%26country%3DDE', path: '/employees/:id' })
+
+  const back = await screen.findByRole('link', { name: 'Back to Pay analysis' })
+  expect(back).toHaveAttribute('href', '/analysis?tab=highest&country=DE')
 })

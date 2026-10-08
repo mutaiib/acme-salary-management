@@ -1,4 +1,4 @@
-import type { Band, Employee, EmployeeDetail, Meta, Page, SalaryChange } from '../api/types'
+import type { Band, BandFigures, Employee, EmployeeDetail, Meta, Page, SalaryChange } from '../api/types'
 
 export function employee(number: number, overrides: Partial<Employee> = {}): Employee {
   return {
@@ -59,6 +59,14 @@ export function band(number: number, overrides: Partial<Band> = {}): Band {
     max_minor: 7_800_000,
     ...overrides,
   }
+}
+
+/** A band with the figures of an in-range band: 5 employees, none outside. */
+export function bandFigures(
+  number: number,
+  overrides: Partial<BandFigures> = {},
+): BandFigures {
+  return { ...band(number), headcount: 5, below_count: 0, above_count: 0, ...overrides }
 }
 
 /** An employee at the midpoint of the default band. */

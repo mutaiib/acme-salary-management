@@ -2,11 +2,15 @@ import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/Segme
 import { Stack } from '@astryxdesign/core/Stack'
 import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
+import { Token } from '@astryxdesign/core/Token'
+import { useSearchParams } from 'react-router-dom'
 import { listEmployees } from '../../api/employees'
 import type { Employee, EmployeeStatus, Meta } from '../../api/types'
 import {
+  BackLink,
   CountryFilter,
   DataState,
+  DepartmentFilter,
   DataTable,
   EmployeeLink,
   FilterBar,
@@ -25,7 +29,8 @@ import {
 import { useApi } from '../../hooks/useApi'
 import { countryNameOf, useMeta } from '../../hooks/useMeta'
 import { useUrlFilters } from '../../hooks/useUrlFilters'
-import { formatCount } from '../../lib/format'
+import { listBack } from '../../lib/backLinks'
+import { formatCount, formatMoney } from '../../lib/format'
 import { PaySummary } from './PaySummary'
 
 // The value `all` puts no status in the address.
@@ -74,9 +79,26 @@ const columnsFor = (
   moneyColumn<Employee>('salary_minor', 'Salary'),
 ]
 
+interface BracketLimits {
+  from: string
+  to: string
+}
+
+/** The salary bracket in the address, or null when the address has no valid bracket. */
+function salaryBracketOf(from: string, to: string): BracketLimits | null {
+  const isWholeNumber = (text: string) => /^\d+$/.test(text)
+  return isWholeNumber(from) && isWholeNumber(to) && Number(from) < Number(to)
+    ? { from, to }
+    : null
+}
+
 export function EmployeesPage() {
   const meta = useMeta()
-  const { filter, setFilter, page, setPage, pageSize, setPageSize } = useUrlFilters()
+  const { filter, setFilter, page, setPage, pageSize, setPageSize, clearFilters } = useUrlFilters()
+  // Another screen can put its address in the list, so the list can go back to it.
+  const [params] = useSearchParams()
+  const back = listBack(params)
+  const bracket = salaryBracketOf(filter('salary_from_minor'), filter('salary_to_minor'))
   const query = {
     page,
     page_size: pageSize,
@@ -85,12 +107,15 @@ export function EmployeesPage() {
     department: filter('department'),
     job_level: filter('job_level'),
     status: filter('status'),
+    salary_from_minor: bracket?.from ?? '',
+    salary_to_minor: bracket?.to ?? '',
     sort: filter('sort'),
   }
   const employees = useApi(() => listEmployees(query), [JSON.stringify(query)])
 
   return (
     <Stack gap={4} padding={6}>
+      {back && <BackLink href={back.href} label={back.label} />}
       <PageHeader title="Employees" description="Find an employee and open the pay record." />
       <MetaBanner state={meta} />
       <FilterBar>
@@ -100,11 +125,10 @@ export function EmployeesPage() {
           value={query.country}
           onChange={(value) => setFilter('country', value)}
         />
-        <FilterSelect
-          label="Department"
+        <DepartmentFilter
+          meta={meta.data}
           value={query.department}
           onChange={(value) => setFilter('department', value)}
-          options={(meta.data?.departments ?? []).map((d) => ({ value: d, label: d }))}
         />
         <JobLevelFilter
           meta={meta.data}
@@ -121,6 +145,12 @@ export function EmployeesPage() {
             <SegmentedControlItem key={option.value} value={option.value} label={option.label} />
           ))}
         </SegmentedControl>
+        {bracket && meta.data && (
+          <Token
+            label={`Salary: ${formatMoney(Number(bracket.from), meta.data.reporting_currency)} to ${formatMoney(Number(bracket.to), meta.data.reporting_currency)} in ${meta.data.reporting_currency}`}
+            onRemove={() => clearFilters(['salary_from_minor', 'salary_to_minor'])}
+          />
+        )}
       </FilterBar>
       <PaySummary
         filters={{
@@ -129,10 +159,13 @@ export function EmployeesPage() {
           department: query.department,
           job_level: query.job_level,
           status: query.status,
+          salary_from_minor: query.salary_from_minor,
+          salary_to_minor: query.salary_to_minor,
         }}
       />
       <DataState
         state={employees}
+        rowsOf={(data) => data.items.length}
         isEmpty={(data) => data.items.length === 0}
         emptyTitle="No employee matches"
         emptyDescription="Change the search text or remove a filter."
