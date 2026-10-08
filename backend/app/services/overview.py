@@ -82,7 +82,7 @@ def overview(session: Session, group_by: GroupBy) -> Overview:
     groups = [
         GroupFigures(
             key=str(key),
-            label=_label(group_by, key),
+            label=group_label(group_by, key),
             headcount=headcount,
             payroll_cost_minor=int(cost_minor),
             currency=COUNTRIES[key].currency if group_by == "country" else REPORTING_CURRENCY,
@@ -103,7 +103,7 @@ def overview(session: Session, group_by: GroupBy) -> Overview:
     )
 
 
-def _label(group_by: GroupBy, key) -> str:
+def group_label(group_by: GroupBy, key) -> str:
     if group_by == "country":
         return COUNTRIES[key].name
     if group_by == "job_level":

@@ -1,4 +1,4 @@
-"""NFR-08: a log line for each write."""
+"""FR-16, NFR-08: a log line for each write."""
 
 import logging
 
@@ -38,6 +38,19 @@ def test_writes_a_log_line_for_a_band_change(client, make, caplog):
         )
 
     assert f"Band change: band={band.id} min=5000000 mid=6000000 max=7000000" in caplog.text
+
+
+def test_writes_no_log_line_for_a_band_preview(client, make, caplog):
+    band = make.band()
+
+    with caplog.at_level(logging.INFO):
+        response = client.post(
+            f"/api/bands/{band.id}/preview",
+            json={"min_minor": 5_000_000, "mid_minor": 6_000_000, "max_minor": 7_000_000},
+        )
+
+    assert response.status_code == 200
+    assert "Band change" not in caplog.text
 
 
 def test_writes_no_log_line_for_a_refused_salary_change(client, make, caplog):

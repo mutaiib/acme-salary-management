@@ -1,4 +1,4 @@
-"""FR-07, FR-08: salary bands and the position of a salary in its band.
+"""FR-07, FR-08, FR-15, FR-16: salary bands and the position of a salary in its band.
 
 Tests: tests/api/test_bands.py, test_employee_detail.py, tests/unit/test_ranges.py.
 """
@@ -20,6 +20,8 @@ from app.calculations.ranges import (
 )
 from app.errors import DomainError, NotFoundError
 from app.models import Employee, SalaryBand
+from app.reference import REPORTING_CURRENCY
+from app.services.pay_health import BandEffect, effect_by_band, effect_of_limits
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +36,70 @@ class RangePosition:
     range_status: RangeStatus
 
 
-def list_bands(session: Session, country: str | None = None) -> list[SalaryBand]:
+@dataclass(frozen=True)
+class BandFigures:
+    """A salary band, with the headcount and the counts below range and above range."""
+
+    id: int
+    job_level: int
+    country: str
+    currency: str
+    min_minor: int
+    mid_minor: int
+    max_minor: int
+    headcount: int
+    below_count: int
+    above_count: int
+
+
+def list_band_figures(session: Session, country: str | None = None) -> list[BandFigures]:
     statement = select(SalaryBand).order_by(SalaryBand.country, SalaryBand.job_level)
     if country:
         statement = statement.where(SalaryBand.country == country)
-    return list(session.scalars(statement))
+    effects = effect_by_band(session, country)
+    no_employee = BandEffect(0, 0, 0, 0)
+    return [
+        _with_effect(band, effects.get(band.id, no_employee)) for band in session.scalars(statement)
+    ]
 
 
-def update_band(
+def _with_effect(band: SalaryBand, effect: BandEffect) -> BandFigures:
+    return BandFigures(
+        id=band.id,
+        job_level=band.job_level,
+        country=band.country,
+        currency=band.currency,
+        min_minor=band.min_minor,
+        mid_minor=band.mid_minor,
+        max_minor=band.max_minor,
+        headcount=effect.headcount,
+        below_count=effect.below_count,
+        above_count=effect.above_count,
+    )
+
+
+@dataclass(frozen=True)
+class BandChangePreview:
+    """The figures of a band with its current limits and with the proposed limits."""
+
+    current: BandEffect
+    proposed: BandEffect
+    reporting_currency: str
+
+
+def preview_band_change(
+    session: Session, band_id: int, min_minor: int, mid_minor: int, max_minor: int
+) -> BandChangePreview:
+    """Shows what a band change does. It saves nothing."""
+    band = _valid_band(session, band_id, min_minor, mid_minor, max_minor)
+    return BandChangePreview(
+        current=effect_of_limits(session, band, band.min_minor, band.max_minor),
+        proposed=effect_of_limits(session, band, min_minor, max_minor),
+        reporting_currency=REPORTING_CURRENCY,
+    )
+
+
+def _valid_band(
     session: Session, band_id: int, min_minor: int, mid_minor: int, max_minor: int
 ) -> SalaryBand:
     band = session.get(SalaryBand, band_id)
@@ -51,6 +109,13 @@ def update_band(
         validate_band(min_minor, mid_minor, max_minor)
     except InvalidBandError as error:
         raise DomainError(error.field, error.cause) from error
+    return band
+
+
+def update_band(
+    session: Session, band_id: int, min_minor: int, mid_minor: int, max_minor: int
+) -> SalaryBand:
+    band = _valid_band(session, band_id, min_minor, mid_minor, max_minor)
     band.min_minor, band.mid_minor, band.max_minor = min_minor, mid_minor, max_minor
     session.commit()
     logger.info(

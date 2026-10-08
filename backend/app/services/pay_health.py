@@ -1,4 +1,5 @@
-"""FR-09, FR-10: the outliers and the correction cost.
+"""FR-09, FR-10, FR-15, FR-16, FR-18, FR-20: the outliers, the correction cost, the figures of
+each band and the outliers by group.
 
 Tests: tests/api/test_pay_health.py.
 """
@@ -11,7 +12,8 @@ from sqlalchemy.orm import Session
 
 from app.calculations.ranges import RangeStatus
 from app.models import Employee, SalaryBand
-from app.reference import REPORTING_CURRENCY
+from app.reference import REPORTING_CURRENCY, GroupBy
+from app.services.overview import GROUP_COLUMNS, group_label
 from app.services.pagination import Page, paginate
 from app.services.sql import active_employees_with_rate, matches_search, reporting_minor
 
@@ -29,15 +31,8 @@ class PayHealthSummary:
 
 
 def summary(session: Session) -> PayHealthSummary:
-    below = _is_outside(RangeStatus.BELOW)
-    above = _is_outside(RangeStatus.ABOVE)
-    _, difference_to_minimum = _LIMIT_AND_DIFFERENCE[RangeStatus.BELOW]
     below_count, above_count, cost = session.execute(
-        _active_employees_with_band(
-            func.count().filter(below),
-            func.count().filter(above),
-            func.coalesce(func.sum(reporting_minor(difference_to_minimum)).filter(below), 0),
-        )
+        _active_employees_with_band(*_outlier_figures())
     ).one()
     payroll_cost = session.execute(
         active_employees_with_rate(
@@ -53,10 +48,84 @@ def summary(session: Session) -> PayHealthSummary:
     )
 
 
+@dataclass(frozen=True)
+class BandEffect:
+    """The figures of the employees of one salary band."""
+
+    headcount: int
+    below_count: int
+    above_count: int
+    correction_cost_minor: int
+
+
+def effect_by_band(session: Session, country: str | None = None) -> dict[int, BandEffect]:
+    """The figures of each band that has an employee, with the band id as the key."""
+    query = _active_employees_with_band(SalaryBand.id, func.count(), *_outlier_figures()).group_by(
+        SalaryBand.id
+    )
+    if country:
+        query = query.where(SalaryBand.country == country)
+    return {
+        band_id: BandEffect(headcount, below_count, above_count, int(cost))
+        for band_id, headcount, below_count, above_count, cost in session.execute(query)
+    }
+
+
+def effect_of_limits(
+    session: Session, band: SalaryBand, min_minor: int, max_minor: int
+) -> BandEffect:
+    """The figures of the employees of `band` if the band had these limits."""
+    below = _is_below(min_minor)
+    headcount, below_count, above_count, cost = session.execute(
+        active_employees_with_rate(
+            func.count(),
+            func.count().filter(below),
+            func.count().filter(_is_above(max_minor)),
+            func.coalesce(
+                func.sum(reporting_minor(min_minor - Employee.salary_minor)).filter(below), 0
+            ),
+        ).where(Employee.country == band.country, Employee.job_level == band.job_level)
+    ).one()
+    return BandEffect(headcount, below_count, above_count, int(cost))
+
+
+@dataclass(frozen=True)
+class OutlierGroup:
+    key: str
+    label: str
+    headcount: int
+    below_count: int
+    above_count: int
+
+
+def outliers_by_group(session: Session, group_by: GroupBy) -> list[OutlierGroup]:
+    """The employees with a band and their outliers, by country, department or job level.
+
+    The groups with the most outliers are first. Job levels are in the order of the level.
+    """
+    group = GROUP_COLUMNS[group_by]
+    rows = session.execute(
+        _active_employees_with_band(
+            group,
+            func.count(),
+            func.count().filter(_is_outside(RangeStatus.BELOW)),
+            func.count().filter(_is_outside(RangeStatus.ABOVE)),
+        ).group_by(group)
+    )
+    groups = [
+        OutlierGroup(str(key), group_label(group_by, key), headcount, below_count, above_count)
+        for key, headcount, below_count, above_count in rows
+    ]
+    if group_by == "job_level":
+        return sorted(groups, key=lambda g: int(g.key))
+    return sorted(groups, key=lambda g: (-(g.below_count + g.above_count), g.label))
+
+
 def list_outliers(
     session: Session,
     status: OutlierStatus | None,
     country: str | None,
+    department: str | None,
     job_level: int | None,
     search: str | None,
     page: int,
@@ -81,6 +150,7 @@ def list_outliers(
     matching = select_outliers(
         status,
         country,
+        department,
         job_level,
         search,
         Employee.id,
@@ -108,6 +178,7 @@ def list_outliers(
 def select_outliers(
     status: OutlierStatus | None,
     country: str | None,
+    department: str | None,
     job_level: int | None,
     search: str | None,
     *columns: ColumnElement,
@@ -124,6 +195,8 @@ def select_outliers(
     matching = _active_employees_with_band(*columns).where(is_listed)
     if country:
         matching = matching.where(Employee.country == country)
+    if department:
+        matching = matching.where(Employee.department == department)
     if job_level:
         matching = matching.where(Employee.job_level == job_level)
     if search:
@@ -138,17 +211,38 @@ def _active_employees_with_band(*columns: ColumnElement) -> Select:
     )
 
 
+def _outlier_figures() -> tuple[ColumnElement[int], ColumnElement[int], ColumnElement[int]]:
+    """The count below range, the count above range and the correction cost of a group."""
+    below = _is_outside(RangeStatus.BELOW)
+    return (
+        func.count().filter(below),
+        func.count().filter(_is_outside(RangeStatus.ABOVE)),
+        func.coalesce(func.sum(reporting_minor(_DIFFERENCE_TO_MINIMUM)).filter(below), 0),
+    )
+
+
+def _is_below(minimum: ColumnElement[int] | int) -> ColumnElement[bool]:
+    return Employee.salary_minor < minimum
+
+
+def _is_above(maximum: ColumnElement[int] | int) -> ColumnElement[bool]:
+    return Employee.salary_minor > maximum
+
+
 # The definitions of an outlier in SQL. They agree with `calculations.ranges.range_status`:
 # a salary equal to the minimum or the maximum is in range. A status that is not here
 # raises a KeyError.
 _IS_OUTSIDE: dict[RangeStatus, ColumnElement[bool]] = {
-    RangeStatus.BELOW: Employee.salary_minor < SalaryBand.min_minor,
-    RangeStatus.ABOVE: Employee.salary_minor > SalaryBand.max_minor,
+    RangeStatus.BELOW: _is_below(SalaryBand.min_minor),
+    RangeStatus.ABOVE: _is_above(SalaryBand.max_minor),
 }
+
+# How far a below-range salary is under the band minimum. It is the cost to bring it to the minimum.
+_DIFFERENCE_TO_MINIMUM: ColumnElement[int] = SalaryBand.min_minor - Employee.salary_minor
 
 # The band limit that the salary is outside, and the distance of the salary from it.
 _LIMIT_AND_DIFFERENCE: dict[RangeStatus, tuple[ColumnElement[int], ColumnElement[int]]] = {
-    RangeStatus.BELOW: (SalaryBand.min_minor, SalaryBand.min_minor - Employee.salary_minor),
+    RangeStatus.BELOW: (SalaryBand.min_minor, _DIFFERENCE_TO_MINIMUM),
     RangeStatus.ABOVE: (SalaryBand.max_minor, Employee.salary_minor - SalaryBand.max_minor),
 }
 

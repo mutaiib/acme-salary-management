@@ -1,4 +1,4 @@
-"""FR-03, FR-04, FR-05, FR-06, FR-13: the employee list, salary changes and deactivation.
+"""FR-03, FR-04, FR-05, FR-06, FR-13, FR-20: the employee list, salary changes and deactivation.
 
 Tests: tests/api/test_employees_list.py, test_employee_search.py, test_salary_changes.py,
 test_deactivate.py.
@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.calculations.salary_changes import SalaryChangeError, validate_salary_change
 from app.errors import EMPLOYEE_FIELD, DomainError, NotFoundError
-from app.models import Employee, SalaryChange
+from app.models import Employee, ExchangeRate, SalaryChange
 from app.reference import ACTIVE, INACTIVE, REPORTING_CURRENCY
 from app.services.pagination import DEFAULT_PAGE_SIZE, Page, paginate
 from app.services.sql import (
@@ -46,13 +46,20 @@ class EmployeeQuery:
     department: str | None = None
     job_level: int | None = None
     status: str | None = None
+    # A salary bracket in the reporting currency: from (included) to (not included).
+    salary_from_minor: int | None = None
+    salary_to_minor: int | None = None
     sort: str = DEFAULT_SORT
+
+    @property
+    def has_salary_bracket(self) -> bool:
+        return self.salary_from_minor is not None or self.salary_to_minor is not None
 
 
 def list_employees(session: Session, query: EmployeeQuery) -> Page[Employee]:
     return paginate(
         session,
-        _matching(select(Employee), query),
+        _matching(_select_employees(query), query),
         _order(query.sort),
         query.page,
         query.page_size,
@@ -126,6 +133,14 @@ def summarize(session: Session, query: EmployeeQuery) -> EmployeeSummary:
     )
 
 
+def _select_employees(query: EmployeeQuery) -> Select:
+    """The employees. A salary bracket joins the exchange rate, so it drops an employee without."""
+    statement = select(Employee)
+    if query.has_salary_bracket:
+        statement = statement.join(ExchangeRate, ExchangeRate.currency == Employee.currency)
+    return statement
+
+
 def _matching(statement: Select, query: EmployeeQuery) -> Select:
     if query.search:
         statement = statement.where(matches_search(query.search))
@@ -139,6 +154,12 @@ def _matching(statement: Select, query: EmployeeQuery) -> Select:
         # An empty value means "no filter", the same as in the other lists.
         if value:
             statement = statement.where(column == value)
+    if query.has_salary_bracket:
+        salary = reporting_minor(Employee.salary_minor)
+        if query.salary_from_minor is not None:
+            statement = statement.where(salary >= query.salary_from_minor)
+        if query.salary_to_minor is not None:
+            statement = statement.where(salary < query.salary_to_minor)
     return statement
 
 
