@@ -27,6 +27,7 @@ The first screens used the right Astryx components, but gave them no hierarchy. 
 | Font | Figtree, which the theme names | `frontend/index.html` |
 | Icons | The icon set of the theme (`lucide-react`). A navigation item has an icon | `frontend/src/App.tsx` |
 | Shell | `AppShell` with a `SideNav` in 2 sections: Insights and Manage. The navigation collapses to icons | `frontend/src/App.tsx` |
+| Color mode | Light and dark. The mode follows the device until the HR Manager selects one with the item at the bottom of the navigation ("Use the dark mode"). The browser keeps the selection. Each color is a `[light, dark]` pair of a theme token, so the charts follow the mode | `frontend/src/hooks/useColorMode.ts`, `frontend/src/components/ColorModeItem.tsx` |
 | Links | Astryx links use the router | `frontend/src/components/RouterLink.tsx` |
 
 ## Page patterns

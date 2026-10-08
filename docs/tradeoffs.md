@@ -84,6 +84,7 @@ New on 8 October 2026.
 | 8 October 2026 | From a bar to its employees (FR-20) | A chart showed a number only. | A bar opens the list of its employees. The list has a link back to the chart. | The developer asked for it: a number is more useful when the HR Manager can see who is in it. |
 | 8 October 2026 | The way back from a list and from an employee record | A record went back to a list with no filters. | A link carries the address of its screen. A list goes back to the same tab and grouping of Pay analysis. A record goes back to its list, with the filters and the page. | The developer opened a record from a list with a salary bracket, and the way back lost the bracket. |
 | 8 October 2026 | The outliers of a band, on the Salary bands screen | A red badge and a green badge, with a link below them. | 2 columns of plain numbers. A number is a link to its employees. | The badges made each row 3 lines high, with no space around them. |
+| 8 October 2026 | The color mode (FR-21) | The system followed the color mode of the device, with no control. | An item with a name at the bottom of the navigation changes between light and dark. On a narrow screen, the item is in the navigation that opens. The browser keeps the selection. | The developer asked for it. A person reads figures for a long time, and selects the mode that is easy to read. |
 
 ## Smaller product choices
 

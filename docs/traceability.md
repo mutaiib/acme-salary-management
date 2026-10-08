@@ -8,7 +8,7 @@ Each test file starts with the IDs of the requirements that it checks. The servi
 
 The numbers FR-11, FR-12 and NFR-07 are not in use. Pay equity left the scope. See `requirements.md`.
 
-The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C5 are in `specs/screen-clarity-spec.md`. The slices B1 to B8 are in `plans/band-insight-and-charts-plan.md`.
+The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C5 are in `specs/screen-clarity-spec.md`. The slices B1 to B8 are in `plans/band-insight-and-charts-plan.md`. B9 is the color mode; it came after that plan.
 
 | ID | Requirement (short) | Slice | Backend tests | UI tests |
 |---|---|---|---|---|
@@ -30,6 +30,7 @@ The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C
 | FR-18 | Chart of the employees below range and above range, by country, department or job level | B5, B7 | `api/test_pay_health.py` | `pages/analysis/PayAnalysisPage.test.tsx`, `pages/analysis/OutlierGroupChart.test.tsx`, `components/ChartFigure.test.tsx` |
 | FR-19 | The 10 active employees with the highest salary, for the organization or for one country | B6, B7 | `api/test_highest_salaries.py` | `pages/analysis/PayAnalysisPage.test.tsx`, `lib/backLinks.test.ts` |
 | FR-20 | Open the list of the employees of a chart bar, with a link back to the chart | B8 | `api/test_employees_list.py`, `api/test_employee_summary.py`, `api/test_salary_distribution.py`, `api/test_pay_health.py` | `lib/chartLinks.test.ts`, `lib/backLinks.test.ts`, `components/BackLink.test.tsx`, `pages/analysis/SalaryDistributionChart.test.tsx`, `pages/analysis/OutlierGroupChart.test.tsx`, `pages/analysis/PayAnalysisPage.test.tsx`, `pages/employees/EmployeesPage.test.tsx`, `pages/pay-health/PayHealthPage.test.tsx`, `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-21 | Select the light or the dark color mode; keep the selection; follow the device with no selection | B9 | None: the color mode is in the browser only | `components/ColorModeItem.test.tsx` |
 
 ## Quality requirements
 

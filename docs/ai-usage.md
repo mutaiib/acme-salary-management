@@ -303,6 +303,14 @@ The first version was complete and deployed. The developer then used the system 
 
 **Decision of the developer.** No commit before the review of the developer. The agent prepared the commits, and the developer decides.
 
+### Step 8: The light and the dark color mode
+
+**Request of the developer.** Add a light and a dark mode in a place that fits, so that a person selects the view. Check that the charts work in the 2 modes.
+
+**Proposal of the agent.** The theme had the 2 modes, and followed the device with no control. The agent added one icon button at the bottom of the navigation (FR-21). The developer saw it on a narrow screen: an icon alone in the top bar, with no name. It is now an item of the navigation with a name, and a narrow screen shows it in the navigation that opens. The browser keeps the selection. The agent then looked at the 2 charts in the dark mode in a browser: the bars, the axis text, the grid and the legend are easy to read, because each chart color comes from a theme token.
+
+**Decision of the developer.** The developer reviews the screens before the commit.
+
 ### The value of each change for the HR Manager
 
 | Change | Before | Now |
@@ -317,6 +325,7 @@ The first version was complete and deployed. The developer then used the system 
 | From a bar to its employees (FR-20) | A chart gave a number. | A click on a bar opens the employees of that number, and one more click goes back to the chart. |
 | The way back from a record | The list lost its filters. | The HR Manager returns to the same list, the same filters and the same page. |
 | The Pay analysis screen | 3 more sections on the Pay overview and on Pay health. | One question for each tab. The Pay overview is short again. |
+| The color mode (FR-21) | The mode of the device, with no control. | The HR Manager selects light or dark, and the system keeps the selection. |
 
 ### Where the AI output was wrong in this iteration
 

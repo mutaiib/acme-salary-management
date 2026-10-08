@@ -38,10 +38,11 @@ The system follows this sequence:
 | FR-18 | The system must show a chart of the employees below range and above range for each country, department or job level. |
 | FR-19 | The system must show the 10 active employees with the highest salary, for the organization or for one country. Each row must show the salary in the local currency and in the reporting currency, and the compa-ratio. |
 | FR-20 | The system must let the HR Manager open the list of the employees that a bar of a chart shows. That list must give a link back to the chart. An employee record must give a link back to the list that opened it, with the filters of that list. |
+| FR-21 | The system must let the HR Manager select the light or the dark color mode. The browser must keep the selection. With no selection, the system must follow the color mode of the device. |
 
 The numbers FR-11, FR-12 and NFR-07 are not in use. Pay equity left the scope (see the next section). The other numbers do not change.
 
-FR-15 to FR-20 and the last sentence of FR-04 are new on 8 October 2026, after the first version. `tradeoffs.md`, section "Decisions that changed", gives the cause of each one.
+FR-15 to FR-21 and the last sentence of FR-04 are new on 8 October 2026, after the first version. `tradeoffs.md`, section "Decisions that changed", gives the cause of each one.
 
 | ID | Quality requirement |
 |---|---|
