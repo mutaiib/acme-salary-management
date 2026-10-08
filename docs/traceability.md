@@ -8,28 +8,34 @@ Each test file starts with the IDs of the requirements that it checks. The servi
 
 The numbers FR-11, FR-12 and NFR-07 are not in use. Pay equity left the scope. See `requirements.md`.
 
-The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C5 are in `specs/screen-clarity-spec.md`.
+The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C5 are in `specs/screen-clarity-spec.md`. The slices B1 to B8 are in `plans/band-insight-and-charts-plan.md`.
 
 | ID | Requirement (short) | Slice | Backend tests | UI tests |
 |---|---|---|---|---|
 | FR-01 | Total payroll cost and the median salary of the organization in the reporting currency, with the exchange rates and their date | S2 | `unit/test_money.py`, `api/test_overview.py`, `api/test_meta.py` | `pages/overview/OverviewPage.test.tsx`, `pages/exchange-rates/ExchangeRatesPage.test.tsx`, `lib/format.test.ts` |
 | FR-02 | Headcount, payroll cost and its share, and minimum, median and maximum salary, by country, department and job level | S2 | `unit/test_money.py`, `api/test_overview.py` | `pages/overview/OverviewPage.test.tsx`, `lib/format.test.ts` |
 | FR-03 | Find an employee; filter and sort the list; set the rows on a page; the pay figures of the list | S0, S1, C2, C5 | `api/test_employees_list.py`, `api/test_employee_search.py`, `api/test_employee_detail.py`, `api/test_employee_summary.py`, `api/test_meta.py` | `pages/employees/EmployeesPage.test.tsx`, `pages/employees/summarySentences.test.ts` |
-| FR-04 | Change a salary with a reason and an effective date, as a new salary or as an increase in percent | S1, C4 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py` | `pages/employee-detail/SalaryChange.test.tsx`, `lib/money.test.ts` |
+| FR-04 | Change a salary with a reason and an effective date, as a new salary or as an increase in percent | S1, C4, B1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py` | `pages/employee-detail/SalaryChange.test.tsx`, `pages/employee-detail/ChangeFromTo.test.tsx`, `lib/money.test.ts`, `lib/format.test.ts` |
 | FR-05 | Refuse a salary that is zero or negative, and show the cause | S1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py` | `pages/employee-detail/SalaryChange.test.tsx` |
 | FR-06 | Keep each salary change; show the salary history | S1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py`, `api/test_seed_write.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx`, `pages/employee-detail/SalaryChange.test.tsx` |
 | FR-07 | Set a salary band for each job level in a country | S3 | `unit/test_ranges.py`, `api/test_bands.py` | `pages/bands/BandsPage.test.tsx` |
 | FR-08 | Compa-ratio and range penetration of each employee; the band and the amount to the band maximum before a salary change | S3, C4 | `unit/test_ranges.py`, `api/test_employee_detail.py` | `pages/employee-detail/EmployeeDetailPage.test.tsx`, `pages/employee-detail/RangeBar.test.tsx`, `pages/employee-detail/SalaryChange.test.tsx`, `lib/ranges.test.ts` |
 | FR-09 | Employees below range and above range, all or one kind; find an outlier by name, email or employee code | S4, C1 | `unit/test_ranges.py`, `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
 | FR-10 | Cost to move all below-range salaries to the band minimum, and its share of the payroll cost | S4, C4 | `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
-| FR-13 | Deactivate an employee; insights count active employees only | S1, S2, S4 | `api/test_deactivate.py`, `api/test_overview.py`, `api/test_pay_health.py` | `pages/employee-detail/SalaryChange.test.tsx`, `pages/employee-detail/EmployeeDetailPage.test.tsx` |
+| FR-13 | Deactivate an employee; insights count active employees only | S1, S2, S4 | `api/test_deactivate.py`, `api/test_overview.py`, `api/test_pay_health.py`, `api/test_salary_distribution.py`, `api/test_highest_salaries.py` | `pages/employee-detail/SalaryChange.test.tsx`, `pages/employee-detail/EmployeeDetailPage.test.tsx` |
 | FR-14 | A first screen that states the purpose of the system and what it can do | C3 | None: the screen has no data | None: the screen has fixed text and one link. A check in a browser covers it |
+| FR-15 | Headcount of each salary band; employees below range and above range for each band | B2 | `api/test_bands.py` | `pages/bands/BandsPage.test.tsx` |
+| FR-16 | Effect of a band change before the save: employees below range and above range, and the correction cost | B3 | `api/test_bands.py`, `api/test_pay_health.py`, `api/test_write_log.py` | `pages/bands/BandsPage.test.tsx` |
+| FR-17 | Chart of the active employees in each salary bracket, in the reporting currency | B4, B7 | `unit/test_distribution.py`, `api/test_salary_distribution.py` | `pages/analysis/PayAnalysisPage.test.tsx`, `pages/analysis/SalaryDistributionChart.test.tsx`, `components/ChartFigure.test.tsx` |
+| FR-18 | Chart of the employees below range and above range, by country, department or job level | B5, B7 | `api/test_pay_health.py` | `pages/analysis/PayAnalysisPage.test.tsx`, `pages/analysis/OutlierGroupChart.test.tsx`, `components/ChartFigure.test.tsx` |
+| FR-19 | The 10 active employees with the highest salary, for the organization or for one country | B6, B7 | `api/test_highest_salaries.py` | `pages/analysis/PayAnalysisPage.test.tsx`, `lib/backLinks.test.ts` |
+| FR-20 | Open the list of the employees of a chart bar, with a link back to the chart | B8 | `api/test_employees_list.py`, `api/test_employee_summary.py`, `api/test_salary_distribution.py`, `api/test_pay_health.py` | `lib/chartLinks.test.ts`, `lib/backLinks.test.ts`, `components/BackLink.test.tsx`, `pages/analysis/SalaryDistributionChart.test.tsx`, `pages/analysis/OutlierGroupChart.test.tsx`, `pages/analysis/PayAnalysisPage.test.tsx`, `pages/employees/EmployeesPage.test.tsx`, `pages/pay-health/PayHealthPage.test.tsx`, `pages/employee-detail/EmployeeDetailPage.test.tsx` |
 
 ## Quality requirements
 
 | ID | Requirement (short) | Evidence |
 |---|---|---|
-| NFR-01 | A list page responds in less than 300 ms | `docs/performance.md`: the slowest list request has a 95th percentile of 18 ms. No automated test checks the time. |
+| NFR-01 | A list page responds in less than 300 ms | `docs/performance.md`: the slowest list request has a 95th percentile of 27 ms. No automated test checks the time. |
 | NFR-02 | A pay insight responds in less than 500 ms | `docs/performance.md`: the slowest insight has a 95th percentile of 56 ms. No automated test checks the time. |
 | NFR-03 | The seed script creates exactly 10,000 employees in less than 30 seconds; two runs give the same data | `unit/test_seed.py`, `api/test_seed_write.py`; `docs/performance.md`: less than 1 second |
 | NFR-04 | Money is an integer in minor units | `unit/test_money.py`, `lib/money.test.ts`; the tests for the largest amount in `api/test_salary_changes.py` and `api/test_bands.py` |
@@ -41,8 +47,14 @@ The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C
 
 | Test file | Check |
 |---|---|
-| `components/DataState.test.tsx` | The loading, empty and error states that all screens share |
+| `components/DataState.test.tsx` | The loading, empty and error states that all screens share. A list shows rows with a shimmer when a later load is slow |
+| `components/LoadingMark.test.tsx` | A load indicator shows for a slow load, and not for a quick reply |
+| `components/BackLink.test.tsx`, `lib/backLinks.test.ts` | A back link has an arrow. A record goes back to the list that opened it, with the filters of that list |
 | `hooks/useApi.test.tsx` | A reply for an old request does not replace newer data; a new attempt removes the old error; the application knows that a load runs |
+
+## Limits of the chart tests
+
+A test browser has no layout. A chart test draws the bars at a fixed size, and checks the number of bars, the legend, the labels and the click. A test does not check the size, the position or the color of a bar, or the hover text. A check in a browser covers these.
 
 ## Tests against the seeded data
 

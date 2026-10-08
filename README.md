@@ -9,6 +9,8 @@ The system follows this sequence:
 3. **Change** a salary, with a reason and an effective date.
 4. **Prove** the salary change: each employee has a salary history.
 
+A second iteration added the Pay analysis screen (2 charts and the 10 highest salaries), and the effect of a band change before the save. A bar of a chart opens the list of its employees. `docs/ai-usage.md`, Part 5, tells why.
+
 - Live application: https://acme-salary-management-ds2v.onrender.com
 - Video demo: https://youtu.be/5bzqguBkGIc
 
@@ -48,15 +50,16 @@ The API documentation is at http://localhost:8000/docs.
 | Welcome | What is this system for? The first screen states the problem and what the system can do. |
 | Pay overview | What does ACME spend on salaries, and where? |
 | Pay health | Who has a salary below or above the salary band? What does the correction cost? |
+| Pay analysis | How many employees are in each salary bracket? Which country, department or job level has the most outliers? Who has the highest salary, in ACME or in one country? |
 | Employees | What does ACME pay a group of employees, for example Engineering in Germany? Who is this employee, and what is the salary history? |
-| Salary bands | What is the pay range for a job level in a country? |
+| Salary bands | What is the pay range for a job level in a country? How many employees does a band have, and how many are outside it? What does a band change do, before the save? |
 | Exchange rates | Which rates convert a salary to USD? The Pay overview links to this screen. |
 
 ## Technology
 
 - Backend: Python, FastAPI, SQLAlchemy, SQLite.
-- UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system.
-- Tests: pytest (206 tests), Vitest with React Testing Library (147 tests).
+- UI: React 19, TypeScript, Vite, and the [Astryx](https://astryx.atmeta.com/) design system. Recharts draws the 2 charts, with the colors of the Astryx theme.
+- Tests: pytest (269 tests), Vitest with React Testing Library (275 tests).
 
 ## Structure
 
@@ -82,7 +85,7 @@ docs/             requirements, design notes and decisions
 | [docs/requirements.md](docs/requirements.md) | Goal, scope, and the features that the product leaves out |
 | [docs/glossary.md](docs/glossary.md) | The pay terms and the formulas |
 | [docs/architecture.md](docs/architecture.md) | Diagram and main decisions |
-| [docs/tradeoffs.md](docs/tradeoffs.md) | The choices and their cost |
+| [docs/tradeoffs.md](docs/tradeoffs.md) | The choices and their cost, and the decisions that changed after the first version |
 | [docs/performance.md](docs/performance.md) | Measured response times |
 | [docs/traceability.md](docs/traceability.md) | Each requirement, with its slice and its tests |
 | [docs/ai-usage.md](docs/ai-usage.md) | How the developer used AI: the requests, the decisions, and the errors in the AI output that the work found |
