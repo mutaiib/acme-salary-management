@@ -20,6 +20,18 @@ export function CountryFilter({ meta, value, onChange }: Props) {
   )
 }
 
+/** The department filter. */
+export function DepartmentFilter({ meta, value, onChange }: Props) {
+  return (
+    <FilterSelect
+      label="Department"
+      value={value}
+      onChange={onChange}
+      options={(meta?.departments ?? []).map((d) => ({ value: d, label: d }))}
+    />
+  )
+}
+
 /** The job level filter. */
 export function JobLevelFilter({ meta, value, onChange }: Props) {
   return (

@@ -1,4 +1,4 @@
-// FR-03: the Employees screen.
+// FR-03, FR-20: the Employees screen.
 import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Link } from 'react-router-dom'
@@ -161,18 +161,6 @@ test('shows an empty state when no employee matches', async () => {
   renderScreen(<EmployeesPage />, { at: '/?search=nobody' })
 
   expect(await screen.findByText('No employee matches')).toBeInTheDocument()
-})
-
-test('links each employee to the Employee detail screen', async () => {
-  stubApi({ '/api/meta': META,
-    '/api/employees/summary': NO_SUMMARY, '/api/employees': pageOf([employee(7, { full_name: 'Asha Rao' })]) })
-
-  renderScreen(<EmployeesPage />)
-
-  expect(await screen.findByRole('link', { name: 'Asha Rao' })).toHaveAttribute(
-    'href',
-    '/employees/7',
-  )
 })
 
 test('shows a badge for an inactive employee', async () => {
@@ -390,4 +378,132 @@ test('shows no badge in a list of inactive employees only', async () => {
 
   const row = (await screen.findByText('Employee 1')).closest('tr')!
   expect(within(row).queryByText('Inactive')).not.toBeInTheDocument()
+})
+
+// FR-20: a list that a chart opened.
+
+const ANALYSIS_ADDRESS = '/analysis?tab=outliers&group_by=department'
+const BRACKET_ADDRESS = `/?status=active&salary_from_minor=4000000&salary_to_minor=6000000&${new URLSearchParams({ back: ANALYSIS_ADDRESS })}`
+
+function stubEmployees() {
+  return stubApi({
+    '/api/meta': META,
+    '/api/employees/summary': NO_SUMMARY,
+    '/api/employees': pageOf([employee(1)]),
+  })
+}
+
+test('sends the salary bracket in the address to the list and to the pay figures', async () => {
+  const api = stubEmployees()
+
+  renderScreen(<EmployeesPage />, { at: BRACKET_ADDRESS })
+  await screen.findByText('Employee 1')
+
+  for (const path of ['/api/employees', '/api/employees/summary']) {
+    const query = requestsTo(api, path).at(-1)!.searchParams
+    expect(query.get('salary_from_minor')).toBe('4000000')
+    expect(query.get('salary_to_minor')).toBe('6000000')
+  }
+})
+
+test('shows the salary bracket as one item in the filter row', async () => {
+  stubEmployees()
+
+  renderScreen(<EmployeesPage />, { at: BRACKET_ADDRESS })
+
+  const filters = await screen.findByRole('search')
+  expect(await within(filters).findByText('Salary: $40,000 to $60,000 in USD')).toBeInTheDocument()
+})
+
+test('shows no salary bracket item when the address has no bracket', async () => {
+  stubEmployees()
+
+  renderScreen(<EmployeesPage />, { at: '/?status=active' })
+  await screen.findByText('Employee 1')
+
+  expect(screen.queryByText(/^Salary: /)).toBeNull()
+})
+
+test('sends no salary bracket after the HR Manager removes the item, and keeps the other filters', async () => {
+  const api = stubEmployees()
+  renderScreen(<EmployeesPage />, { at: BRACKET_ADDRESS })
+  const filters = await screen.findByRole('search')
+  await within(filters).findByText('Salary: $40,000 to $60,000 in USD')
+
+  await userEvent.click(
+    within(filters).getByRole('button', { name: 'Remove Salary: $40,000 to $60,000 in USD' }),
+  )
+
+  await waitFor(() => expect(screen.queryByText(/^Salary: /)).toBeNull())
+  const query = requestsTo(api, '/api/employees').at(-1)!.searchParams
+  expect(query.get('salary_from_minor')).toBeNull()
+  expect(query.get('salary_to_minor')).toBeNull()
+  expect(query.get('status')).toBe('active')
+  // The address of the list has no part of the bracket: a link to a record carries that address.
+  const record = screen.getAllByRole('link').find((link) =>
+    /^\/employees\/\d+/.test(link.getAttribute('href') ?? ''),
+  )!
+  expect(decodeURIComponent(record.getAttribute('href')!)).not.toMatch(/salary_(from|to)_minor/)
+})
+
+test('shows a link back to the view of Pay analysis that the address names', async () => {
+  stubEmployees()
+
+  renderScreen(<EmployeesPage />, { at: BRACKET_ADDRESS })
+
+  const back = await screen.findByRole('link', { name: 'Back to Pay analysis' })
+  expect(back).toHaveAttribute('href', ANALYSIS_ADDRESS)
+})
+
+test('shows no link back for an address that is not a screen of the system', async () => {
+  stubEmployees()
+
+  renderScreen(<EmployeesPage />, { at: '/?back=https%3A%2F%2Fevil.example' })
+  await screen.findByText('Employee 1')
+
+  expect(screen.queryByRole('link', { name: /^Back to / })).toBeNull()
+})
+
+test('keeps the link back to Pay analysis when the HR Manager changes a filter', async () => {
+  stubEmployees()
+  renderScreen(<EmployeesPage />, { at: BRACKET_ADDRESS })
+  await screen.findByText('Employee 1')
+
+  await userEvent.click(screen.getByRole('radio', { name: 'All' }))
+
+  expect(await screen.findByRole('link', { name: 'Back to Pay analysis' })).toBeInTheDocument()
+})
+
+test('shows no link back to Pay analysis for a list that no chart opened', async () => {
+  stubEmployees()
+
+  renderScreen(<EmployeesPage />)
+  await screen.findByText('Employee 1')
+
+  expect(screen.queryByRole('link', { name: 'Back to Pay analysis' })).toBeNull()
+})
+
+test('ignores a salary bracket in the address that is not valid', async () => {
+  const api = stubEmployees()
+
+  renderScreen(<EmployeesPage />, { at: '/?salary_from_minor=abc&salary_to_minor=100' })
+  await screen.findByText('Employee 1')
+
+  expect(requestsTo(api, '/api/employees').at(-1)!.searchParams.get('salary_from_minor')).toBeNull()
+  expect(screen.queryByText(/^Salary: /)).toBeNull()
+})
+
+test('opens the record of an employee with the way back to this list and its filters', async () => {
+  stubApi({
+    '/api/meta': META,
+    '/api/employees': pageOf([employee(7, { full_name: 'Asha Rao' })]),
+    '/api/employees/summary': NO_SUMMARY,
+  })
+
+  renderScreen(<EmployeesPage />, { at: '/employees?country=IN', path: '/employees' })
+
+  expect(await screen.findByRole('link', { name: 'Asha Rao' })).toHaveAttribute(
+    'href',
+    '/employees/7?back=%2Femployees%3Fcountry%3DIN',
+  )
 })

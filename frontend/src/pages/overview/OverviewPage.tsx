@@ -5,8 +5,9 @@ import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
 import { getOverview } from '../../api/insights'
 import type { GroupBy } from '../../api/types'
-import { DataState, PageHeader, Panel, StatCard, StatRow } from '../../components'
+import { DataState, LoadingRows, PageHeader, Panel, StatCard, StatRow } from '../../components'
 import { useApi } from '../../hooks/useApi'
+import { useIsLate } from '../../hooks/useIsLate'
 import { formatCount, formatDate, formatMoney, formatMoneyShort } from '../../lib/format'
 import { GroupTable } from './GroupTable'
 import { OutlierNotice } from './OutlierNotice'
@@ -35,6 +36,8 @@ const GROUPINGS: Record<GroupBy, { tab: string; title: string; header: string; n
 export function OverviewPage() {
   const [groupBy, setGroupBy] = useState<GroupBy>('country')
   const overview = useApi(() => getOverview(groupBy), [groupBy])
+  // A slow change of the grouping shows rows with a shimmer in place of the old table.
+  const isLate = useIsLate(overview.isLoading)
 
   return (
     <Stack gap={5} padding={6}>
@@ -49,7 +52,7 @@ export function OverviewPage() {
         emptyDescription="Run the seed script to create the employees."
       >
         {(data) => {
-          // The old table stays while a new grouping loads. The header and the note
+          // The figures stay while a new grouping loads. The header and the note
           // come from the data, so they always agree with the figures on the screen.
           const shown = GROUPINGS[data.group_by]
           return (
@@ -103,12 +106,16 @@ export function OverviewPage() {
                     </Link>
                   )}
                 </Text>
-                <GroupTable
-                  groupHeader={shown.header}
-                  groups={data.groups}
-                  totalCostMinor={data.payroll_cost_minor}
-                  reportingCurrency={data.reporting_currency}
-                />
+                {isLate ? (
+                  <LoadingRows count={data.groups.length} />
+                ) : (
+                  <GroupTable
+                    groupHeader={shown.header}
+                    groups={data.groups}
+                    totalCostMinor={data.payroll_cost_minor}
+                    reportingCurrency={data.reporting_currency}
+                  />
+                )}
               </Panel>
             </Stack>
           )

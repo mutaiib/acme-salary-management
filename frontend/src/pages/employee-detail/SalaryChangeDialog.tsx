@@ -12,6 +12,7 @@ import { errorStatus, useSubmit } from '../../hooks/useSubmit'
 import { formatMoney } from '../../lib/format'
 import { changePct, raisedBy } from '../../lib/money'
 import { roomToMaximum } from '../../lib/ranges'
+import { ChangeFromTo } from './ChangeFromTo'
 import { RangeBar } from './RangeBar'
 
 interface Props {
@@ -77,7 +78,6 @@ export function SalaryChangeDialog({ employee, today, isOpen, onClose, onChanged
   return (
     <FormDialog
       title="Change salary"
-      subtitle={`Current salary: ${formatMoney(employee.salary_minor, employee.currency)}`}
       isOpen={isOpen}
       onClose={handleClose}
       onSubmit={handleSubmit}
@@ -104,6 +104,11 @@ export function SalaryChangeDialog({ employee, today, isOpen, onClose, onChanged
           width={140}
         />
       </Stack>
+      <ChangeFromTo
+        oldMinor={employee.salary_minor}
+        newMinor={salaryMinor}
+        currency={employee.currency}
+      />
       {employee.band && (
         <Stack gap={1}>
           <RangeBar band={employee.band} salaryMinor={salaryMinor ?? employee.salary_minor} />

@@ -1,9 +1,11 @@
+import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
 import { updateBand } from '../../api/bands'
 import type { Band, BandRequest } from '../../api/types'
 import { FormDialog, MoneyInput } from '../../components'
 import { useSubmit } from '../../hooks/useSubmit'
-import { formatJobLevel } from '../../lib/format'
+import { BandEffectPreview } from './BandEffectPreview'
+import { formatJobLevel, formatMoney } from '../../lib/format'
 
 interface Props {
   band: Band
@@ -48,6 +50,7 @@ export function BandEditDialog({ band, countryName, onClose, onChanged }: Props)
         <MoneyInput
           key={field.name}
           label={field.label}
+          description={`Now: ${formatMoney(band[field.name], band.currency)}`}
           amountMinor={amounts[field.name]}
           onChange={(amountMinor) => setAmounts({ ...amounts, [field.name]: amountMinor })}
           currency={band.currency}
@@ -55,6 +58,8 @@ export function BandEditDialog({ band, countryName, onClose, onChanged }: Props)
           error={form.fieldErrors[field.name]}
         />
       ))}
+      <Text type="supporting">The midpoint changes the compa-ratio only.</Text>
+      <BandEffectPreview band={band} amounts={amounts} />
     </FormDialog>
   )
 }

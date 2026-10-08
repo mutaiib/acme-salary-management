@@ -1,14 +1,16 @@
-// FR-01, FR-02: the formats of money, dates and percentages.
+// FR-01, FR-02, FR-04, FR-17, FR-18: the formats of money, dates and percentages.
 import { expect, test } from 'vitest'
 import {
   formatCount,
   formatDate,
   formatJobLevel,
   formatMoney,
+  formatMoneyCompact,
   formatMoneyShort,
   formatRate,
   formatRecordedDate,
   formatShare,
+  formatSignedMoney,
 } from './format'
 
 test('formats an exchange rate without zeros at the end', () => {
@@ -49,6 +51,18 @@ test('formats a share of a total of zero as zero', () => {
   expect(formatShare(0, 0)).toBe('0.0%')
 })
 
+test('formats a positive amount with a plus sign', () => {
+  expect(formatSignedMoney(500_000, 'USD')).toBe('+$5,000')
+})
+
+test('formats a negative amount with a minus sign', () => {
+  expect(formatSignedMoney(-500_000, 'USD')).toBe('-$5,000')
+})
+
+test('formats an amount of zero without a sign', () => {
+  expect(formatSignedMoney(0, 'USD')).toBe('$0')
+})
+
 test('formats a job level with the word Level', () => {
   expect(formatJobLevel(3)).toBe('Level 3')
 })
@@ -69,4 +83,11 @@ test('formats the time of a record as a date in the time zone of the HR Manager'
   // 19:22 UTC on 7 October is 00:52 on 8 October in India.
   expect(formatRecordedDate('2026-10-07T19:22:00', 'Asia/Kolkata')).toBe('8 Oct 2026')
   expect(formatRecordedDate('2026-10-07T19:22:00', 'UTC')).toBe('7 Oct 2026')
+})
+
+test('formats each amount of a chart axis in the same short form', () => {
+  expect(formatMoneyCompact(0, 'USD')).toBe('$0')
+  expect(formatMoneyCompact(2_000_000, 'USD')).toBe('$20K')
+  expect(formatMoneyCompact(10_000_000, 'USD')).toBe('$100K')
+  expect(formatMoneyCompact(22_000_000, 'USD')).toBe('$220K')
 })

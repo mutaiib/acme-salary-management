@@ -4,7 +4,7 @@ import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { Text } from '@astryxdesign/core/Text'
 import { useState } from 'react'
 import { listBands } from '../../api/bands'
-import type { Band } from '../../api/types'
+import type { Band, BandFigures, OutlierStatus } from '../../api/types'
 import {
   CountryFilter,
   DataState,
@@ -21,8 +21,9 @@ import {
 import { useApi } from '../../hooks/useApi'
 import { countryNameOf, useMeta } from '../../hooks/useMeta'
 import { useUrlFilters } from '../../hooks/useUrlFilters'
-import { formatJobLevel } from '../../lib/format'
+import { formatCount, formatJobLevel } from '../../lib/format'
 import { BandEditDialog } from './BandEditDialog'
+import { OutsideBand } from './OutsideBand'
 
 export function BandsPage() {
   const meta = useMeta()
@@ -33,9 +34,27 @@ export function BandsPage() {
 
   const countryName = (code: string) => countryNameOf(meta.data, code)
 
-  const columns: TableColumn<TableRow<Band>>[] = [
-    jobLevelColumn<Band>('Job level'),
-    moneyColumn<Band>('min_minor', 'Minimum'),
+  // The employees outside the band: one column for each range status.
+  const outsideColumn = (
+    status: OutlierStatus,
+    header: string,
+  ): TableColumn<TableRow<BandFigures>> => ({
+    key: `${status}_count`,
+    header,
+    width: pixel(120),
+    align: 'end',
+    renderCell: (band) => (
+      <OutsideBand
+        band={band}
+        status={status}
+        bandName={`${countryName(band.country)}, ${formatJobLevel(band.job_level)}`}
+      />
+    ),
+  })
+
+  const columns: TableColumn<TableRow<BandFigures>>[] = [
+    jobLevelColumn<BandFigures>('Job level'),
+    moneyColumn<BandFigures>('min_minor', 'Minimum'),
     {
       key: 'mid_minor',
       header: 'Midpoint',
@@ -47,7 +66,16 @@ export function BandsPage() {
         </Text>
       ),
     },
-    moneyColumn<Band>('max_minor', 'Maximum'),
+    moneyColumn<BandFigures>('max_minor', 'Maximum'),
+    {
+      key: 'headcount',
+      header: 'Employees',
+      width: pixel(110),
+      align: 'end',
+      renderCell: (band) => formatCount(band.headcount),
+    },
+    outsideColumn('below', 'Below range'),
+    outsideColumn('above', 'Above range'),
     {
       key: 'actions',
       header: '',
@@ -82,6 +110,7 @@ export function BandsPage() {
       </FilterBar>
       <DataState
         state={bands}
+        rowsOf={(data) => data.length}
         isEmpty={(data) => data.length === 0}
         emptyTitle="No salary bands"
         emptyDescription="Run the seed script to create the salary bands."
@@ -118,8 +147,8 @@ export function BandsPage() {
 }
 
 /** The bands of each country, in the order of the list from the API. */
-function bandsByCountry(bands: Band[]): [string, Band[]][] {
-  const groups = new Map<string, Band[]>()
+function bandsByCountry(bands: BandFigures[]): [string, BandFigures[]][] {
+  const groups = new Map<string, BandFigures[]>()
   for (const band of bands) {
     groups.set(band.country, [...(groups.get(band.country) ?? []), band])
   }

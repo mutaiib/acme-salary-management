@@ -27,21 +27,37 @@ export function useUrlFilters() {
     return params.get(name) ?? ''
   }
 
-  function setFilter(name: string, value: string) {
+  /**
+   * Sets or removes 2 or more filters in one change of the address. Two calls of `setFilter`
+   * in a row start from the same old address, so the second call brings the first filter back.
+   * An empty value removes the filter.
+   */
+  function setFilters(changes: Record<string, string>) {
     setParams(
       (current) => {
         const next = new URLSearchParams(current)
-        if (value) {
-          next.set(name, value)
-        } else {
-          next.delete(name)
-        }
+        Object.entries(changes).forEach(([name, value]) => {
+          if (value) {
+            next.set(name, value)
+          } else {
+            next.delete(name)
+          }
+        })
         // A new filter changes the result, so the old page number has no meaning.
         next.delete('page')
         return next
       },
       { replace: true },
     )
+  }
+
+  function setFilter(name: string, value: string) {
+    setFilters({ [name]: value })
+  }
+
+  /** Removes 2 or more filters in one change of the address. */
+  function clearFilters(names: string[]) {
+    setFilters(Object.fromEntries(names.map((name) => [name, ''])))
   }
 
   function setPage(page: number) {
@@ -60,6 +76,8 @@ export function useUrlFilters() {
   return {
     filter,
     setFilter,
+    setFilters,
+    clearFilters,
     page: pageFrom(params.get('page')),
     setPage,
     pageSize: pageSizeFrom(params.get('page_size')),

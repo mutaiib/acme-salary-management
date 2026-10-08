@@ -1,9 +1,8 @@
-import { Link } from '@astryxdesign/core/Link'
 import { Stack } from '@astryxdesign/core/Stack'
 import { pixel, proportional, type TableColumn } from '@astryxdesign/core/Table'
 import { listExchangeRates } from '../../api/meta'
 import type { ExchangeRate } from '../../api/types'
-import { DataState, DataTable, PageHeader, Panel, type TableRow } from '../../components'
+import { BackLink, DataState, DataTable, PageHeader, Panel, type TableRow } from '../../components'
 import { useApi } from '../../hooks/useApi'
 import { useMeta } from '../../hooks/useMeta'
 import { formatDate, formatRate } from '../../lib/format'
@@ -34,9 +33,7 @@ export function ExchangeRatesPage() {
 
   return (
     <Stack gap={4} padding={6}>
-      <Link href="/overview" isStandalone>
-        Back to Pay overview
-      </Link>
+      <BackLink href="/overview" label="Back to Pay overview" />
       <PageHeader
         title="Exchange rates"
         description={`The payroll cost converts each salary to ${reportingCurrency} with these rates. The rates do not change with the market.`}

@@ -48,7 +48,7 @@ export function PaySummary({ filters }: { filters: Filters }) {
         </Grid>
         <Divider />
         <Stack direction="horizontal" gap={2} vAlign="center" wrap="wrap">
-          <Badge variant="purple" label="In words" icon={<Icon icon={Sparkles} />} />
+          <Badge variant="purple" label="In words" icon={<Icon icon={Sparkles} size="xsm" />} />
           <Text type="supporting" as="p">
             {sentences.join(' ')}
           </Text>

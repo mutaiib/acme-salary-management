@@ -1,4 +1,4 @@
-// FR-04, FR-05, FR-06, FR-13: a salary change and a deactivation on the Employee detail screen.
+// FR-04, FR-05, FR-06, FR-08, FR-13: a salary change and a deactivation on the Employee detail screen.
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test } from 'vitest'
@@ -242,6 +242,34 @@ test('shows the increase in percent for a new salary', async () => {
   const dialog = await fillSalaryChange('71500', 'Annual review')
 
   expect(within(dialog).getByLabelText(/Increase/)).toHaveValue('10')
+})
+
+test('shows the current and the new salary and the increase in one visible line', async () => {
+  openEmployeeDetail()
+
+  const dialog = await fillSalaryChange('70000', 'Annual review')
+
+  expect(
+    within(dialog).getByText('From $65,000 to $70,000. Change: +$5,000 (+7.7%).'),
+  ).toBeVisible()
+})
+
+test('shows the decrease of the salary as a signed amount and a signed percent', async () => {
+  openEmployeeDetail()
+
+  const dialog = await fillSalaryChange('60000', 'Correction')
+
+  expect(
+    within(dialog).getByText('From $65,000 to $60,000. Change: -$5,000 (-7.7%).'),
+  ).toBeInTheDocument()
+})
+
+test('states that the salary does not change when the new salary equals the current salary', async () => {
+  openEmployeeDetail()
+
+  const dialog = await fillSalaryChange('65000', 'No change')
+
+  expect(within(dialog).getByText('Current salary: $65,000. No change.')).toBeInTheDocument()
 })
 
 test('shows the salary band in the dialog', async () => {

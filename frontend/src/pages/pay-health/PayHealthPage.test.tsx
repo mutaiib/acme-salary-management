@@ -1,4 +1,4 @@
-// FR-09, FR-10: the Pay health screen.
+// FR-09, FR-10, FR-20: the Pay health screen.
 import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -39,6 +39,7 @@ function outlier(number: number, overrides: Partial<Outlier> = {}): Outlier {
 }
 
 const OUTLIERS_PATH = '/api/insights/pay-health/employees'
+const GROUPS_PATH = '/api/insights/pay-health/groups'
 
 test('shows the difference to the band limit with its sign, and as a share of the limit', async () => {
   stubPayHealth({
@@ -62,11 +63,12 @@ test('shows the difference to the band limit with its sign, and as a share of th
 test('opens the record of an outlier with the way back to Pay health', async () => {
   stubPayHealth({ [OUTLIERS_PATH]: pageOf([outlier(7, { full_name: 'Asha Rao' })]) })
 
-  renderScreen(<PayHealthPage />)
+  renderScreen(<PayHealthPage />, { at: '/pay-health?status=below', path: '/pay-health' })
 
+  // The record gets the address of this list, with its filters, as the way back.
   expect(await screen.findByRole('link', { name: 'Asha Rao' })).toHaveAttribute(
     'href',
-    '/employees/7?from=pay-health',
+    '/employees/7?back=%2Fpay-health%3Fstatus%3Dbelow',
   )
 })
 
@@ -75,7 +77,7 @@ function stubPayHealth(replies: Record<string, unknown> = {}) {
     '/api/meta': META,
     '/api/insights/pay-health': SUMMARY,
     [OUTLIERS_PATH]: pageOf([outlier(1)]),
-    ...replies,
+        ...replies,
   })
 }
 
@@ -268,4 +270,58 @@ test('sends the search in the address to the API and shows it in the box', async
 
   expect(requestsTo(api, OUTLIERS_PATH).at(-1)!.searchParams.get('search')).toBe('rao')
   expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('rao')
+})
+
+test('does not request the outlier groups', async () => {
+  const api = stubPayHealth()
+
+  renderScreen(<PayHealthPage />)
+
+  await screen.findByText('Employee 1')
+  expect(requestsTo(api, GROUPS_PATH)).toHaveLength(0)
+})
+
+// FR-20: a list that a chart opened.
+
+test('sends the department in the address to the API', async () => {
+  const api = stubPayHealth()
+
+  renderScreen(<PayHealthPage />, { at: '/?status=below&department=Sales' })
+  await screen.findByText('Employee 1')
+
+  expect(requestsTo(api, OUTLIERS_PATH).at(-1)?.searchParams.get('department')).toBe('Sales')
+})
+
+test('sends the department when the HR Manager selects a department', async () => {
+  const api = stubPayHealth()
+  renderScreen(<PayHealthPage />)
+  await screen.findByText('Employee 1')
+
+  await userEvent.click(screen.getByRole('combobox', { name: 'Department' }))
+  await userEvent.click(await screen.findByRole('option', { name: 'Sales' }))
+
+  await waitFor(() =>
+    expect(requestsTo(api, OUTLIERS_PATH).at(-1)?.searchParams.get('department')).toBe('Sales'),
+  )
+})
+
+test('shows a link back to the view of Pay analysis that the address names', async () => {
+  stubPayHealth()
+  const back = new URLSearchParams({ back: '/analysis?tab=outliers&group_by=job_level' })
+
+  renderScreen(<PayHealthPage />, { at: `/?status=below&country=US&${back}` })
+
+  expect(await screen.findByRole('link', { name: 'Back to Pay analysis' })).toHaveAttribute(
+    'href',
+    '/analysis?tab=outliers&group_by=job_level',
+  )
+})
+
+test('shows no link back to Pay analysis for a list that no chart opened', async () => {
+  stubPayHealth()
+
+  renderScreen(<PayHealthPage />)
+  await screen.findByText('Employee 1')
+
+  expect(screen.queryByRole('link', { name: 'Back to Pay analysis' })).toBeNull()
 })
