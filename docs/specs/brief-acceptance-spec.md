@@ -4,7 +4,7 @@
 
 This spec turns the assessment brief into criteria that a person can check in the running system. Source: `docs/brief/`. The check used the development UI at http://localhost:5173 (`make dev-ui`).
 
-The Bee browser verifier checked the criteria in a browser on 8 October 2026. A tick is a criterion that passed. 2 criteria are not met, and each one states the cause. After that check, the last screens that did not state the period of an amount got the text "for one year".
+The Bee browser verifier checked the criteria in a browser on 8 October 2026. A tick is a criterion that passed. 1 criterion is not met, and it states the cause. A second criterion was not met at the first check. The second iteration met it. After that check, the last screens that did not state the period of an amount got the text "for one year".
 
 The brief has two demands. The HR Manager must manage the salary data in web-based software. The HR Manager must be able to answer questions about how the organization pays people.
 
@@ -37,7 +37,7 @@ Each criterion is one question. It passes when the HR Manager can read the answe
 - [x] "What does the organization pay the Engineering department in Germany?"
 - [x] "What is the median salary at job level 3 in India, and in the United Kingdom?"
 - [ ] "How did the payroll cost change from last year to this year?" Not met. An insight is for today only. See `docs/tradeoffs.md`.
-- [ ] "Who are the employees with the highest salary in one country?" Not met. The screen shows the highest salary of a filter, not the employee. The list has no sort by salary. See `docs/tradeoffs.md`.
+- [x] "Who are the employees with the highest salary in one country?" Met on 8 October 2026: the Pay analysis screen, tab "Highest salaries", with a country filter (FR-19). The first check found this criterion not met.
 
 ## Slice 4: Each screen explains its figures
 

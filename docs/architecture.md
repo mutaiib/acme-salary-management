@@ -7,7 +7,7 @@ flowchart LR
   HR[HR Manager] --> UI
 
   subgraph Browser
-    UI[React screens] --> LIB[Shared components<br/>built from Astryx]
+    UI[React screens] --> LIB[Shared components<br/>built from Astryx,<br/>charts from Recharts]
     UI --> CLIENT[Typed API client]
   end
 
@@ -30,7 +30,7 @@ flowchart LR
 |---|---|---|
 | Routers | Parse the request, call a service, shape the response | A router has no query |
 | Services | Use cases and database queries | A service does not import from a router |
-| Calculations | Money, salary bands, salary change rules | No import from the application; no database, network or clock |
+| Calculations | Money, salary bands, salary change rules, salary brackets | No import from the application; no database, network or clock |
 | Models | The 4 tables | No business rule |
 
 The dependency direction is: routers, then services, then models. The services also use the calculations.
@@ -95,3 +95,5 @@ erDiagram
 8. **The clock is an input.** A service gets `today` as an argument. A test gives a fixed date.
 9. **A shared component library.** A screen composes shared components. A shared component composes Astryx components. No file writes a color value by hand. A component goes into the library when 2 screens use it. The theme is the Astryx neutral theme as source (`src/themes/neutral/`). `src/theme.ts` gives it a blue accent from its own palette.
 10. **One container.** FastAPI serves the API and the built UI. The image contains the seeded database, so each start gives the same data.
+11. **A chart is a frame and a table.** Recharts draws the 2 charts. `ChartFigure` hides the marks from a screen reader and gives a table view with the same values. `useChartColors` takes each color from a theme token. A test checks the table view, because a test browser draws no chart.
+12. **A preview is a query, not a stored result.** The preview of a band change runs the pay health aggregation with the limits of the request. It writes nothing, so it cannot differ from the figures after the save.

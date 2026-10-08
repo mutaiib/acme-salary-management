@@ -1,6 +1,6 @@
 # Tradeoffs
 
-This document records the choices of the work, with the reason and the cost of each one. The first section has the decisions that shaped the product. The tables after it have the smaller choices.
+This document records the choices of the work, with the reason and the cost of each one. The first section has the decisions that shaped the product. The tables after it have the smaller choices. The section "Decisions that changed" gives each decision that changed after the first version, with its date.
 
 ## The decisions that matter
 
@@ -53,12 +53,37 @@ This document records the choices of the work, with the reason and the cost of e
 - **Cost.** The shapes of the API exist twice: in `schemas.py` and in `types.ts`. A test does not check that they agree; a header in each file says to change the two together.
 - **Change it when** the shapes change often. Then generate `types.ts` from the OpenAPI document of FastAPI.
 
-### 8. A design system in public beta, and no chart library
+### 8. A design system in public beta, and one chart library
 
-- **Choice.** The UI uses Astryx 0.6.5 for all elements. There is no chart library. A bar is an Astryx progress bar.
-- **Reason.** Astryx gives accessible components, a theme with tokens, and a command that gives an agent the documentation of each component. The Astryx chart package has no stable version. Tables with bars answer the questions of the brief.
-- **Cost.** The API of Astryx can change; `package.json` pins the exact version. There is no trend chart, and a salary band is a row of 3 amounts, not a bar. The theme tokens are a copy as source, so an upgrade of Astryx does not update them.
-- **Change it when** the HR Manager asks for a question that a table cannot answer, for example the payroll cost in time. Then add a chart library with the colors of the theme.
+Changed on 8 October 2026. The first version had no chart library.
+
+- **Choice.** The UI uses Astryx 0.6.5 for all elements. Recharts 3 draws the 2 charts, and each chart color comes from a token of the Astryx theme. All other bars are Astryx progress bars.
+- **Reason.** Astryx gives accessible components, a theme with tokens, and a command that gives an agent the documentation of each component. The Astryx chart package is an empty placeholder on npm. The 2 chart questions need an axis, and a progress bar has no axis.
+- **Cost.** The API of Astryx can change; `package.json` pins the exact version. Recharts is one more dependency, and its SVG elements are not Astryx components. A test cannot check the marks of a chart, so each chart has a table view that a test and a screen reader read. The theme tokens are a copy as source, so an upgrade of Astryx does not update them.
+- **Change it when** the Astryx chart package has a stable version. Then compare it with Recharts, and keep one of the two.
+
+### 9. A band shows its effect
+
+New on 8 October 2026.
+
+- **Choice.** The Salary bands screen shows the headcount of each band, and its employees below range and above range. The band dialog shows the effect of a band change before the save: the 2 counts and the correction cost, with the current band and with the new band.
+- **Reason.** Decision 2 makes the band the reference point, so a band change moves the range status of each employee of the band. In the first version, the HR Manager saw that effect only after the save, on a different screen.
+- **Cost.** The band dialog sends a request while the HR Manager types. The preview is a query on the data of today, with no stored result.
+- **Change it when** a band change needs an approval. Then the preview becomes a proposal that a second person accepts.
+
+## Decisions that changed
+
+| Date | Decision | Before | Now | Cause |
+|---|---|---|---|---|
+| 8 October 2026 | 8. Chart library | No chart library. A bar was an Astryx progress bar. | Recharts 3, with the colors of the theme tokens, for 2 charts. | The developer approved charts for the salary distribution and for the outliers by group. A table did not show the shape of these figures. |
+| 8 October 2026 | 9. A band shows its effect | The Salary bands screen showed 3 amounts for each band. A band change had no preview. | The figures of each band, and the preview of a band change. | The developer asked what a band change does to the figures. The answer was not on a screen. |
+| 8 October 2026 | The salary change dialog (FR-04) | The current salary was in the subtitle of the dialog. | One line shows the current salary, the new salary and the difference. | The developer did not see the current salary during the change. |
+| 8 October 2026 | The load indicator | A thin line at the top of the application showed each load. The old rows stayed on the screen. | A list shows rows with a shimmer in place of the old rows, when a load takes more than 150 ms. | The developer did not see the line after a change of a filter. |
+| 8 October 2026 | The highest salaries (FR-19) | The system showed the highest salary of a group, and not the employee. | The Pay analysis screen lists the 10 employees with the highest salary, for the organization or for one country. | The check of the brief found this question with no answer. The developer asked for it. |
+| 8 October 2026 | The Pay analysis screen | The 2 charts and the highest salaries were sections of the Pay overview and of Pay health. | One screen with 3 tabs has them. The Pay overview and Pay health have the sections of the first version. | The developer saw the screens and asked for a new screen with tabs. The name "Pay analysis" says what the screen does. The Pay overview is the dashboard. |
+| 8 October 2026 | From a bar to its employees (FR-20) | A chart showed a number only. | A bar opens the list of its employees. The list has a link back to the chart. | The developer asked for it: a number is more useful when the HR Manager can see who is in it. |
+| 8 October 2026 | The way back from a list and from an employee record | A record went back to a list with no filters. | A link carries the address of its screen. A list goes back to the same tab and grouping of Pay analysis. A record goes back to its list, with the filters and the page. | The developer opened a record from a list with a salary bracket, and the way back lost the bracket. |
+| 8 October 2026 | The outliers of a band, on the Salary bands screen | A red badge and a green badge, with a link below them. | 2 columns of plain numbers. A number is a link to its employees. | The badges made each row 3 lines high, with no space around them. |
 
 ## Smaller product choices
 
@@ -66,10 +91,13 @@ This document records the choices of the work, with the reason and the cost of e
 |---|---|---|
 | No compensation cycle | A cycle needs a budget, a merit matrix, proposals and an atomic apply. It is a product in itself. | The HR Manager corrects salaries one at a time. |
 | No bulk salary change | The developer asked for one, and stopped it before the write step. A change of many salaries with no undo needs a selection, a preview and an approval. That is the start of the compensation cycle. | The HR Manager opens each outlier from the Pay health list. The salary change dialog shows the band and takes an increase in percent, so one correction is quick. |
+| No history of band changes | A band change writes a log line. A history needs a table and a reason for each change. The developer did not approve it for this iteration. | The HR Manager cannot prove why a band changed. The preview shows the effect, but the system does not keep it. |
 | No change of the payroll cost in time | The system keeps the salary history, but an insight is for today only. | The HR Manager cannot compare this year with last year. |
 | A large total has a short form, a salary does not | A total of 12 digits is hard to compare. The full amount shows on hover. | A short total is exact to 2 decimal places of a million only. |
 | No Excel import | It has many validation cases and a low value in a demo. | The data comes from the seed script. A real adoption needs an import. |
-| No sort by salary in the employee list | The list has 7 currencies, so the order has no meaning. | The HR Manager uses Pay health to find high and low salaries. |
+| The highest salaries are a list of 10, and the employee list has no sort by salary | A country has one currency, so its order is exact. For the organization, the order uses the reporting currency. A page of 10 answers "who", and a sort of 10,000 rows in 7 currencies does not. | The HR Manager cannot see the employee at position 11. |
+| One reporting currency does not compare the value of a salary | A converted salary is the cost of the employee to ACME. It is not the value of the pay to the employee, because prices differ in each country. The compa-ratio compares each salary with the band of its country, so it is the fair measure across countries. The list of the highest salaries shows the 3 figures. | The system has no purchasing power data. A list for the organization has employees of the countries with high pay first. |
+| A bar of a chart has no keyboard path | The chart is hidden from a screen reader, and gives a table view with the same values. A focus stop on each bar adds many stops with little value. | A person who uses only a keyboard sets the same filters on the list. The Employees list has no control that sets a salary bracket: the bracket comes from the chart only. |
 | The effective date cannot be in the future | A future date needs a scheduler and a second meaning of "current salary". | The HR Manager cannot plan a salary change. |
 | The effective date cannot be before the last salary change | The newest row of the salary history must always give the current salary. | The HR Manager cannot record an old salary change that the HR team missed. |
 | An employee without an exchange rate is not in the insights | The seed script gives a rate to each currency, so the case does not occur. | A new currency needs a rate before its employees count. |
@@ -91,12 +119,15 @@ This document records the choices of the work, with the reason and the cost of e
 
 ## Exceptions to the constitution
 
-The constitution (`CLAUDE.md`) says: Astryx components for all UI elements, and no color value by hand. The code has 2 exceptions, and the constitution names them.
+The constitution (`CLAUDE.md`) says: Astryx components for all UI elements, and no color value by hand. The code has 5 exceptions, and the constitution names them.
 
 | Exception | Reason |
 |---|---|
 | One raw HTML element: `<form>` in `FormDialog` | Astryx has no form element. The element gives the Enter key and the submit event. |
 | A required input shows a red star, with 2 CSS rules in `index.css` | The developer asked for a star. Astryx shows the text "Required" and has no option for a star. The rules use the error color token of the theme. An upgrade of Astryx can break them. |
+| The 2 charts, which Recharts draws as SVG with the colors of the Astryx theme tokens | The Astryx chart package is an empty placeholder on npm, and the 2 charts need an axis. See decision 8. |
+| The table view of a chart uses HTML table elements | A screen reader reads a table view with the same values as the chart. The Astryx table is a visible component with its own controls, and the table view is not visible. |
+| A bar of a chart has no keyboard path (Article 4.6) | A focus stop on each bar adds many stops. The table view and the lists give the same data. See "Smaller product choices". |
 
 ## What production needs first
 

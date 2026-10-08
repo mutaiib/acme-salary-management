@@ -19,7 +19,7 @@ The product is salary management software for the HR Manager of ACME. Read `docs
 11. A test name must describe the scenario, for example `refuses_a_salary_of_zero`.
 12. A unit test must not use the network, the system clock or shared database state.
 
-Known exceptions to 1.1 and 1.4: `docs/ai-usage.md`, section "Limits to state", lists the steps that did not have a test first, and tells how the commits came from snapshots.
+Known exceptions to 1.1 and 1.4: `docs/ai-usage.md`, section "Limits to state", lists the steps that did not have a test first, and tells how the commits came from snapshots. The second iteration has one commit for each purpose, and not one commit for each green step.
 
 ## Article 2: Structure
 
@@ -36,6 +36,7 @@ backend/app/
     money.py          minor units, currency conversion, median
     ranges.py         compa-ratio, range penetration, range status, the band rule
     salary_changes.py the rules of a salary change
+    distribution.py   salary brackets: the width of a bracket, and the list of brackets
   db.py           engine, Base, get_session
   models.py       database tables
   schemas.py      request and response shapes
@@ -51,7 +52,7 @@ frontend/src/
   theme.ts        the theme of the application: the neutral theme with a blue accent
   pages/          one directory for each screen; a test file is next to its source file
   api/            typed API client; types.ts has the same shapes as backend/app/schemas.py
-  hooks/          shared React hooks
+  hooks/          shared React hooks; useChartColors gives the chart colors from the theme tokens
   lib/            formats and small pure functions
   test/           test helpers: stubApi, renderScreen, data builders
 ```
@@ -66,7 +67,8 @@ Patterns to follow. Read `docs/architecture.md` for the reasons.
 - **Clock.** A service gets `today` and `now` as arguments. A router gets them from `routers/deps.py`. Do not call `date.today()` or `datetime.now()` in a service.
 - **Errors.** A service raises `DomainError(field, cause)` or `NotFoundError`. The API returns `422 {"detail": [{"field", "cause"}]}` or `404`. A business rule goes into a pure function in `calculations/`, as `validate_band` does.
 - **Insights.** Use `active_employees_with_rate` from `services/sql.py`, so that all insights count the same employees.
-- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`. Put a section of an insight screen or of a record screen in a `Panel`. Explain a term with the `help` text of a `Stat`, which opens from an info button.
+- **A screen.** Load data with `useApi` and show it with `DataState`. Keep list filters in the address with `useUrlFilters`. Write data with `useSubmit` in a `FormDialog`. Put a section of an insight screen or of a record screen in a `Panel`. Explain a term with the `help` text of a `Stat`, which opens from an info button. Give a list `rowsOf` on its `DataState`, so that a slow load shows rows with a shimmer. Go back to a screen with a `BackLink`. A link to a list or to an employee record carries the address of its screen in `back`; `lib/backLinks.ts` reads it and accepts only a screen of the system.
+- **A chart.** Draw it with Recharts in a `ChartFigure`, and give it a table view. Take each color from `useChartColors`. Add a legend for 2 or more series. Build the address that a bar opens in `lib/chartLinks.ts`.
 - **Amounts on a screen.** A salary shows all its digits (`formatMoney`). A large total shows a short form with the full amount on hover (`formatMoneyShort`). Each amount states its period: "for one year".
 - **Design brief.** `.claude/DESIGN.md` has the principles, the page patterns and the color rules.
 - **A screen test.** Replace the API with `stubApi`, and render with `renderScreen`.
@@ -101,7 +103,16 @@ Code comments and commit messages follow the same rules where practical.
 5. Each screen must have a loading state, an empty state and an error state.
 6. Each screen must be usable with a keyboard.
 
-Known exceptions to 4.1 and 4.2: the `<form>` element in `FormDialog`, and the 2 CSS rules for the required star in `index.css`. `docs/tradeoffs.md` gives the reason for each.
+Known exceptions to 4.1 and 4.2:
+
+- the `<form>` element in `FormDialog`
+- the 2 CSS rules for the required star in `index.css`
+- the charts, which Recharts draws as SVG with the colors of the Astryx theme tokens
+- the table view of a chart, which uses HTML table elements in an Astryx `VisuallyHidden`
+
+Known exception to 4.6: a bar of a chart has no keyboard path. The table view gives the same values, and the lists give the same employees.
+
+`docs/tradeoffs.md` gives the reason for each.
 
 ## Article 5: Commands
 
