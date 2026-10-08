@@ -23,7 +23,7 @@ The system follows this sequence:
 | FR-01 | The system must show the total payroll cost in one reporting currency. The system must show the median salary of the organization in the reporting currency. The system must show the exchange rates and their date. |
 | FR-02 | The system must show figures for each country, for each department and for each job level. The figures are the headcount, the payroll cost, its share of the total, and the minimum, median and maximum salary. |
 | FR-03 | The system must let the HR Manager find an employee by name, email or employee code. The system must let the HR Manager filter the list by country, department, job level and status. The system must let the HR Manager sort the list and set the number of rows on a page. The system must show the number, the payroll cost and the median salary of the employees in the list. |
-| FR-04 | The system must let the HR Manager change a salary. Each salary change must have a reason and an effective date. The system must let the HR Manager give the change as a new salary or as an increase in percent. |
+| FR-04 | The system must let the HR Manager change a salary. Each salary change must have a reason and an effective date. The system must let the HR Manager give the change as a new salary or as an increase in percent. The system must show the current salary, the new salary and the difference before the HR Manager saves a salary change. |
 | FR-05 | The system must refuse a salary that is zero or negative. The system must show the cause. |
 | FR-06 | The system must keep each salary change. The system must show the salary history of an employee. |
 | FR-07 | The system must let the HR Manager set a salary band for each job level in a country. A band has a minimum, a midpoint and a maximum. |
@@ -32,8 +32,16 @@ The system follows this sequence:
 | FR-10 | The system must show the cost to move all below-range salaries to the band minimum. The system must show that cost as a share of the payroll cost. |
 | FR-13 | The system must let the HR Manager deactivate an employee. The insights must count active employees only. |
 | FR-14 | The system must open with a screen that states its purpose and what it can do. |
+| FR-15 | The system must show the headcount of each salary band. The system must show the number of employees below range and above range for each salary band. |
+| FR-16 | The system must show the effect of a band change before the HR Manager saves it. The effect is the number of employees below range and above range, and the correction cost, with the current band and with the new band. |
+| FR-17 | The system must show a chart of the number of active employees in each salary bracket, in the reporting currency. |
+| FR-18 | The system must show a chart of the employees below range and above range for each country, department or job level. |
+| FR-19 | The system must show the 10 active employees with the highest salary, for the organization or for one country. Each row must show the salary in the local currency and in the reporting currency, and the compa-ratio. |
+| FR-20 | The system must let the HR Manager open the list of the employees that a bar of a chart shows. That list must give a link back to the chart. An employee record must give a link back to the list that opened it, with the filters of that list. |
 
 The numbers FR-11, FR-12 and NFR-07 are not in use. Pay equity left the scope (see the next section). The other numbers do not change.
+
+FR-15 to FR-20 and the last sentence of FR-04 are new on 8 October 2026, after the first version. `tradeoffs.md`, section "Decisions that changed", gives the cause of each one.
 
 | ID | Quality requirement |
 |---|---|

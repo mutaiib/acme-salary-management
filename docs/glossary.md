@@ -23,6 +23,7 @@ This document gives one meaning to each term. All project documents and the code
 | Payroll cost | The sum of the salaries of the active employees, in the reporting currency. |
 | Headcount | The number of active employees. |
 | Median salary | The middle salary of a group: half of the employees get less, and half get more. For an even count, it is the mean of the two middle salaries. |
+| Salary bracket | The salaries between two amounts in the reporting currency. All salary brackets have the same width. The salary distribution counts the active employees in each one. |
 | Salary change | A record of one change to a salary. It has the old salary, the new salary, a reason and an effective date. |
 | Salary history | All the salary changes of one employee, newest first. |
 | Effective date | The date from which a salary change applies. |
