@@ -110,6 +110,22 @@ class OverviewOut(BaseModel):
     groups: list[GroupFiguresOut]
 
 
+class SalaryBracketOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    from_minor: int
+    to_minor: int
+    headcount: int
+
+
+class SalaryDistributionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    reporting_currency: str
+    bracket_width_minor: int
+    brackets: list[SalaryBracketOut]
+
+
 class BandIn(BaseModel):
     min_minor: AmountMinor
     mid_minor: AmountMinor
@@ -126,6 +142,29 @@ class BandOut(BaseModel):
     min_minor: int
     mid_minor: int
     max_minor: int
+
+
+class BandFiguresOut(BandOut):
+    headcount: int
+    below_count: int
+    above_count: int
+
+
+class BandEffectOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    headcount: int
+    below_count: int
+    above_count: int
+    correction_cost_minor: int
+
+
+class BandChangePreviewOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    current: BandEffectOut
+    proposed: BandEffectOut
+    reporting_currency: str
 
 
 class EmployeeDetailOut(EmployeeOut):
@@ -148,6 +187,16 @@ class PayHealthSummaryOut(BaseModel):
     reporting_currency: str
 
 
+class OutlierGroupOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    key: str
+    label: str
+    headcount: int
+    below_count: int
+    above_count: int
+
+
 class OutlierOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -163,6 +212,22 @@ class OutlierOut(BaseModel):
     range_status: Literal["below", "above"]
     band_limit_minor: int
     difference_minor: int
+
+
+class HighSalaryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    employee_code: str
+    full_name: str
+    job_title: str
+    job_level: int
+    department: str
+    country: str
+    currency: str
+    salary_minor: int
+    salary_reporting_minor: int
+    compa_ratio: float | None
 
 
 class SalaryFiguresOut(BaseModel):

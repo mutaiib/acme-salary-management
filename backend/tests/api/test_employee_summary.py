@@ -1,4 +1,4 @@
-"""FR-01, FR-02, FR-03: the pay figures of the employees that the list shows."""
+"""FR-01, FR-02, FR-03, FR-20: the pay figures of the employees that the list shows."""
 
 import pytest
 
@@ -118,6 +118,22 @@ def test_shows_zero_and_no_salary_figures_when_no_employee_matches(client, acme)
 
 def test_the_headcount_is_equal_to_the_total_of_the_list_of_active_employees(client, acme):
     filters = {"country": "DE", "status": "active"}
+
+    listed = client.get("/api/employees", params=filters).json()["total"]
+
+    assert summary(client, **filters)["headcount"] == listed
+
+
+def test_sums_only_the_employees_of_the_salary_bracket(client, acme):
+    body = summary(client, salary_from_minor=6_000_000, salary_to_minor=7_500_000, status="active")
+
+    # 60,000 USD, 70,000 EUR (75,600 USD is out), 60,000 EUR (64,800 USD).
+    assert body["headcount"] == 2
+    assert body["payroll_cost_minor"] == 6_000_000 + 6_480_000
+
+
+def test_the_summary_with_a_bracket_agrees_with_the_list(client, acme):
+    filters = {"salary_from_minor": 5_000_000, "salary_to_minor": 7_000_000, "status": "active"}
 
     listed = client.get("/api/employees", params=filters).json()["total"]
 

@@ -33,6 +33,8 @@ def list_employees(
     department: str | None = None,
     job_level: int | None = None,
     status: Status | None = None,
+    salary_from_minor: int | None = Query(None, ge=0),
+    salary_to_minor: int | None = Query(None, ge=0),
     # The sort options come from the sort columns of the service.
     sort: Literal[SORT_OPTIONS] = DEFAULT_SORT,  # type: ignore[valid-type]
     session: Session = Depends(get_session),
@@ -45,6 +47,8 @@ def list_employees(
         department=department,
         job_level=job_level,
         status=status,
+        salary_from_minor=salary_from_minor,
+        salary_to_minor=salary_to_minor,
         sort=sort,
     )
     return service.list_employees(session, query)
@@ -57,11 +61,19 @@ def summarize_employees(
     department: str | None = None,
     job_level: int | None = None,
     status: Status | None = None,
+    salary_from_minor: int | None = Query(None, ge=0),
+    salary_to_minor: int | None = Query(None, ge=0),
     session: Session = Depends(get_session),
 ):
     """The pay figures for the same filters as the list. It must be before `/{employee_id}`."""
     query = EmployeeQuery(
-        search=search, country=country, department=department, job_level=job_level, status=status
+        search=search,
+        country=country,
+        department=department,
+        job_level=job_level,
+        status=status,
+        salary_from_minor=salary_from_minor,
+        salary_to_minor=salary_to_minor,
     )
     return service.summarize(session, query)
 

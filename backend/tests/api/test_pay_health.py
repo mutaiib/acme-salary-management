@@ -1,4 +1,4 @@
-"""FR-09, FR-10, FR-13: pay health, the list of outliers and its search."""
+"""FR-09, FR-10, FR-13, FR-16, FR-18, FR-20: pay health, its list of outliers, search and groups."""
 
 import pytest
 
@@ -92,6 +92,20 @@ def test_the_list_total_is_equal_to_the_count(client, acme):
 
 def test_filters_the_list_by_country(client, acme):
     assert names(outliers(client, "below", country="DE")) == ["Below By 10000 EUR"]
+
+
+def test_filters_the_list_by_department(client, acme, make):
+    make.employee(
+        country="US",
+        currency="USD",
+        job_level=2,
+        department="Sales",
+        full_name="Sales Below",
+        salary_minor=4_000_000,
+    )
+
+    assert names(outliers(client, "below", department="Sales")) == ["Sales Below"]
+    assert outliers(client, "below", department="Sales")["total"] == 1
 
 
 def test_filters_the_list_by_job_level(client, acme):
@@ -297,3 +311,68 @@ def test_each_outlier_states_its_range_status_and_the_limit_that_it_is_outside(c
 
 def test_a_list_of_one_status_also_states_the_range_status(client, acme):
     assert {item["range_status"] for item in outliers(client, "above")["items"]} == {"above"}
+
+
+def test_the_counts_of_all_bands_add_up_to_the_summary(client, acme):
+    bands = client.get("/api/bands").json()
+    body = summary(client)
+
+    assert sum(band["below_count"] for band in bands) == body["below_count"]
+    assert sum(band["above_count"] for band in bands) == body["above_count"]
+
+
+def groups(client, group_by=None):
+    params = {"group_by": group_by} if group_by else {}
+    response = client.get("/api/insights/pay-health/groups", params=params)
+    assert response.status_code == 200
+    return response.json()
+
+
+def test_counts_the_outliers_by_country_and_orders_the_most_outliers_first(client, acme):
+    body = groups(client)
+
+    assert [
+        (g["key"], g["label"], g["headcount"], g["below_count"], g["above_count"]) for g in body
+    ] == [
+        ("US", "United States", 5, 1, 1),
+        ("DE", "Germany", 1, 1, 0),
+    ]
+
+
+def test_counts_the_outliers_by_job_level_in_the_order_of_the_level(client, acme):
+    body = groups(client, "job_level")
+
+    assert [(g["key"], g["label"], g["below_count"], g["above_count"]) for g in body] == [
+        ("2", "Level 2", 1, 1),
+        ("3", "Level 3", 1, 0),
+    ]
+
+
+def test_the_groups_add_up_to_the_summary_for_each_grouping(client, acme):
+    for group_by in ("country", "department", "job_level"):
+        body = groups(client, group_by)
+
+        assert sum(g["below_count"] for g in body) == summary(client)["below_count"]
+        assert sum(g["above_count"] for g in body) == summary(client)["above_count"]
+
+
+def test_an_inactive_employee_and_an_employee_with_no_band_are_not_in_a_group(client, acme):
+    assert sum(g["headcount"] for g in groups(client)) == 6
+    assert "IN" not in [g["key"] for g in groups(client)]
+
+
+def test_a_group_with_the_same_outliers_orders_by_label(client, make):
+    make.rate("USD", 1_000_000)
+    make.band(country="US", job_level=2, **BAND)
+    for department in ("Sales", "Engineering"):
+        make.employee(
+            country="US", currency="USD", job_level=2, department=department, salary_minor=1
+        )
+
+    assert [g["key"] for g in groups(client, "department")] == ["Engineering", "Sales"]
+
+
+def test_refuses_a_grouping_that_is_not_known(client, acme):
+    assert (
+        client.get("/api/insights/pay-health/groups", params={"group_by": "age"}).status_code == 422
+    )
