@@ -13,6 +13,7 @@ import { Theme } from '@astryxdesign/core/theme'
 import { ChartColumn, HeartPulse, LayoutDashboard, Rows3, Users } from 'lucide-react'
 import { type ReactElement, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { ColorModeItem } from './components/ColorModeItem'
 import { LoadingBar } from './components/LoadingBar'
 import { RouterLink } from './components/RouterLink'
 import { BandsPage } from './pages/bands/BandsPage'
@@ -23,6 +24,7 @@ import { PayAnalysisPage } from './pages/analysis/PayAnalysisPage'
 import { OverviewPage } from './pages/overview/OverviewPage'
 import { PayHealthPage } from './pages/pay-health/PayHealthPage'
 import { WelcomePage } from './pages/welcome/WelcomePage'
+import { useColorMode } from './hooks/useColorMode'
 import { acmeTheme } from './theme'
 
 interface Screen {
@@ -66,8 +68,11 @@ export function App() {
   const [isNavCollapsed, setNavCollapsed] = useState(false)
   const navCollapse = { isCollapsed: isNavCollapsed, onCollapsedChange: setNavCollapsed }
 
+  // The Welcome screen has no item for the color mode. It uses the mode that the browser kept.
+  const colorMode = useColorMode()
+
   return (
-    <Theme theme={acmeTheme}>
+    <Theme theme={acmeTheme} mode={colorMode.mode}>
       <InternationalizationProvider locale="en" overrides={TEXT_OVERRIDES}>
         <LinkProvider component={RouterLink}>
           {pathname === '/' ? (
@@ -89,6 +94,7 @@ export function App() {
                     />
                   }
                   topContent={isNavCollapsed && <SideNavCollapseButton collapsible={navCollapse} />}
+                  footer={<ColorModeItem colorMode={colorMode} />}
                 >
                   {SECTIONS.map((section) => (
                     <SideNavSection key={section.title} title={section.title}>
