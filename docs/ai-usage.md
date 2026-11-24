@@ -325,6 +325,24 @@ The agent wrote a test for each fault before the correction. Then it put 12 scre
 
 **Decision of the developer.** The developer reviews the screens and the README before the push.
 
+### Step 10: A first look that shows the design
+
+**Request of the developer.** The Welcome screen was a wall of text about the system. Make each screen show the UX and UI skills, and clean up the screens inside the application.
+
+**Proposal of the agent.** The agent looked at each screen in a browser, at desktop width and at phone width. It made these changes, each with a test first where the change has a behavior:
+
+1. The Welcome screen has one headline, the live figures of ACME, and 4 steps that open their screens.
+2. The navigation has a mark for the product. The name moved below the mark, because the long name was cut.
+3. The captions of the Pay overview and the Pay analysis tabs have one short line in place of a paragraph.
+4. On a phone, the outliers chart gave its bars almost no room. A narrow chart now has narrow labels and no in-range text.
+5. The share bars of the Pay overview have the same length in each row.
+6. The pay sentence of the Employees screen lost its badge with a sparkle icon, which suggested AI text.
+7. The table of exchange rates has a maximum width, so that a rate stays near its currency.
+
+**Error of the agent.** The agent ran a code formatter on the changed files. The repository has no formatter configuration, so the formatter changed the style of many lines. The agent restored the files and applied the edits again.
+
+**Decision of the developer.** The developer reviews the screens before the push.
+
 ### The value of each change for the HR Manager
 
 | Change | Before | Now |

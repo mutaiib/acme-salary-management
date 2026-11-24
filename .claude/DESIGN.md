@@ -39,7 +39,7 @@ Each screen is a vertical stack with a padding of 24 px: the title block, then t
 | Insight | Pay overview, Pay health | `PageHeader`, a `StatRow` of 3 `StatCard`, then one `Panel` with a switch at the end of its title row and one table |
 | Analysis | Pay analysis | `PageHeader`, a `TabList` of 3 tabs, then one `Panel` for the open tab: a chart or a table. The address keeps the open tab. A tab keeps its height while it loads |
 | List | Employees, Salary bands, Exchange rates | `PageHeader`, a `FilterBar`, then the table. The Employees screen has a card with the pay figures of the list above the table. A band row shows its headcount, and its employees below range and above range as plain numbers that are links |
-| Introduction | Welcome | A column in the center of the window, with no navigation: the purpose, a card for each capability, and one primary button |
+| Introduction | Welcome | No navigation. A headline and 2 buttons beside a `Panel` with the live figures of ACME and the salaries outside the band. Below, the 4 steps of the work, each a `ClickableCard` that opens its screen |
 | Record | Employee detail | A link back to the list, `PageHeader` with the name and the actions, a card with the salary and its position in the band, a `Panel` with the details, a `Panel` with the salary history |
 | Form | Salary change, band change, deactivation | `FormDialog` with `useSubmit`. An error of an input shows at the input. Another error shows at the top of the dialog. A change form shows the current value and the new value together. The band form shows the effect of the change before the save |
 
@@ -61,6 +61,7 @@ All are in `frontend/src/components/`. A screen composes them, and each one comp
 | `ChartFigure` | The frame of a chart, with its table view. `hooks/useChartColors` gives the colors from the theme tokens |
 | `BackLink` | The link above the title that goes back to the screen before, with an arrow. A list goes back to the same view of Pay analysis. A record goes back to the list that opened it, with the filters of that list |
 | `Money`, `StatusBadge`, `EmployeeLink`, `MetaBanner`, `LoadingBar` | Small parts that 2 or more screens use |
+| `BrandMark` | The mark of the product, in the navigation and on the Welcome screen. A screen reader skips it |
 | `LoadingRows`, `LoadingMark` | A list shows rows with a shimmer when a later load is slow, for example after a change of a filter (`rowsOf` of `DataState`). A section with a known height keeps that height while it loads (`loadingHeight`). `LoadingMark` is a small spinner for a figure that is not in a list. The two show after 150 ms, so a quick reply does not make them flash |
 
 ## Color rules

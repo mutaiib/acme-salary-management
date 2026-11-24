@@ -8,7 +8,7 @@ The system tells the HR Manager what ACME pays, where the pay problems are, and 
 
 **[Open the live application](https://acme-salary-management-ds2v.onrender.com)** · [Screens](#screens) · [What the project shows](#what-the-project-shows) · [Start](#start) · [Documents](#documents)
 
-![The Pay overview: payroll cost, headcount and median salary, a notice for the salaries outside the band, and the payroll cost by country](docs/screenshots/02-pay-overview.png)
+![The Welcome screen: one headline, the live figures of ACME with the salaries outside the band, and the 4 steps of the work](docs/screenshots/01-welcome.png)
 
 ## The problem
 
@@ -37,12 +37,13 @@ All totals use one reporting currency (USD). Each salary converts at a dated exc
 
 | | |
 |---|---|
-| ![Welcome screen](docs/screenshots/01-welcome.png) **Welcome.** The problem, and the 6 capabilities of the system. | ![Pay overview](docs/screenshots/02-pay-overview.png) **Pay overview.** What ACME spends on salaries, and where. A notice links the salaries outside the band to Pay health. |
+| ![Welcome screen](docs/screenshots/01-welcome.png) **Welcome.** One headline, then the proof: the live figures of ACME and the salaries outside the band. Each step opens its screen. | ![Pay overview](docs/screenshots/02-pay-overview.png) **Pay overview.** What ACME spends on salaries, and where. A notice links the salaries outside the band to Pay health. |
 | ![Pay health](docs/screenshots/03-pay-health.png) **Pay health.** Each employee below range or above range, worst case first. The correction cost, as an amount and as a share of the payroll cost. | ![Salary distribution chart](docs/screenshots/04-salary-distribution.png) **Pay analysis: salary distribution.** The headcount in each salary bracket. A bar opens the list of its employees. |
 | ![Outliers by group chart](docs/screenshots/05-outliers-by-group.png) **Pay analysis: outliers by group.** The outliers of each country, department or job level, next to the employees in range. | ![Highest salaries](docs/screenshots/06-highest-salaries.png) **Pay analysis: highest salaries.** The 10 highest salaries, in the local currency and in USD, with the compa-ratio. |
 | ![Salary bands](docs/screenshots/08-salary-bands.png) **Salary bands.** The pay range of each job level in each country, with its headcount and its outliers. | ![Band change preview](docs/screenshots/07-band-change-preview.png) **Band change.** The effect of a new band on the outliers and the correction cost, before the save. |
 | ![Employee record](docs/screenshots/10-employee-record.png) **Employee record.** The salary, its position in the band, the compa-ratio, the range penetration and the salary history. | ![Salary change dialog](docs/screenshots/11-salary-change.png) **Salary change.** A new salary or an increase in percent. The dialog shows the difference and the band before the save. |
 | ![Employees](docs/screenshots/09-employees.png) **Employees.** Search and filters. The list gives its headcount, payroll cost and median salary, so a filter answers a pay question. | ![Dark mode](docs/screenshots/12-dark-mode.png) **Light and dark mode.** The mode follows the device, or the selection of the HR Manager. The charts follow the mode. |
+| ![The Welcome screen on a phone](docs/screenshots/13-phone-welcome.png) **On a phone.** The columns stack, and the navigation opens from a menu button. | ![The outliers chart on a phone](docs/screenshots/14-phone-chart.png) **A chart on a phone.** The labels take less room, so the bars stay long enough to read. |
 
 | Screen | Question that it answers |
 |---|---|
@@ -70,18 +71,22 @@ All totals use one reporting currency (USD). Each salary converts at a dated exc
 
 **Tests first, and traceable.**
 
-- 269 backend tests (pytest) and 288 UI tests (Vitest and React Testing Library).
+- 269 backend tests (pytest) and 292 UI tests (Vitest and React Testing Library).
 - Each requirement (`FR-nn`, `NFR-nn`) points to its slice and its tests in `docs/traceability.md`.
 - Each test name describes a scenario, for example `refuses_a_salary_of_zero`.
 
 **Measured performance.** With 10,000 employees, a list responds in less than 30 ms, and a pay insight in less than 60 ms. The requirements are 300 ms and 500 ms. `docs/performance.md` has the measurements.
 
-**An accessible, consistent UI.**
+**UX and UI design.**
 
-- All screens use the Astryx design system and its theme tokens.
-- Each screen has a loading state, an empty state and an error state, and works with a keyboard.
-- Each chart has a table view for a screen reader.
-- An explanation of each pay term opens from an info button.
+- **Answer first, then evidence.** Each screen opens with the figures that answer its question. The table follows.
+- **Show, not tell.** The first screen proves the product with the live figures of ACME, not with a list of features.
+- **Exceptions stand out.** Only a salary outside the band, an inactive employee or an error gets a color. A sign, an arrow or a word repeats each color.
+- **Plain words.** A caption has one short line. The explanation of a pay term opens from an info button.
+- **From a number to the people.** A bar of a chart and a count in a table open the list of their employees. A record goes back to the same list, with its filters.
+- **See the effect before the save.** The salary change and the band change show the result before the HR Manager commits.
+- **Every state and every screen size.** Each screen has a loading, an empty and an error state, and works with a keyboard. The layout adapts to a phone, and the light and dark modes share one set of theme tokens.
+- **One system.** All screens use the Astryx design system and its tokens, through a shared component library. Each chart has a table view for a screen reader. `.claude/DESIGN.md` has the design brief.
 
 **AI-assisted work, with a record.**
 
