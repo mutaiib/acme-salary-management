@@ -51,7 +51,7 @@ All are in `frontend/src/components/`. A screen composes them, and each one comp
 |---|---|
 | `PageHeader` | The title block, with the one `h1` of the screen |
 | `Panel` | A section in a card, with a title row |
-| `Stat`, `StatCard`, `StatRow` | A figure with its label, its note, and an info button for its explanation |
+| `Stat`, `StatCard`, `StatRow` | A figure with its label, its note, and an info button for its explanation. Each label row has the height of an info button, so the figures of a row align |
 | `TermHelp` | The info button that opens the explanation of a term. It works with a keyboard |
 | `DataState` | The loading, empty and error states of one API call |
 | `DataTable`, `moneyColumn`, `jobLevelColumn` | A table and its common columns |

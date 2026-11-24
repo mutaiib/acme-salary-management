@@ -311,6 +311,20 @@ The first version was complete and deployed. The developer then used the system 
 
 **Decision of the developer.** The developer reviews the screens before the commit.
 
+### Step 9: The repository as a showcase
+
+**Request of the developer.** Make the screens a little better. Add screenshots, and make the value of the project clear to a reader of the repository. Remove the link to the video.
+
+**Proposal of the agent.** The agent took a screenshot of each screen in a browser, and looked for small faults. It found 3:
+
+1. The Welcome screen introduced a submission, not the product.
+2. A figure with no info button was higher than a figure with one, on Pay health and on Employees.
+3. The headcount axis of the salary distribution had no thousands separator.
+
+The agent wrote a test for each fault before the correction. Then it put 12 screenshots in `docs/screenshots/`, and wrote the README again around the problem, the screens and the engineering.
+
+**Decision of the developer.** The developer reviews the screens and the README before the push.
+
 ### The value of each change for the HR Manager
 
 | Change | Before | Now |
