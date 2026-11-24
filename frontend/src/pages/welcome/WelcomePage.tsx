@@ -42,8 +42,8 @@ const CAPABILITIES: { title: string; text: string; icon: IconType }[] = [
 ]
 
 /**
- * The first screen of the application: the introduction of the submission. It tells the
- * problem, the purpose of the system and what it can do. The button opens the Pay overview.
+ * The first screen of the application. It tells the problem, the purpose of the system
+ * and what it can do. The button opens the Pay overview.
  */
 export function WelcomePage() {
   return (
@@ -51,11 +51,11 @@ export function WelcomePage() {
       <Stack gap={8} maxWidth={960}>
         <Stack gap={4}>
           <Text type="label" color="accent">
-            Salary management assessment
+            Pay decisions for 10,000 employees in 8 countries
           </Text>
           <Heading level={1}>ACME Salary Management</Heading>
           <Text type="large" weight="normal" as="p">
-            Hello, I am Mutaib, and this is my submission for the salary management assessment.
+            Salary management that helps the HR Manager make a pay decision, and keeps the proof.
           </Text>
           <Text as="p" color="secondary">
             ACME has 10,000 employees in 8 countries, and the HR team keeps the salaries in Excel.
@@ -63,8 +63,9 @@ export function WelcomePage() {
             changed, or why.
           </Text>
           <Text as="p" color="secondary">
-            So I did not build an employee list with a salary column. I built a system that helps
-            the HR Manager make a pay decision. This is what it can do.
+            This system is not an employee list with a salary column. It shows where the money
+            goes, finds the salaries outside the band, and changes a salary with rules. This is
+            what it can do.
           </Text>
         </Stack>
         <Grid columns={{ minWidth: 240, max: 3 }} gap={4}>

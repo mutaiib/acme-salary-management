@@ -37,7 +37,8 @@ export function Stat({ label, value, fullValue, note, help, size = 'lg', testId 
     )
   return (
     <Stack gap={1} role="group" aria-labelledby={labelId}>
-      <Stack direction="horizontal" gap={1} vAlign="center">
+      {/* The label row has the height of the info button, so figures with and without help align. */}
+      <Stack direction="horizontal" gap={1} vAlign="center" minHeight="var(--size-element-sm)">
         <Text type="label" color="secondary" id={labelId}>
           {label}
         </Text>

@@ -72,6 +72,8 @@ export function SalaryDistributionBars({
       <YAxis
         domain={[0, 'auto']}
         allowDecimals={false}
+        // A headcount on the axis has a thousands separator: 2,800.
+        tickFormatter={(headcount: number) => formatCount(headcount)}
         tick={{ fill: ink }}
         tickLine={false}
         axisLine={false}

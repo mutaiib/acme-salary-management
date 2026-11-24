@@ -12,7 +12,7 @@ The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C
 
 | ID | Requirement (short) | Slice | Backend tests | UI tests |
 |---|---|---|---|---|
-| FR-01 | Total payroll cost and the median salary of the organization in the reporting currency, with the exchange rates and their date | S2 | `unit/test_money.py`, `api/test_overview.py`, `api/test_meta.py` | `pages/overview/OverviewPage.test.tsx`, `pages/exchange-rates/ExchangeRatesPage.test.tsx`, `lib/format.test.ts` |
+| FR-01 | Total payroll cost and the median salary of the organization in the reporting currency, with the exchange rates and their date | S2 | `unit/test_money.py`, `api/test_overview.py`, `api/test_meta.py` | `pages/overview/OverviewPage.test.tsx`, `pages/exchange-rates/ExchangeRatesPage.test.tsx`, `components/Stat.test.tsx`, `lib/format.test.ts` |
 | FR-02 | Headcount, payroll cost and its share, and minimum, median and maximum salary, by country, department and job level | S2 | `unit/test_money.py`, `api/test_overview.py` | `pages/overview/OverviewPage.test.tsx`, `lib/format.test.ts` |
 | FR-03 | Find an employee; filter and sort the list; set the rows on a page; the pay figures of the list | S0, S1, C2, C5 | `api/test_employees_list.py`, `api/test_employee_search.py`, `api/test_employee_detail.py`, `api/test_employee_summary.py`, `api/test_meta.py` | `pages/employees/EmployeesPage.test.tsx`, `pages/employees/summarySentences.test.ts` |
 | FR-04 | Change a salary with a reason and an effective date, as a new salary or as an increase in percent | S1, C4, B1 | `unit/test_salary_change_rules.py`, `api/test_salary_changes.py` | `pages/employee-detail/SalaryChange.test.tsx`, `pages/employee-detail/ChangeFromTo.test.tsx`, `lib/money.test.ts`, `lib/format.test.ts` |
@@ -23,7 +23,7 @@ The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C
 | FR-09 | Employees below range and above range, all or one kind; find an outlier by name, email or employee code | S4, C1 | `unit/test_ranges.py`, `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
 | FR-10 | Cost to move all below-range salaries to the band minimum, and its share of the payroll cost | S4, C4 | `api/test_pay_health.py` | `pages/pay-health/PayHealthPage.test.tsx` |
 | FR-13 | Deactivate an employee; insights count active employees only | S1, S2, S4 | `api/test_deactivate.py`, `api/test_overview.py`, `api/test_pay_health.py`, `api/test_salary_distribution.py`, `api/test_highest_salaries.py` | `pages/employee-detail/SalaryChange.test.tsx`, `pages/employee-detail/EmployeeDetailPage.test.tsx` |
-| FR-14 | A first screen that states the purpose of the system and what it can do | C3 | None: the screen has no data | None: the screen has fixed text and one link. A check in a browser covers it |
+| FR-14 | A first screen that states the purpose of the system and what it can do | C3 | None: the screen has no data | `pages/welcome/WelcomePage.test.tsx` |
 | FR-15 | Headcount of each salary band; employees below range and above range for each band | B2 | `api/test_bands.py` | `pages/bands/BandsPage.test.tsx` |
 | FR-16 | Effect of a band change before the save: employees below range and above range, and the correction cost | B3 | `api/test_bands.py`, `api/test_pay_health.py`, `api/test_write_log.py` | `pages/bands/BandsPage.test.tsx` |
 | FR-17 | Chart of the active employees in each salary bracket, in the reporting currency | B4, B7 | `unit/test_distribution.py`, `api/test_salary_distribution.py` | `pages/analysis/PayAnalysisPage.test.tsx`, `pages/analysis/SalaryDistributionChart.test.tsx`, `components/ChartFigure.test.tsx` |
@@ -48,6 +48,7 @@ The slices S0 to S4 are in `specs/salary-management-spec.md`. The slices C1 to C
 
 | Test file | Check |
 |---|---|
+| `components/Stat.test.tsx` | A figure with its label. All label rows have the same height, with or without an info button |
 | `components/DataState.test.tsx` | The loading, empty and error states that all screens share. A list shows rows with a shimmer when a later load is slow |
 | `components/LoadingMark.test.tsx` | A load indicator shows for a slow load, and not for a quick reply |
 | `components/BackLink.test.tsx`, `lib/backLinks.test.ts` | A back link has an arrow. A record goes back to the list that opened it, with the filters of that list |
