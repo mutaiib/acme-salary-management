@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- The accent blue of the theme (blue 40). Three bars that rise: the pay bands of ACME. -->
+  <!-- The logo of components/BrandMark.tsx, with the accent blue of the theme (blue 40).
+       3 salary bands that step up, and the position of one salary in the top band. -->
   <rect width="32" height="32" rx="8" fill="#005cb8"/>
-  <rect x="6" y="19" width="5" height="7" rx="1.5" fill="#ffffff" opacity="0.75"/>
-  <rect x="13.5" y="13" width="5" height="13" rx="1.5" fill="#ffffff" opacity="0.9"/>
-  <rect x="21" y="6" width="5" height="20" rx="1.5" fill="#ffffff"/>
+  <rect x="6" y="20.5" width="13" height="4.5" rx="2.25" fill="#ffffff" opacity="0.5"/>
+  <rect x="9.5" y="13.75" width="13" height="4.5" rx="2.25" fill="#ffffff" opacity="0.75"/>
+  <rect x="13" y="7" width="13" height="4.5" rx="2.25" fill="#ffffff"/>
+  <circle cx="22.75" cy="9.25" r="1.6" fill="#005cb8"/>
 </svg>
