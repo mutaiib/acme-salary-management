@@ -40,7 +40,17 @@ test('writes the signed count in each part of a bar, and no label for a zero', (
   const { container } = drawBars()
 
   const labels = [...container.querySelectorAll('.recharts-label')].map((label) => label.textContent)
-  expect(labels.filter(Boolean).sort()).toEqual(['+3', '-2', '-7'])
+  expect(labels.filter(Boolean).sort()).toEqual(expect.arrayContaining(['+3', '-2', '-7']))
+  expect(labels).not.toContain('+0')
+})
+
+test('writes the number of in-range employees at the end of each bar', () => {
+  const { container } = drawBars()
+
+  const rightTicks = [...container.querySelectorAll('.recharts-cartesian-axis-tick-value')].map(
+    (tick) => tick.textContent,
+  )
+  expect(rightTicks).toEqual(expect.arrayContaining(['40 in range', '18 in range']))
 })
 
 test('gives the group and the status of a part to onSelect when the HR Manager clicks the part', async () => {

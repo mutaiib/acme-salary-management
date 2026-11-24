@@ -76,8 +76,8 @@ export function OverviewPage() {
                 <StatCard
                   label="Median salary"
                   value={formatMoney(data.median_salary_minor, data.reporting_currency)}
-                  hint={`For one year, in ${data.reporting_currency}`}
-                  help="The median is the middle salary. Half of the active employees get less, and half get more."
+                  hint={`Of all active employees, for one year, in ${data.reporting_currency}`}
+                  help="The median is the middle salary. Half of the active employees get less, and half get more. This figure is for all of ACME. Each row of the table has the median of its own group."
                   testId="median-salary"
                 />
               </StatRow>
@@ -99,7 +99,8 @@ export function OverviewPage() {
               >
                 <Text type="supporting">
                   The amounts are for one year. The payroll cost is in {data.reporting_currency}.{' '}
-                  {shown.note}{' '}
+                  {shown.note} The bar of a row goes from the lowest salary to the highest salary
+                  of that group. The mark on the bar is the median salary of that group.{' '}
                   {data.rates_as_of && (
                     <Link href="/exchange-rates">
                       Exchange rates of {formatDate(data.rates_as_of)}

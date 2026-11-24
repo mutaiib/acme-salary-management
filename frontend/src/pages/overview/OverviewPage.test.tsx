@@ -239,7 +239,38 @@ test('shows the median salary of the organization with its period and currency',
 
   const figure = await screen.findByRole('group', { name: 'Median salary' })
   expect(within(figure).getByText('$63,000')).toBeInTheDocument()
-  expect(within(figure).getByText(/For one year, in USD/)).toBeInTheDocument()
+  expect(within(figure).getByText('Of all active employees, for one year, in USD')).toBeInTheDocument()
+})
+
+test('names the group of the salaries in the heading of the last column', async () => {
+  stubOverview()
+
+  renderScreen(<OverviewPage />)
+
+  expect(
+    await screen.findByRole('columnheader', {
+      name: 'Salaries in each country: minimum, median, maximum',
+    }),
+  ).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('radio', { name: 'Department' }))
+
+  expect(
+    await screen.findByRole('columnheader', {
+      name: 'Salaries in each department: minimum, median, maximum',
+    }),
+  ).toBeInTheDocument()
+})
+
+test('says that the bar and the median of a row are for the group of that row', async () => {
+  stubOverview()
+
+  renderScreen(<OverviewPage />)
+
+  const section = await screen.findByRole('region', { name: 'Payroll cost by country' })
+  expect(
+    within(section).getByText(/The mark on the bar is the median salary of that group\./),
+  ).toBeInTheDocument()
 })
 
 test('does not request the salary distribution or the highest salaries', async () => {

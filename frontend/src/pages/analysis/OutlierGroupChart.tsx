@@ -22,15 +22,28 @@ const LABEL_WIDTH = 130
 const BAR_SIZE = 20
 const PART_GAP = 2
 const STACK = 'outliers'
+// The width of the right axis, which holds the in-range label of each group.
+const IN_RANGE_LABEL_WIDTH = 120
 
 /** The signed count inside a part of a bar, as in the badges of the outlier list. A zero has no label. */
 const signedLabel = (sign: '-' | '+') => (value: unknown) =>
   typeof value === 'number' && value > 0 ? `${sign}${formatCount(value)}` : ''
 
+const inRangeCount = (group: OutlierGroup) =>
+  group.headcount - group.below_count - group.above_count
+
 type Row = OutlierGroup & { outlier_count: number }
 
 const toRows = (groups: OutlierGroup[]): Row[] =>
-  groups.map((group) => ({ ...group, outlier_count: group.below_count + group.above_count }))
+  groups.map((group) => ({
+    ...group,
+    outlier_count: group.below_count + group.above_count,
+  }))
+
+// The in-range employees are text, not a part of a bar: they are most of each group, and a
+// part with their size makes the outliers too small to read. A right axis writes the text
+// at the end of each row, also when a bar part has a size of zero.
+const inRangeText = (group: OutlierGroup) => `${formatCount(inRangeCount(group))} in range`
 
 type OnSelect = (group: OutlierGroup, status: OutlierStatus) => void
 
@@ -74,6 +87,7 @@ export function OutlierGroupBars({
 }: BarsProps) {
   const { below, above, onBar, ink, line, surface } = useChartColors()
   const rows = toRows(groups)
+  const inRangeByKey = new Map(groups.map((group) => [group.key, inRangeText(group)]))
   const legendText = (name: string) => (
     <Text type="inherit" color="secondary">
       {name}
@@ -98,6 +112,7 @@ export function OutlierGroupBars({
         axisLine={{ stroke: line }}
       />
       <YAxis
+        yAxisId="group"
         type="category"
         dataKey="label"
         width={LABEL_WIDTH}
@@ -105,11 +120,23 @@ export function OutlierGroupBars({
         tickLine={false}
         axisLine={{ stroke: line }}
       />
+      <YAxis
+        yAxisId="inRange"
+        orientation="right"
+        type="category"
+        dataKey="key"
+        width={IN_RANGE_LABEL_WIDTH}
+        tickFormatter={(key) => inRangeByKey.get(key) ?? ''}
+        tick={{ fill: ink }}
+        tickLine={false}
+        axisLine={false}
+      />
       <Tooltip cursor={{ fill: line, fillOpacity: 0.4 }} content={GroupTooltip} />
       {/* The legend has the order of the parts of a bar: below range, then above range. */}
       <Legend formatter={legendText} itemSorter={(item) => (item.dataKey === 'below_count' ? 0 : 1)} />
       <Bar
         name="Below range"
+        yAxisId="group"
         dataKey="below_count"
         stackId={STACK}
         fill={below}
@@ -124,6 +151,7 @@ export function OutlierGroupBars({
       </Bar>
       <Bar
         name="Above range"
+        yAxisId="group"
         dataKey="above_count"
         stackId={STACK}
         fill={above}
@@ -151,6 +179,7 @@ function GroupTooltip({ active, payload }: TooltipContentProps) {
         <Text type="supporting">{row.label}</Text>
         <Text>Below range: {formatCount(row.below_count)}</Text>
         <Text>Above range: {formatCount(row.above_count)}</Text>
+        <Text>In range: {formatCount(inRangeCount(row))}</Text>
         <Text>Headcount: {formatCount(row.headcount)}</Text>
       </Stack>
     </Card>
@@ -161,7 +190,7 @@ function GroupTable({ groups }: { groups: OutlierGroup[] }) {
   return (
     <table>
       <caption>
-        Outliers by group: the active employees below range and above range, with a salary band.
+        Outliers by group: the active employees below range, above range and in range, with a salary band.
       </caption>
       <thead>
         <tr>
@@ -169,6 +198,7 @@ function GroupTable({ groups }: { groups: OutlierGroup[] }) {
           <th scope="col">Below range</th>
           <th scope="col">Above range</th>
           <th scope="col">Outliers</th>
+          <th scope="col">In range</th>
         </tr>
       </thead>
       <tbody>
@@ -178,6 +208,7 @@ function GroupTable({ groups }: { groups: OutlierGroup[] }) {
             <td>{formatCount(group.below_count)}</td>
             <td>{formatCount(group.above_count)}</td>
             <td>{formatCount(group.below_count + group.above_count)}</td>
+            <td>{formatCount(inRangeCount(group))}</td>
           </tr>
         ))}
       </tbody>

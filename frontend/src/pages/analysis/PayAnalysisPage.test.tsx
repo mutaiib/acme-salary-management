@@ -274,10 +274,11 @@ test('shows a table view with a row for each group of outliers', async () => {
     'Below range',
     'Above range',
     'Outliers',
+    'In range',
   ])
   expect(within(table).getAllByRole('row')).toHaveLength(1 + COUNTRY_GROUPS.length)
   const row = within(table).getByText('United States').closest('tr')!
-  expect(within(row).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['7', '3', '10'])
+  expect(within(row).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['7', '3', '10', '40'])
 })
 
 test('groups the outliers by country at first, and sends no other grouping', async () => {

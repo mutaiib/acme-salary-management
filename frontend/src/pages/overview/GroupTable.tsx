@@ -93,7 +93,7 @@ export function GroupTable({ groupHeader, groups, totalCostMinor, reportingCurre
     },
     {
       key: 'median_minor',
-      header: 'Salary: minimum, median, maximum',
+      header: `Salaries in each ${groupHeader.toLowerCase()}: minimum, median, maximum`,
       width: proportional(3),
       renderCell: (group) => <SalaryRange group={group} />,
     },
