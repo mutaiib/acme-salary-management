@@ -61,7 +61,7 @@ All are in `frontend/src/components/`. A screen composes them, and each one comp
 | `ChartFigure` | The frame of a chart, with its table view. `hooks/useChartColors` gives the colors from the theme tokens |
 | `BackLink` | The link above the title that goes back to the screen before, with an arrow. A list goes back to the same view of Pay analysis. A record goes back to the list that opened it, with the filters of that list |
 | `Money`, `StatusBadge`, `EmployeeLink`, `MetaBanner`, `LoadingBar` | Small parts that 2 or more screens use |
-| `BrandMark` | The mark of the product, in the navigation and on the Welcome screen. A screen reader skips it |
+| `BrandMark` | The logo: 3 salary bands that step up, and the position of one salary in the top band. It is an SVG in an Astryx `Icon`, with the accent and the on-accent tokens, so it follows the color mode. `public/favicon.svg` has the same drawing. A screen reader skips it |
 | `LoadingRows`, `LoadingMark` | A list shows rows with a shimmer when a later load is slow, for example after a change of a filter (`rowsOf` of `DataState`). A section with a known height keeps that height while it loads (`loadingHeight`). `LoadingMark` is a small spinner for a figure that is not in a list. The two show after 150 ms, so a quick reply does not make them flash |
 
 ## Color rules

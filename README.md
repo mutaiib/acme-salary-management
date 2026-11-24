@@ -1,3 +1,5 @@
+<img src="frontend/public/favicon.svg" alt="" width="56" height="56">
+
 # ACME Salary Management
 
 [![CI](https://github.com/mutaiib/acme-salary-management/actions/workflows/ci.yml/badge.svg)](https://github.com/mutaiib/acme-salary-management/actions/workflows/ci.yml)
