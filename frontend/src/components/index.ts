@@ -1,3 +1,4 @@
+export { BrandMark } from './BrandMark'
 export { BackLink } from './BackLink'
 export { ChartFigure } from './ChartFigure'
 export { DataState, LoadingRows } from './DataState'

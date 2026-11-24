@@ -237,7 +237,7 @@ test('states the period and the currency of the salary distribution', async () =
 
   const section = await screen.findByRole('region', { name: 'Salary distribution' })
   expect(
-    await within(section).findByText(/bracket of \$20,000\. The salaries are for one year, in USD/),
+    await within(section).findByText(/salary bracket of \$20,000, for one year, in USD\./),
   ).toBeInTheDocument()
 })
 
@@ -426,7 +426,7 @@ test('says that the amounts are for one year and what the reporting currency and
   const section = await findHighestSalaries()
   expect(
     await within(section).findByText(
-      /The amounts are for one year\. The amount in USD is the cost to ACME; the compa-ratio compares a salary with the salary band of its country\./,
+      /^For one year\. The salary in USD is the cost to ACME\. The compa-ratio is the salary divided by the midpoint of its band\.$/,
     ),
   ).toBeInTheDocument()
 })

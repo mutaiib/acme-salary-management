@@ -102,8 +102,8 @@ export function HighestSalaries() {
     >
       <Stack gap={3}>
         <Text type="supporting">
-          The amounts are for one year. The amount in {reportingCurrency} is the cost to ACME; the
-          compa-ratio compares a salary with the salary band of its country.
+          For one year. The salary in {reportingCurrency} is the cost to ACME. The compa-ratio is the
+          salary divided by the midpoint of its band.
         </Text>
         <DataState
           state={highest}

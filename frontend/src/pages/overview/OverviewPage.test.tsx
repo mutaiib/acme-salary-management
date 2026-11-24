@@ -204,9 +204,9 @@ test('keeps the note of the old grouping while the new grouping loads', async ()
 
   await userEvent.click(screen.getByRole('radio', { name: 'Department' }))
 
-  expect(screen.getByText(/The salaries of a country are in the local currency/)).toBeInTheDocument()
+  expect(screen.getByText(/Salaries in the local currency/)).toBeInTheDocument()
   release()
-  expect(await screen.findByText(/A department has many currencies/)).toBeInTheDocument()
+  expect(await screen.findByText(/Salaries in USD: a department has many currencies/)).toBeInTheDocument()
 })
 
 test('shows the figures by job level when the HR Manager groups by job level', async () => {
@@ -262,14 +262,16 @@ test('names the group of the salaries in the heading of the last column', async 
   ).toBeInTheDocument()
 })
 
-test('says that the bar and the median of a row are for the group of that row', async () => {
+test('states the period and the currencies of the table in one short line', async () => {
   stubOverview()
 
   renderScreen(<OverviewPage />)
 
   const section = await screen.findByRole('region', { name: 'Payroll cost by country' })
   expect(
-    within(section).getByText(/The mark on the bar is the median salary of that group\./),
+    within(section).getByText(
+      /^For one year\. Payroll cost in USD\. Salaries in the local currency\./,
+    ),
   ).toBeInTheDocument()
 })
 

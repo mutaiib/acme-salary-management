@@ -59,9 +59,8 @@ export function OutlierGroupPanel() {
         {(data) => (
           <Stack gap={3}>
             <Text type="supporting">
-              The active employees below range and above range, in each group. Each part of a bar
-              shows its number of employees. The number at the end of a row is the employees in
-              range. Select a part of a bar to see its employees.
+              Active employees below range and above range, in each group. Select a part of a bar
+              to see its employees.
             </Text>
             <OutlierGroupChart
               groups={data.items}

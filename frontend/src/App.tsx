@@ -13,6 +13,7 @@ import { Theme } from '@astryxdesign/core/theme'
 import { ChartColumn, HeartPulse, LayoutDashboard, Rows3, Users } from 'lucide-react'
 import { type ReactElement, useState } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { BrandMark } from './components/BrandMark'
 import { ColorModeItem } from './components/ColorModeItem'
 import { LoadingBar } from './components/LoadingBar'
 import { RouterLink } from './components/RouterLink'
@@ -88,8 +89,9 @@ export function App() {
                   collapsible={{ ...navCollapse, hasButton: false }}
                   header={
                     <SideNavHeading
-                      heading="Salary Management"
-                      superheading="ACME"
+                      heading="ACME"
+                      subheading="Salary management"
+                      icon={<BrandMark />}
                       headerEndContent={<SideNavCollapseButton collapsible={navCollapse} />}
                     />
                   }

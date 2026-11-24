@@ -31,7 +31,7 @@ export function PayAnalysisPage() {
     <Stack gap={5} padding={6}>
       <PageHeader
         title="Pay analysis"
-        description="How ACME pays people: the salary distribution, the outliers by group, and the highest salaries."
+        description="The shape of the pay, where the outliers are, and the highest salaries."
       />
       <TabList
         role="tablist"

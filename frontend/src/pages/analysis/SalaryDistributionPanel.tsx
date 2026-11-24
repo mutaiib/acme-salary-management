@@ -26,10 +26,9 @@ export function SalaryDistributionPanel() {
         {(data) => (
           <Stack gap={3}>
             <Text type="supporting">
-              The headcount of the active employees in each salary bracket of{' '}
-              {formatMoney(data.bracket_width_minor, data.reporting_currency)}. The salaries are
-              for one year, in {data.reporting_currency}. The label of a bar is the start of its
-              bracket. Select a bar to see its employees.
+              Active employees in each salary bracket of{' '}
+              {formatMoney(data.bracket_width_minor, data.reporting_currency)}, for one year, in{' '}
+              {data.reporting_currency}. Select a bar to see its employees.
             </Text>
             <SalaryDistributionChart
               distribution={data}

@@ -12,24 +12,27 @@ import { formatCount, formatDate, formatMoney, formatMoneyShort } from '../../li
 import { GroupTable } from './GroupTable'
 import { OutlierNotice } from './OutlierNotice'
 
-const GROUPINGS: Record<GroupBy, { tab: string; title: string; header: string; note: string }> = {
+const GROUPINGS: Record<
+  GroupBy,
+  { tab: string; title: string; header: string; note: (currency: string) => string }
+> = {
   country: {
     tab: 'Country',
     title: 'Payroll cost by country',
     header: 'Country',
-    note: 'The salaries of a country are in the local currency.',
+    note: () => 'Salaries in the local currency.',
   },
   department: {
     tab: 'Department',
     title: 'Payroll cost by department',
     header: 'Department',
-    note: 'A department has many currencies, so the salaries are in the reporting currency.',
+    note: (currency) => `Salaries in ${currency}: a department has many currencies.`,
   },
   job_level: {
     tab: 'Job level',
     title: 'Payroll cost by job level',
     header: 'Job level',
-    note: 'A job level has many currencies, so the salaries are in the reporting currency.',
+    note: (currency) => `Salaries in ${currency}: a job level has many currencies.`,
   },
 }
 
@@ -98,9 +101,8 @@ export function OverviewPage() {
                 }
               >
                 <Text type="supporting">
-                  The amounts are for one year. The payroll cost is in {data.reporting_currency}.{' '}
-                  {shown.note} The bar of a row goes from the lowest salary to the highest salary
-                  of that group. The mark on the bar is the median salary of that group.{' '}
+                  For one year. Payroll cost in {data.reporting_currency}.{' '}
+                  {shown.note(data.reporting_currency)}{' '}
                   {data.rates_as_of && (
                     <Link href="/exchange-rates">
                       Exchange rates of {formatDate(data.rates_as_of)}

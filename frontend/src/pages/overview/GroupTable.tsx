@@ -48,6 +48,9 @@ function SalaryRange({ group }: { group: GroupFigures }) {
   )
 }
 
+// The width of the longest share, 100.0%.
+const SHARE_LABEL_WIDTH = 52
+
 export function GroupTable({ groupHeader, groups, totalCostMinor, reportingCurrency }: Props) {
   const columns: TableColumn<TableRow<GroupFigures>>[] = [
     { key: 'label', header: groupHeader, width: proportional(2) },
@@ -85,9 +88,12 @@ export function GroupTable({ groupHeader, groups, totalCostMinor, reportingCurre
             max={totalCostMinor}
             variant="accent"
           />
-          <Text hasTabularNumbers textWrap="nowrap">
-            {formatShare(group.payroll_cost_minor, totalCostMinor)}
-          </Text>
+          {/* A fixed width for the share keeps the bars of all rows the same length. */}
+          <Stack width={SHARE_LABEL_WIDTH} hAlign="end">
+            <Text hasTabularNumbers textWrap="nowrap">
+              {formatShare(group.payroll_cost_minor, totalCostMinor)}
+            </Text>
+          </Stack>
         </Stack>
       ),
     },

@@ -98,7 +98,7 @@ export function BandsPage() {
     <Stack gap={4} padding={6}>
       <PageHeader
         title="Salary bands"
-        description="The pay range for one year, for each job level in each country. A salary below the minimum or above the maximum shows on the Pay health screen."
+        description="The pay range for one year of each job level, in each country. Select a count to see its employees."
       />
       <MetaBanner state={meta} />
       <FilterBar>

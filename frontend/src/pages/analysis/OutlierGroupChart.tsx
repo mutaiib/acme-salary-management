@@ -11,6 +11,7 @@ import {
   type TooltipContentProps,
   XAxis,
   YAxis,
+  useChartWidth,
 } from 'recharts'
 import type { OutlierGroup, OutlierStatus } from '../../api/types'
 import { ChartFigure } from '../../components'
@@ -24,6 +25,10 @@ const PART_GAP = 2
 const STACK = 'outliers'
 // The width of the right axis, which holds the in-range label of each group.
 const IN_RANGE_LABEL_WIDTH = 120
+// Below this chart width, the labels take less room and the in-range text goes away,
+// so that the bars stay long enough to read. The tooltip and the table still give it.
+const NARROW_CHART_WIDTH = 520
+const NARROW_LABEL_WIDTH = 96
 
 /** The signed count inside a part of a bar, as in the badges of the outlier list. A zero has no label. */
 const signedLabel = (sign: '-' | '+') => (value: unknown) =>
@@ -111,26 +116,7 @@ export function OutlierGroupBars({
         tickLine={false}
         axisLine={{ stroke: line }}
       />
-      <YAxis
-        yAxisId="group"
-        type="category"
-        dataKey="label"
-        width={LABEL_WIDTH}
-        tick={{ fill: ink }}
-        tickLine={false}
-        axisLine={{ stroke: line }}
-      />
-      <YAxis
-        yAxisId="inRange"
-        orientation="right"
-        type="category"
-        dataKey="key"
-        width={IN_RANGE_LABEL_WIDTH}
-        tickFormatter={(key) => inRangeByKey.get(key) ?? ''}
-        tick={{ fill: ink }}
-        tickLine={false}
-        axisLine={false}
-      />
+      <GroupAxes inRangeByKey={inRangeByKey} ink={ink} line={line} />
       <Tooltip cursor={{ fill: line, fillOpacity: 0.4 }} content={GroupTooltip} />
       {/* The legend has the order of the parts of a bar: below range, then above range. */}
       <Legend formatter={legendText} itemSorter={(item) => (item.dataKey === 'below_count' ? 0 : 1)} />
@@ -165,6 +151,45 @@ export function OutlierGroupBars({
         <LabelList dataKey="above_count" fill={onBar} formatter={signedLabel('+')} />
       </Bar>
     </BarChart>
+  )
+}
+
+/** The group names at the start of each row, and the in-range text at its end. */
+function GroupAxes({
+  inRangeByKey,
+  ink,
+  line,
+}: {
+  inRangeByKey: Map<string, string>
+  ink: string
+  line: string
+}) {
+  const chartWidth = useChartWidth() ?? 0
+  const isNarrow = chartWidth > 0 && chartWidth < NARROW_CHART_WIDTH
+  return (
+    <>
+      <YAxis
+        yAxisId="group"
+        type="category"
+        dataKey="label"
+        width={isNarrow ? NARROW_LABEL_WIDTH : LABEL_WIDTH}
+        tick={{ fill: ink }}
+        tickLine={false}
+        axisLine={{ stroke: line }}
+      />
+      <YAxis
+        yAxisId="inRange"
+        orientation="right"
+        type="category"
+        dataKey="key"
+        hide={isNarrow}
+        width={IN_RANGE_LABEL_WIDTH}
+        tickFormatter={(key) => inRangeByKey.get(key) ?? ''}
+        tick={{ fill: ink }}
+        tickLine={false}
+        axisLine={false}
+      />
+    </>
   )
 }
 

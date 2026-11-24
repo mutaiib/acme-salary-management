@@ -86,7 +86,7 @@ export function PayHealthPage() {
       {back && <BackLink href={back.href} label={back.label} />}
       <PageHeader
         title="Pay health"
-        description="The employees who have a salary outside the salary band for their job. Each amount is for one year."
+        description="Each salary outside its band, worst first. The amounts are for one year."
       />
       <MetaBanner state={meta} />
       <DataState state={summary}>

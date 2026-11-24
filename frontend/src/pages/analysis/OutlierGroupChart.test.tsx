@@ -65,3 +65,15 @@ test('gives the group and the status of a part to onSelect when the HR Manager c
   expect(onSelect).toHaveBeenNthCalledWith(1, GROUPS[1], 'below')
   expect(onSelect).toHaveBeenNthCalledWith(2, GROUPS[0], 'above')
 })
+
+test('leaves out the in-range text on a narrow chart, so that the bars keep their room', () => {
+  const { container } = renderScreen(
+    <OutlierGroupBars groups={GROUPS} width={340} height={200} isAnimated={false} />,
+  )
+
+  const ticks = [...container.querySelectorAll('.recharts-cartesian-axis-tick-value')].map(
+    (tick) => tick.textContent,
+  )
+  expect(ticks).toEqual(expect.arrayContaining(['United States', 'Germany']))
+  expect(ticks.filter((tick) => tick?.includes('in range'))).toEqual([])
+})

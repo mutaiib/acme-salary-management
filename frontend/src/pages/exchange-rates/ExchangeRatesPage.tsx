@@ -38,16 +38,19 @@ export function ExchangeRatesPage() {
         title="Exchange rates"
         description={`The payroll cost converts each salary to ${reportingCurrency} with these rates. The rates do not change with the market.`}
       />
-      <Panel title="Rates">
-        <DataState
-          state={rates}
-          isEmpty={(data) => data.length === 0}
-          emptyTitle="No exchange rates"
-          emptyDescription="Run the seed script to create the exchange rates."
-        >
-          {(data) => <DataTable rows={data} columns={columnsFor(reportingCurrency)} idKey="currency" />}
-        </DataState>
-      </Panel>
+      {/* 3 short columns read better when a rate stays near its currency. */}
+      <Stack maxWidth={720}>
+        <Panel title="Rates">
+          <DataState
+            state={rates}
+            isEmpty={(data) => data.length === 0}
+            emptyTitle="No exchange rates"
+            emptyDescription="Run the seed script to create the exchange rates."
+          >
+            {(data) => <DataTable rows={data} columns={columnsFor(reportingCurrency)} idKey="currency" />}
+          </DataState>
+        </Panel>
+      </Stack>
     </Stack>
   )
 }
